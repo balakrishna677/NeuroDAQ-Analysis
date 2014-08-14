@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'browser.ui'
 #
-# Created: Thu Aug 14 13:57:19 2014
+# Created: Thu Aug 14 21:59:23 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -137,9 +137,12 @@ class Ui_MainWindow(object):
         icon1.addPixmap(QtGui.QPixmap(_fromUtf8("icons/push7.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionShowCursors.setIcon(icon1)
         self.actionShowCursors.setObjectName(_fromUtf8("actionShowCursors"))
+        self.actionSaveFileAs = QtGui.QAction(MainWindow)
+        self.actionSaveFileAs.setObjectName(_fromUtf8("actionSaveFileAs"))
         self.toolBar.addAction(self.actionNewFile)
         self.toolBar.addAction(self.actionLoadData)
         self.toolBar.addAction(self.actionSaveFile)
+        self.toolBar.addAction(self.actionSaveFileAs)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -164,6 +167,7 @@ class Ui_MainWindow(object):
         self.actionPlotData.setToolTip(QtGui.QApplication.translate("MainWindow", "Plot Data", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShowCursors.setText(QtGui.QApplication.translate("MainWindow", "showCursors", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShowCursors.setToolTip(QtGui.QApplication.translate("MainWindow", "Show Cursors", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSaveFileAs.setText(QtGui.QApplication.translate("MainWindow", "Save As", None, QtGui.QApplication.UnicodeUTF8))
 
 from matplotlibwidgetFile import matplotlibWidget
 from h5TreeWidgetFile import h5TreeWidget
