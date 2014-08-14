@@ -20,16 +20,18 @@ class dataBrowser(QtGui.QMainWindow):
         # General Window settings
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.db = None
+        self.wdb = None
               
         # Directory browser
-        model = QtGui.QFileSystemModel()
-        model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/')))
-        model.setNameFilters(['*.hdf5'])
-        self.ui.dirTree.setModel(model)
+        self.model = QtGui.QFileSystemModel()
+        self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/')))
+        self.model.setNameFilters(['*.hdf5'])
+        self.ui.dirTree.setModel(self.model)
         self.ui.dirTree.setColumnHidden(1, True)
         self.ui.dirTree.setColumnHidden(2, True)
         self.ui.dirTree.setColumnHidden(3, True)
-        self.ui.dirTree.setRootIndex(model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/'))))
+        self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/'))))
    
         self.ui.dirTree.selectionModel().selectionChanged.connect(self.loadH5OnSelectionChanged)
         self.currentFile = []
@@ -45,8 +47,11 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.workingTree.setHeaderLabels(['Working Data'])
         self.ui.actionLoadData.triggered.connect(self.loadH5OnLoadPush)
         self.ui.actionNewFile.triggered.connect(self.createH5OnNewPush)
+        self.ui.actionSaveFile.triggered.connect(self.saveH5OnSavePush)
+        self.ui.actionSaveFileAs.triggered.connect(self.saveH5OnSaveAsPush)
         self.connect(self.ui.workingTree, QtCore.SIGNAL('dropped'), self.moveItemsAcross)
         self.connect(self.ui.workingTree, QtCore.SIGNAL('targetPosition'), self.setTargetPosition)
+        self.ui.workingTree.saveStr = ''
         
         # context menus
         self.ui.workingTree.customContextMenuRequested.connect(self.openWorkingTreeMenu)
@@ -88,6 +93,10 @@ class dataBrowser(QtGui.QMainWindow):
         self.workingTreeMenu.exec_(self.ui.workingTree.viewport().mapToGlobal(position))
     
     def loadH5OnSelectionChanged(self, newSelection, oldSelection):
+        #newIndex = newSelection.indexes()[0]
+        #oldIndex = oldSelection.indexes()[0]
+        #currentFile = str(newIndex.model().filePath(newIndex))
+        #oldFile = str(newIndex.model().filePath(newIndex))
         loadH5(self, self.ui.hdfTree)
        
     def loadH5OnLoadPush(self):
@@ -95,6 +104,20 @@ class dataBrowser(QtGui.QMainWindow):
         
     def createH5OnNewPush(self):
         createH5(self, self.ui.workingTree)
+
+    def saveH5OnSavePush(self):
+        if self.ui.workingTree.saveStr:
+            fname = self.ui.workingTree.saveStr
+            saveH5(self, self.ui.workingTree, fname)
+        else: 
+            fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
+            if ok:
+                saveH5(self, self.ui.workingTree, fname)
+        
+    def saveH5OnSaveAsPush(self):
+        fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
+        if ok:
+            saveH5(self, self.ui.workingTree, fname)
 
     def addRootGroupOnMenu(self):
         addTreeGroup(self, self.ui.workingTree, 'root')
@@ -111,8 +134,11 @@ class dataBrowser(QtGui.QMainWindow):
     
     def storeSelection(self):
         self.dragItems = []
-        for item in self.ui.hdfTree.selectedItems():
-            self.dragItems.append([item.path, item.text(0)])        
+        #for item in self.ui.hdfTree.selectedItems():
+        #    self.dragItems.append([item.path, item.text(0), item.dataIndex])    
+        for originalIndex in self.ui.hdfTree.selectedIndexes():
+            item = self.ui.workingTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
+            self.dragItems.append([item.path, item.text(0), item.dataIndex, originalIndex]) 
     
     def setTargetPosition(self, parent, row):
         self.dragTargetParent = parent
@@ -123,6 +149,8 @@ class dataBrowser(QtGui.QMainWindow):
         for item in self.dragItems:
             i = h5Item([str(item[1])])
             i.path = item[0]
+            i.dataIndex = item[2]
+            i.originalIndex = item[3]
             targetItems.append(i)            
         
         parentIndex = self.ui.workingTree.indexFromItem(self.dragTargetParent)
@@ -132,8 +160,12 @@ class dataBrowser(QtGui.QMainWindow):
             sip.delete(temp_item)        
             if parentIndex.isValid():
                 self.dragTargetParent.insertChild(index.row(), targetItems[row])
+                originalParentWidget = self.ui.hdfTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
+                populateH5dragItems(self, originalParentWidget, targetItems[row])
             else:
                 self.ui.workingTree.insertTopLevelItem(index.row(), targetItems[row])     
+                originalParentWidget = self.ui.hdfTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
+                populateH5dragItems(self, originalParentWidget, targetItems[row])
 
         
     # Plot methods
@@ -198,8 +230,10 @@ def plotMultipleData(browser, plotWidget):
     items = browser.ui.workingTree.selectedItems()
     if items:
         for item in items:
-            if 'dataset' in str(browser.db[str(item.path)]):
-                plotWidget.canvas.ax.plot(browser.db[str(item.path)][:], 'k')
+            if item.dataIndex is not None:
+                plotWidget.canvas.ax.plot(browser.ui.workingTree.data[item.dataIndex], 'k')
+            #if 'dataset' in str(browser.db[str(item.path)]):
+            #    plotWidget.canvas.ax.plot(browser.db[str(item.path)][:], 'k')
     plotWidget.canvas.draw()            
     plotWidget.background = plotWidget.canvas.copy_from_bbox(plotWidget.canvas.ax.bbox)
     plotWidget.createCursor()
@@ -208,14 +242,16 @@ def plotMultipleData(browser, plotWidget):
 
 # Tree management
 def loadH5(browser, tree):
+    browser.ui.workingTree.data = []
     index = browser.ui.dirTree.selectedIndexes()[0]
     currentFile = str(index.model().filePath(index))
+    if browser.db: browser.db.close()
     if '.hdf5' in currentFile:
         #print self.currentFile
         tree.clear()       
         browser.db = h5py.File(currentFile, 'r')
        
-       # Insert groups into the tree
+        # Insert groups into the tree and add data to internal data list
         for group in browser.db:
             item = h5Item([str(group)])
             item.path = '/'+str(group)
@@ -230,14 +266,53 @@ def populateH5tree(browser, parent, parentWidget):
             item.path = re.findall('"([^"]*)"', str(parent))[0] + '/' + str(child)
             parentWidget.addChild(item)
             populateH5tree(browser, parent[child], item)
+    elif isinstance(parent, h5py.Dataset):
+        parentWidget.dataIndex = len(browser.ui.workingTree.data)
+        browser.ui.workingTree.data.append(parent[:])
+
+def populateH5File(browser, parent, parentWidget):
+    for i in range(parentWidget.childCount()):
+        item = parentWidget.child(i)        
+        if item.childCount()>0:
+            parent.create_group(str(item.text(0)))
+            populateH5File(browser, parent[str(item.text(0))], parentWidget=item)
+        else:
+            parent.create_dataset(str(item.text(0)), data=browser.ui.workingTree.data[item.dataIndex])
+
+def populateH5dragItems(browser, originalParentWidget, parentWidget):
+    if originalParentWidget.childCount()>0:
+        for c in range(originalParentWidget.childCount()):
+            child = originalParentWidget.child(c)
+            i = h5Item([str(child.text(0))])
+            i.path = child.path
+            i.dataIndex = child.dataIndex
+            parentWidget.addChild(i)
+            populateH5dragItems(browser, child, i)
+
 
 def createH5(browser, tree):
-    tree.clear()
+    fname, ok = QtGui.QInputDialog.getText(browser, 'New file', 'Enter file name:')
+    if ok: 
+        tree.clear()
+        browser.ui.workingTree.saveStr = fname
 
+def saveH5(browser, tree, fname):
+    fname = str(fname)
+    browser.ui.workingTree.setHeaderLabels([fname])
+    pathName = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
+    browser.wdb = h5py.File(pathName, 'w') 
+    root = tree.invisibleRootItem()
+    childCount = root.childCount()
+    for i in range(childCount):
+        item = root.child(i)
+        browser.wdb.create_group(str(item.text(0)))
+        populateH5File(browser, browser.wdb['/'+str(item.text(0))], item)
+    browser.wdb.close()         
+       
 def addTreeGroup(browser, tree, level):
     if level=='root':
         item = h5Item(['Group'])
-        tree.addTopLevelItem(item) 
+        tree.addTopLevelItem(item)        
     elif level=='child':
         item = h5Item(['Group'])
         parentWidget = tree.currentItem()
@@ -249,10 +324,14 @@ def renameTreeItem(browser, tree, text):
     
 def removeTreeItem(browser, tree):
     items = tree.selectedItems()
-    for item in items: sip.delete(item)
+    for item in items: 
+        sip.delete(item)
+        del tree.data[item.dataIndex]
 
 
-
+# TO DO:
+# sorting of elements in tree (add 0 to numbers and have column for user defined orders) 
+# time, dt in recordings 
 
 
 
