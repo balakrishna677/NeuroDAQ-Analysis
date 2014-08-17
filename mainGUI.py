@@ -27,20 +27,21 @@ class dataBrowser(QtGui.QMainWindow):
               
         # Directory browser
         self.model = QtGui.QFileSystemModel()
-        #self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/')))
+        #self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/NeuroDAQ-Analysis/testData/')))
         self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/Users/adam/')))       
         self.model.setNameFilters(['*.hdf5'])
         self.ui.dirTree.setModel(self.model)
         self.ui.dirTree.setColumnHidden(1, True)
         self.ui.dirTree.setColumnHidden(2, True)
         self.ui.dirTree.setColumnHidden(3, True)
-        #self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/'))))
+        #self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/NeuroDAQ-Analysis/testData/'))))
         self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/Users/adam'))))   
         self.ui.dirTree.selectionModel().selectionChanged.connect(self.loadH5OnSelectionChanged)
         self.currentOpenFile = []
         self.currentSaveFile = []
         
         # hdf5 browser
+        self.ui.hdfTree.data = []
         self.ui.hdfTree.setColumnCount(1)
         self.ui.hdfTree.setHeaderLabels(['Data'])
         self.ui.hdfTree.currentItemChanged.connect(self.plotOnSelectionChanged)
@@ -95,8 +96,8 @@ class dataBrowser(QtGui.QMainWindow):
         cidRelease = self.ui.plotsWidget.canvas.mpl_connect('button_release_event', self.on_release)    
         
         # analysis actions
-        #self.ui.plotsWidget.toolbar.addAction(self.ui.actionBaseline)
-        #self.ui.actionBaseline.triggered.connect(self.baseline)
+        self.ui.plotsWidget.toolbar.addAction(self.ui.actionBaseline)
+        self.ui.actionBaseline.triggered.connect(self.baseline)
                 
         self.show()              
     
@@ -305,7 +306,7 @@ def plotMultipleData(browser, plotWidget):
 
 # Tree management
 def loadH5(browser, tree, push):
-    browser.ui.workingTree.data = []
+    browser.ui.hdfTree.data = []
     index = browser.ui.dirTree.selectedIndexes()[0]
     currentFile = str(index.model().filePath(index))
     if browser.db: browser.db.close()
@@ -318,7 +319,7 @@ def loadH5(browser, tree, push):
             item = h5Item([str(group)])
             item.path = '/'+str(group)
             tree.addTopLevelItem(item)
-            populateH5tree(browser, browser.db['/'+str(group)], parentWidget=item) 
+            populateH5tree(browser, browser.db['/'+str(group)], parentWidget=item, push=push) 
 
     if push:
         browser.ui.workingTree.propsDt = ''
@@ -332,17 +333,18 @@ def loadH5(browser, tree, push):
         browser.currentSaveFile = currentFile
         browser.ui.workingTree.setHeaderLabels([os.path.split(currentFile)[1]])
 
-def populateH5tree(browser, parent, parentWidget):
+def populateH5tree(browser, parent, parentWidget, push):
     if isinstance(parent, h5py.Group):
         for child in parent:
             #print parent[child]
             item = h5Item([child])
             item.path = re.findall('"([^"]*)"', str(parent))[0] + '/' + str(child)
             parentWidget.addChild(item)
-            populateH5tree(browser, parent[child], item)
+            populateH5tree(browser, parent[child], item, push)
     elif isinstance(parent, h5py.Dataset):
-        parentWidget.dataIndex = len(browser.ui.workingTree.data)
-        browser.ui.workingTree.data.append(parent[:])
+        if push:
+            parentWidget.dataIndex = len(browser.ui.workingTree.data)
+            browser.ui.workingTree.data.append(parent[:])
 
 def populateH5File(browser, parent, parentWidget):
     for i in range(parentWidget.childCount()):
@@ -359,7 +361,8 @@ def populateH5dragItems(browser, originalParentWidget, parentWidget):
             child = originalParentWidget.child(c)
             i = h5Item([str(child.text(0))])
             i.path = child.path
-            i.dataIndex = child.dataIndex
+            i.dataIndex = len(browser.ui.workingTree.data)
+            browser.ui.workingTree.data.append(browser.db[child.path][:])
             parentWidget.addChild(i)
             populateH5dragItems(browser, child, i)
 
