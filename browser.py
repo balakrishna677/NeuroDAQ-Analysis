@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'browser.ui'
 #
-# Created: Sat Aug 16 20:22:42 2014
+# Created: Sun Aug 17 19:51:55 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,14 +26,9 @@ class Ui_MainWindow(object):
         MainWindow.setAutoFillBackground(False)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.gridLayout_2 = QtGui.QGridLayout(self.centralwidget)
-        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.gridLayout_3 = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.splitter_4 = QtGui.QSplitter(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.splitter_4.sizePolicy().hasHeightForWidth())
-        self.splitter_4.setSizePolicy(sizePolicy)
         self.splitter_4.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_4.setObjectName(_fromUtf8("splitter_4"))
         self.splitter_2 = QtGui.QSplitter(self.splitter_4)
@@ -70,7 +65,7 @@ class Ui_MainWindow(object):
         self.hdfTree.setAcceptDrops(True)
         self.hdfTree.setDragEnabled(True)
         self.hdfTree.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
-        self.hdfTree.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.hdfTree.setDefaultDropAction(QtCore.Qt.CopyAction)
         self.hdfTree.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.hdfTree.setObjectName(_fromUtf8("hdfTree"))
         self.hdfTree.headerItem().setText(0, _fromUtf8("1"))
@@ -101,15 +96,17 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
-        self.plotsWidget_2 = QtGui.QWidget(self.tab_2)
-        self.plotsWidget_2.setGeometry(QtCore.QRect(6, 5, 511, 671))
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.plotsWidget_2.sizePolicy().hasHeightForWidth())
-        self.plotsWidget_2.setSizePolicy(sizePolicy)
-        self.plotsWidget_2.setMinimumSize(QtCore.QSize(0, 0))
-        self.plotsWidget_2.setObjectName(_fromUtf8("plotsWidget_2"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.tab_2)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.dataTableWidget = QtGui.QTableWidget(self.tab_2)
+        self.dataTableWidget.setDragEnabled(True)
+        self.dataTableWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.dataTableWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.dataTableWidget.setAlternatingRowColors(True)
+        self.dataTableWidget.setObjectName(_fromUtf8("dataTableWidget"))
+        self.dataTableWidget.setColumnCount(0)
+        self.dataTableWidget.setRowCount(0)
+        self.gridLayout_2.addWidget(self.dataTableWidget, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
         self.splitter_3 = QtGui.QSplitter(self.splitter_4)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
@@ -145,7 +142,7 @@ class Ui_MainWindow(object):
         self.propsTableWidget.setObjectName(_fromUtf8("propsTableWidget"))
         self.propsTableWidget.horizontalHeader().setCascadingSectionResizes(False)
         self.propsTableWidget.horizontalHeader().setStretchLastSection(True)
-        self.gridLayout_2.addWidget(self.splitter_4, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.splitter_4, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -195,6 +192,12 @@ class Ui_MainWindow(object):
         self.actionZoomOut.setObjectName(_fromUtf8("actionZoomOut"))
         self.actionBaseline = QtGui.QAction(MainWindow)
         self.actionBaseline.setObjectName(_fromUtf8("actionBaseline"))
+        self.actionAverage = QtGui.QAction(MainWindow)
+        self.actionAverage.setObjectName(_fromUtf8("actionAverage"))
+        self.actionStats = QtGui.QAction(MainWindow)
+        self.actionStats.setObjectName(_fromUtf8("actionStats"))
+        self.actionShowInTable = QtGui.QAction(MainWindow)
+        self.actionShowInTable.setObjectName(_fromUtf8("actionShowInTable"))
         self.toolBar.addAction(self.actionNewFile)
         self.toolBar.addAction(self.actionLoadData)
         self.toolBar.addAction(self.actionSaveFile)
@@ -206,8 +209,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "NeuroDAQ Analysis", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Tab 1", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Tab 2", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Plot", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Table", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLoadData.setText(QtGui.QApplication.translate("MainWindow", "Load", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLoadData.setToolTip(QtGui.QApplication.translate("MainWindow", "Load data", None, QtGui.QApplication.UnicodeUTF8))
@@ -228,6 +231,11 @@ class Ui_MainWindow(object):
         self.actionZoomOut.setToolTip(QtGui.QApplication.translate("MainWindow", "Zoom Out", None, QtGui.QApplication.UnicodeUTF8))
         self.actionBaseline.setText(QtGui.QApplication.translate("MainWindow", "Baseline", None, QtGui.QApplication.UnicodeUTF8))
         self.actionBaseline.setToolTip(QtGui.QApplication.translate("MainWindow", "Baseline traces", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAverage.setText(QtGui.QApplication.translate("MainWindow", "Average", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAverage.setToolTip(QtGui.QApplication.translate("MainWindow", "Make Average", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStats.setText(QtGui.QApplication.translate("MainWindow", "Stats", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStats.setToolTip(QtGui.QApplication.translate("MainWindow", "Measure Statistics", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShowInTable.setText(QtGui.QApplication.translate("MainWindow", "Show in Table", None, QtGui.QApplication.UnicodeUTF8))
 
 from matplotlibwidgetFile import matplotlibWidget
 from h5TreeWidgetFile import h5TreeWidget

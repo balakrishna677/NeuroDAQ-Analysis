@@ -66,6 +66,7 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.actionAddChildGroup.triggered.connect(self.addChildGroupOnMenu)
         self.ui.actionRenameTreeItem.triggered.connect(self.renameItemOnMenu)
         self.ui.actionRemoveTreeItem.triggered.connect(self.removeItemOnMenu)
+        self.ui.actionShowInTable.triggered.connect(self.showInTableOnMenu)        
         
         # properties table        
         self.ui.propsTableWidget.setRowCount(2)
@@ -80,6 +81,10 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.propsTableWidget.setVerticalHeaderItem(1, self.ui.workingTree.propsItemDescriptionLabel)
         self.ui.propsTableWidget.setItem(1,0,self.ui.workingTree.propsItemDescription)
         self.ui.propsTableWidget.cellChanged.connect(self.updateTableEntry)        
+        
+        # data table
+        self.ui.dataTableWidget.setRowCount(100)
+        self.ui.dataTableWidget.setColumnCount(100)
                 
         # main plotting mouse actions
         self.ui.plotsWidget.plotDataIndex = None
@@ -98,6 +103,10 @@ class dataBrowser(QtGui.QMainWindow):
         # analysis actions
         self.ui.plotsWidget.toolbar.addAction(self.ui.actionBaseline)
         self.ui.actionBaseline.triggered.connect(self.baseline)
+        self.ui.plotsWidget.toolbar.addAction(self.ui.actionAverage)
+        self.ui.actionAverage.triggered.connect(self.average)
+        self.ui.plotsWidget.toolbar.addAction(self.ui.actionStats)
+        self.ui.actionStats.triggered.connect(self.measureStats)        
                 
         self.show()              
     
@@ -109,6 +118,7 @@ class dataBrowser(QtGui.QMainWindow):
         self.workingTreeMenu.addAction(self.ui.actionAddDataset)
         self.workingTreeMenu.addAction(self.ui.actionRenameTreeItem)
         self.workingTreeMenu.addAction(self.ui.actionRemoveTreeItem)
+        self.workingTreeMenu.addAction(self.ui.actionShowInTable)
 
         if len(self.ui.workingTree.selectedItems())==0: 
             self.ui.actionAddChildGroup.setDisabled(True)
@@ -164,6 +174,10 @@ class dataBrowser(QtGui.QMainWindow):
 
     def removeItemOnMenu(self):
         removeTreeItem(self, self.ui.workingTree)
+
+    def showInTableOnMenu(self):
+        clearTable(self)
+        putDataOnTable(self)
     
     def storeSelection(self):
         self.dragItems = []
@@ -265,6 +279,13 @@ class dataBrowser(QtGui.QMainWindow):
         if self.ui.plotsWidget.plotDataIndex:
             if self.ui.plotsWidget.cursor1Pos: alib.baseline(self)
 
+    def average(self):
+        if self.ui.plotsWidget.plotDataIndex: alib.average(self)
+        
+    def measureStats(self):
+        if self.ui.plotsWidget.plotDataIndex:
+            if self.ui.plotsWidget.cursor1Pos: alib.measureStats(self)    
+            
 def main():    
     defaultFont = QtGui.QFont('Ubuntu', 8) 
     app = QtGui.QApplication(sys.argv)
@@ -283,17 +304,19 @@ if __name__ == '__main__':
 # Plotting
 def plotSingleData(browser, plotWidget, data):
     plotWidget.canvas.ax.clear()
-    plotWidget.canvas.ax.plot(data, 'k')
+    plotWidget.canvas.ax.plot(data, 'k', linewidth=0.5)
     plotWidget.canvas.draw()
 
 def plotMultipleData(browser, plotWidget):
+    dt = 0.04
     plotWidget.canvas.ax.clear()
     plotWidget.plotDataIndex = []
     items = browser.ui.workingTree.selectedItems()
     if items:
         for item in items:
             if item.dataIndex is not None:
-                plotWidget.canvas.ax.plot(browser.ui.workingTree.data[item.dataIndex], 'k')
+                x = np.arange(0, len(browser.ui.workingTree.data[item.dataIndex])*dt, dt)
+                plotWidget.canvas.ax.plot(x, browser.ui.workingTree.data[item.dataIndex], 'k', linewidth=0.5)
                 plotWidget.plotDataIndex.append(item.dataIndex)
             #if 'dataset' in str(browser.db[str(item.path)]):
             #    plotWidget.canvas.ax.plot(browser.db[str(item.path)][:], 'k')
@@ -361,10 +384,12 @@ def populateH5dragItems(browser, originalParentWidget, parentWidget):
             child = originalParentWidget.child(c)
             i = h5Item([str(child.text(0))])
             i.path = child.path
-            i.dataIndex = len(browser.ui.workingTree.data)
-            browser.ui.workingTree.data.append(browser.db[child.path][:])
             parentWidget.addChild(i)
-            populateH5dragItems(browser, child, i)
+            if child.childCount()>0:
+                populateH5dragItems(browser, child, i)
+            else:
+                i.dataIndex = len(browser.ui.workingTree.data)
+                browser.ui.workingTree.data.append(browser.db[child.path][:])
 
 
 def createH5(browser, tree):
@@ -436,6 +461,28 @@ def updateTable(browser):
     browser.ui.propsTableWidget.setItem(0,0,browser.ui.workingTree.propsItemDt)
     browser.ui.propsTableWidget.setItem(1,0,browser.ui.workingTree.propsItemDescription)
 
+# Data Table
+def putDataOnTable(browser):
+    row, col = 0, 0
+    items = browser.ui.workingTree.selectedItems()    
+    if items:
+        for item in items:
+            if item.dataIndex is not None:
+                addData(browser, row, col, browser.ui.workingTree.data[item.dataIndex])
+            col+=1        
+
+def addData(browser, row, col, data):
+    for dpoint in range(len(data)):
+        item = QtGui.QTableWidgetItem(str(data[dpoint]))
+        browser.ui.dataTableWidget.setItem(row, col, item)
+        row+=1    
+
+def clearTable(browser):
+    for row in range(100):
+        for col in range(100):
+            item = QtGui.QTableWidgetItem('')
+            browser.ui.dataTableWidget.setItem(row, col, item) 
+    
 
 # TO DO:
 # sorting of elements in tree (add 0 to numbers and have column for user defined orders) 
@@ -443,6 +490,27 @@ def updateTable(browser):
 # single plotting in data tree
 # tidy zoom out function - try to draw just the axis instead of the whole thing again
 # deal with poperties properly and attach them to Groups and Datasets
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

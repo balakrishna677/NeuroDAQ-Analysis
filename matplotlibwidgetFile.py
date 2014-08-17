@@ -89,7 +89,9 @@ class matplotlibWidget(QtGui.QWidget):
     
     def hideCursor(self):
         self.cursor1.set_visible(False)
-        self.cursor2.set_visible(False)        
+        self.cursor2.set_visible(False)    
+        self.cursor1Pos = None
+        self.cursor2Pos = None    
         self.blitCursors() 
         
     def showCursorLastPos(self):
