@@ -110,3 +110,4 @@ class h5TreeWidgetTEST(QtGui.QTreeWidget):
 # copy across and move internally
 # copy children
 # copy whole selection > have to create a list with QStringList for data pack/unpack
+

@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from browser import Ui_MainWindow
 from h5TreeWidgetFile import h5Item
 
+import analysisLib as alib 
+
 # Classes and main loop functions 
 # -----------------------------------------------
 class dataBrowser(QtGui.QMainWindow):
@@ -25,16 +27,18 @@ class dataBrowser(QtGui.QMainWindow):
               
         # Directory browser
         self.model = QtGui.QFileSystemModel()
-        self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/')))
+        #self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/')))
+        self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir('/Users/adam/')))       
         self.model.setNameFilters(['*.hdf5'])
         self.ui.dirTree.setModel(self.model)
         self.ui.dirTree.setColumnHidden(1, True)
         self.ui.dirTree.setColumnHidden(2, True)
         self.ui.dirTree.setColumnHidden(3, True)
-        self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/'))))
-   
+        #self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/hdf5/'))))
+        self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/Users/adam'))))   
         self.ui.dirTree.selectionModel().selectionChanged.connect(self.loadH5OnSelectionChanged)
-        self.currentFile = []
+        self.currentOpenFile = []
+        self.currentSaveFile = []
         
         # hdf5 browser
         self.ui.hdfTree.setColumnCount(1)
@@ -43,6 +47,7 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.hdfTree.itemSelectionChanged.connect(self.storeSelection)
         
         # working hdf5 tree
+        self.ui.workingTree.data = []
         self.ui.workingTree.setColumnCount(1)
         self.ui.workingTree.setHeaderLabels(['Working Data'])
         self.ui.actionLoadData.triggered.connect(self.loadH5OnLoadPush)
@@ -51,7 +56,8 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.actionSaveFileAs.triggered.connect(self.saveH5OnSaveAsPush)
         self.connect(self.ui.workingTree, QtCore.SIGNAL('dropped'), self.moveItemsAcross)
         self.connect(self.ui.workingTree, QtCore.SIGNAL('targetPosition'), self.setTargetPosition)
-        self.ui.workingTree.saveStr = ''
+        self.ui.workingTree.propsDt = ''
+        self.ui.workingTree.propsDescription = ''   
         
         # context menus
         self.ui.workingTree.customContextMenuRequested.connect(self.openWorkingTreeMenu)
@@ -60,17 +66,37 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.actionRenameTreeItem.triggered.connect(self.renameItemOnMenu)
         self.ui.actionRemoveTreeItem.triggered.connect(self.removeItemOnMenu)
         
+        # properties table        
+        self.ui.propsTableWidget.setRowCount(2)
+        self.ui.propsTableWidget.setColumnCount(1)
+        self.ui.propsTableWidget.horizontalHeader().setVisible(False)
+        self.ui.workingTree.propsItemDtLabel = QtGui.QTableWidgetItem('dt')
+        self.ui.workingTree.propsItemDt = QtGui.QTableWidgetItem(self.ui.workingTree.propsDt)
+        self.ui.workingTree.propsItemDescriptionLabel = QtGui.QTableWidgetItem('Description')
+        self.ui.workingTree.propsItemDescription = QtGui.QTableWidgetItem(self.ui.workingTree.propsDescription)                
+        self.ui.propsTableWidget.setVerticalHeaderItem(0, self.ui.workingTree.propsItemDtLabel)
+        self.ui.propsTableWidget.setItem(0,0,self.ui.workingTree.propsItemDt)
+        self.ui.propsTableWidget.setVerticalHeaderItem(1, self.ui.workingTree.propsItemDescriptionLabel)
+        self.ui.propsTableWidget.setItem(1,0,self.ui.workingTree.propsItemDescription)
+        self.ui.propsTableWidget.cellChanged.connect(self.updateTableEntry)        
+                
         # main plotting mouse actions
+        self.ui.plotsWidget.plotDataIndex = None
         self.ui.plotsWidget.insertNavigationBar(self)
         self.ui.plotsWidget.toolbar.addAction(self.ui.actionPlotData)
         self.ui.actionPlotData.triggered.connect(self.plotSelected)
         self.ui.plotsWidget.toolbar.addAction(self.ui.actionShowCursors)
         self.ui.actionShowCursors.toggled.connect(self.showCursors)
-        
+        self.ui.plotsWidget.toolbar.addAction(self.ui.actionZoomOut)
+        self.ui.actionZoomOut.triggered.connect(self.zoomOut)
         self.mouseIsPressed = False
         cidPress = self.ui.plotsWidget.canvas.mpl_connect('button_press_event', self.on_press)
         cidMotion = self.ui.plotsWidget.canvas.mpl_connect('motion_notify_event', self.on_motion)        
         cidRelease = self.ui.plotsWidget.canvas.mpl_connect('button_release_event', self.on_release)    
+        
+        # analysis actions
+        #self.ui.plotsWidget.toolbar.addAction(self.ui.actionBaseline)
+        #self.ui.actionBaseline.triggered.connect(self.baseline)
                 
         self.show()              
     
@@ -97,27 +123,33 @@ class dataBrowser(QtGui.QMainWindow):
         #oldIndex = oldSelection.indexes()[0]
         #currentFile = str(newIndex.model().filePath(newIndex))
         #oldFile = str(newIndex.model().filePath(newIndex))
-        loadH5(self, self.ui.hdfTree)
+        if self.db: 
+            self.db.close()
+            self.db = None
+        loadH5(self, self.ui.hdfTree, push=False)
        
     def loadH5OnLoadPush(self):
-        loadH5(self, self.ui.workingTree)
+        loadH5(self, self.ui.workingTree, push=True)
         
     def createH5OnNewPush(self):
         createH5(self, self.ui.workingTree)
 
     def saveH5OnSavePush(self):
-        if self.ui.workingTree.saveStr:
-            fname = self.ui.workingTree.saveStr
-            saveH5(self, self.ui.workingTree, fname)
+        if self.currentSaveFile:
+            saveH5(self, self.ui.workingTree)
         else: 
             fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
             if ok:
-                saveH5(self, self.ui.workingTree, fname)
+                self.currentSaveFile = str(self.model.rootPath()) + '/' + fname + '.hdf5'
+                saveH5(self, self.ui.workingTree)
         
     def saveH5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
         if ok:
-            saveH5(self, self.ui.workingTree, fname)
+            savePath = '/Users/adam/DataAnalysis'
+            self.currentSaveFile = savePath + '/' + fname + '.hdf5'      
+            #self.currentSaveFile = str(self.model.rootPath()) + '/' + fname + '.hdf5'
+            saveH5(self, self.ui.workingTree)
 
     def addRootGroupOnMenu(self):
         addTreeGroup(self, self.ui.workingTree, 'root')
@@ -167,6 +199,10 @@ class dataBrowser(QtGui.QMainWindow):
                 originalParentWidget = self.ui.hdfTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
                 populateH5dragItems(self, originalParentWidget, targetItems[row])
 
+    # Properties methods
+    def updateTableEntry(self, row, col):
+        if row==0: self.ui.workingTree.propsDt = self.ui.propsTableWidget.item(row, col).text() 
+        if row==1: self.ui.workingTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
         
     # Plot methods
     def plotOnSelectionChanged(self, current, previous):
@@ -185,6 +221,23 @@ class dataBrowser(QtGui.QMainWindow):
             self.ui.plotsWidget.initCursor()
         else:
             self.ui.plotsWidget.hideCursor()
+
+    def zoomOut(self):
+        if self.ui.plotsWidget.homeAxis: 
+            self.ui.plotsWidget.canvas.ax.axis(self.ui.plotsWidget.homeAxis)
+            self.ui.plotsWidget.cursor1.set_visible(False)
+            self.ui.plotsWidget.cursor2.set_visible(False)
+            self.ui.plotsWidget.canvas.draw()
+            self.ui.plotsWidget.background = self.ui.plotsWidget.canvas.copy_from_bbox(self.ui.plotsWidget.canvas.ax.bbox)                 
+            if self.ui.actionShowCursors.isChecked():
+                x1,x2,y1,y2 = self.ui.plotsWidget.canvas.ax.axis()
+                self.ui.plotsWidget.cursor1.set_data([self.ui.plotsWidget.cursor1Pos, self.ui.plotsWidget.cursor1Pos], [y1,y2])         
+                self.ui.plotsWidget.cursor2.set_data([self.ui.plotsWidget.cursor2Pos, self.ui.plotsWidget.cursor2Pos], [y1,y2]) 
+                self.ui.plotsWidget.cursor1.set_visible(True)
+                self.ui.plotsWidget.cursor2.set_visible(True)
+                self.ui.plotsWidget.canvas.ax.draw_artist(self.ui.plotsWidget.cursor1)
+                self.ui.plotsWidget.canvas.ax.draw_artist(self.ui.plotsWidget.cursor2)
+            self.ui.plotsWidget.canvas.draw()                     
     
     def on_press(self, event):        
         if (event.button==1) & (self.ui.actionShowCursors.isChecked()):
@@ -206,8 +259,15 @@ class dataBrowser(QtGui.QMainWindow):
             elif (event.button==3) & (self.ui.actionShowCursors.isChecked()):
                 self.ui.plotsWidget.refreshCursor(event)
 
+    # Analysis methods
+    def baseline(self):
+        if self.ui.plotsWidget.plotDataIndex:
+            if self.ui.plotsWidget.cursor1Pos: alib.baseline(self)
+
 def main():    
+    defaultFont = QtGui.QFont('Ubuntu', 8) 
     app = QtGui.QApplication(sys.argv)
+    app.setFont(defaultFont)
     c = dataBrowser()
     sys.exit(app.exec_())
 
@@ -227,11 +287,13 @@ def plotSingleData(browser, plotWidget, data):
 
 def plotMultipleData(browser, plotWidget):
     plotWidget.canvas.ax.clear()
+    plotWidget.plotDataIndex = []
     items = browser.ui.workingTree.selectedItems()
     if items:
         for item in items:
             if item.dataIndex is not None:
                 plotWidget.canvas.ax.plot(browser.ui.workingTree.data[item.dataIndex], 'k')
+                plotWidget.plotDataIndex.append(item.dataIndex)
             #if 'dataset' in str(browser.db[str(item.path)]):
             #    plotWidget.canvas.ax.plot(browser.db[str(item.path)][:], 'k')
     plotWidget.canvas.draw()            
@@ -239,24 +301,36 @@ def plotMultipleData(browser, plotWidget):
     plotWidget.createCursor()
     if browser.ui.actionShowCursors.isChecked(): 
         plotWidget.showCursorLastPos()                 
+    browser.ui.plotsWidget.homeAxis = browser.ui.plotsWidget.canvas.ax.axis()
 
 # Tree management
-def loadH5(browser, tree):
+def loadH5(browser, tree, push):
     browser.ui.workingTree.data = []
     index = browser.ui.dirTree.selectedIndexes()[0]
     currentFile = str(index.model().filePath(index))
     if browser.db: browser.db.close()
     if '.hdf5' in currentFile:
         #print self.currentFile
+        browser.db = h5py.File(currentFile, 'r+')
         tree.clear()       
-        browser.db = h5py.File(currentFile, 'r')
-       
         # Insert groups into the tree and add data to internal data list
         for group in browser.db:
             item = h5Item([str(group)])
             item.path = '/'+str(group)
             tree.addTopLevelItem(item)
             populateH5tree(browser, browser.db['/'+str(group)], parentWidget=item) 
+
+    if push:
+        browser.ui.workingTree.propsDt = ''
+        browser.ui.workingTree.propsDescription = ''
+        for attr in browser.db.attrs:
+            #print attr, browser.db.attrs[attr]
+            if 'dt' in attr: browser.ui.workingTree.propsDt = str(browser.db.attrs[attr])
+            if 'description' in attr:  browser.ui.workingTree.propsDescription = browser.db.attrs[attr]
+        updateTable(browser)
+        browser.currentOpenFile = currentFile
+        browser.currentSaveFile = currentFile
+        browser.ui.workingTree.setHeaderLabels([os.path.split(currentFile)[1]])
 
 def populateH5tree(browser, parent, parentWidget):
     if isinstance(parent, h5py.Group):
@@ -293,20 +367,34 @@ def populateH5dragItems(browser, originalParentWidget, parentWidget):
 def createH5(browser, tree):
     fname, ok = QtGui.QInputDialog.getText(browser, 'New file', 'Enter file name:')
     if ok: 
+        browser.ui.workingTree.data = []
         tree.clear()
-        browser.ui.workingTree.saveStr = fname
+        browser.ui.workingTree.saveStr = fname     
+        browser.ui.workingTree.propsDt = ''
+        browser.ui.workingTree.propsDescription = ''   
+        updateTable(browser)
+        browser.ui.workingTree.setHeaderLabels([fname])
+        savePath = '/Users/adam/DataAnalysis'
+        #browser.currentSaveFile = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
+        browser.currentSaveFile = savePath + '/' + fname + '.hdf5'           
 
-def saveH5(browser, tree, fname):
-    fname = str(fname)
-    browser.ui.workingTree.setHeaderLabels([fname])
-    pathName = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
-    browser.wdb = h5py.File(pathName, 'w') 
+def saveH5(browser, tree):
+    currentSaveFile = str(browser.currentSaveFile)
+    currentOpenFile = str(browser.currentOpenFile)
+    browser.ui.workingTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
+    #pathName = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
+    if browser.db:
+        browser.db.close()
+        browser.db = None
+    browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
     childCount = root.childCount()
     for i in range(childCount):
         item = root.child(i)
         browser.wdb.create_group(str(item.text(0)))
         populateH5File(browser, browser.wdb['/'+str(item.text(0))], item)
+    browser.wdb.attrs['dt'] =  str(browser.ui.workingTree.propsDt) 
+    browser.wdb.attrs['description'] =  str(browser.ui.workingTree.propsDescription)     
     browser.wdb.close()         
        
 def addTreeGroup(browser, tree, level):
@@ -325,13 +413,33 @@ def renameTreeItem(browser, tree, text):
 def removeTreeItem(browser, tree):
     items = tree.selectedItems()
     for item in items: 
+        #deleteDataIndexes(tree, item)        
         sip.delete(item)
-        del tree.data[item.dataIndex]
+
+# can't use this unless updating indexes of all other object, so right now just leave it
+def deleteDataIndexes(tree, parentWidget):
+    for c in range(parentWidget.childCount()):
+        item = parentWidget.child(c)
+        if item.childCount()>0:
+            deleteDataIndexes(tree, parentWidget=item)
+        else:
+            del tree.data[item.dataIndex]
+
+
+# Properties
+def updateTable(browser):   
+    browser.ui.workingTree.propsItemDt = QtGui.QTableWidgetItem(browser.ui.workingTree.propsDt)
+    browser.ui.workingTree.propsItemDescription = QtGui.QTableWidgetItem(browser.ui.workingTree.propsDescription)                
+    browser.ui.propsTableWidget.setItem(0,0,browser.ui.workingTree.propsItemDt)
+    browser.ui.propsTableWidget.setItem(1,0,browser.ui.workingTree.propsItemDescription)
 
 
 # TO DO:
 # sorting of elements in tree (add 0 to numbers and have column for user defined orders) 
 # time, dt in recordings 
+# single plotting in data tree
+# tidy zoom out function - try to draw just the axis instead of the whole thing again
+# deal with poperties properly and attach them to Groups and Datasets
 
 
 
