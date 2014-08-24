@@ -36,7 +36,7 @@ class dataBrowser(QtGui.QMainWindow):
         self.ui.dirTree.setColumnHidden(3, True)
         #self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/home/tiago/Code/py/NeuroDAQ-Analysis/testData/'))))
         self.ui.dirTree.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir('/Users/adam'))))   
-        self.ui.dirTree.selectionModel().selectionChanged.connect(self.loadH5OnSelectionChanged)
+        self.ui.dirTree.selectionModel().selectionChanged.connect(self.loadH5OnSelectionChanged)      #### not in Class ####
         self.currentOpenFile = []
         self.currentSaveFile = []
         
