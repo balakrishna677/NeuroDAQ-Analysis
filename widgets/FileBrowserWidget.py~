@@ -6,7 +6,9 @@ class FileBrowserWidget(QtGui.QTreeView):
 
     """ Reimplement QTreeWidget Class 
     
-    Set Model to QFileSystemModel and to allow setting size hint.       
+    Set Model to QFileSystemModel.
+    Allows setting size hint and Home Folder
+           
     TabWidget(width, height, [homeFolder=None])
     """
 
@@ -18,7 +20,7 @@ class FileBrowserWidget(QtGui.QTreeView):
         self.setModel(self.model)
 
         # Set home folder and file filters
-        homeFolder = '/home/tiago/Code/py/NeuroDAQ-Analysis/testData/'
+        homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/'
         if not homeFolder: 
             if platform.system()=='Darwin':
                 homeFolder = '/Users/'

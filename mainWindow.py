@@ -17,11 +17,20 @@ from PyQt4 import QtGui, QtCore
 from gui import Ui_MainWindow
 from widgets import h5Item
 from util import h5, mplplot, treefun, table, pgplot
+from analysis import toolselector
 
 import pyqtgraph as pg
 
 class NeuroDaqWindow(QtGui.QMainWindow):
-    """ Assembles the main NeuroDAQ user interface
+    """ Assembles the main NeuroDAQ user interface.
+    
+    Data management:
+    
+    Data loaded in the Working Data tree are stored in list workingDataTree.data. Each item in 
+    the tree had a property item.dataIndex that is the position of the item's data in the list.
+    
+    To keep track of data plotted in dataPlotsWidget, the indexes of the plotted data are stored 
+    in dataPlotsWidget.plotDataIndex
     """
     
     def __init__(self, parent=None):    
@@ -34,6 +43,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Lists for storing data
         self.db = None
         self.wdb = None
+        
+        # Current working file and folder for saving)
+        self.currentSaveFile = []
+        self.currentFolder = []
 
         # Directory browser
         # -----------------------------------------------------------------------------
@@ -45,6 +58,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.fileDataTree.currentItemChanged.connect(self.plot_OnSelectionChanged)
         self.ui.fileDataTree.itemSelectionChanged.connect(self.store_Selection)
         self.ui.loadFolderInput.returnPressed.connect(self.update_loadDir)
+
+        # Analysis selection list
+        # -----------------------------------------------------------------------------
+        self.ui.oneDimToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
 
         # Working data tree
         # -----------------------------------------------------------------------------
@@ -83,13 +100,14 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         
         # Data table tab
         # -----------------------------------------------------------------------------        
-        self.ui.dataTableWidget.setRowCount(100)
-        self.ui.dataTableWidget.setColumnCount(100)
+ 
 
         # Plots tab
         # ----------------------------------------------------------------------------- 
         self.ui.actionPlotData.triggered.connect(self.plot_selected)
-        self.ui.actionZoomOut.triggered.connect(self.zoom_out)
+        #self.ui.actionZoomOut.triggered.connect(self.zoom_out)
+        self.ui.actionShowCursors.triggered.connect(self.show_cursors)
+        self.ui.actionAnalyseData.triggered.connect(self.analyse_data)
 
 
     # -----------------------------------------------------------------------------
@@ -121,16 +139,13 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def save_h5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
         if ok:
-            savePath = '/Users/adam/DataAnalysis'
-            self.currentSaveFile = savePath + '/' + fname + '.hdf5'      
-            #self.currentSaveFile = str(self.model.rootPath()) + '/' + fname + '.hdf5'
+            self.currentSaveFile = self.currentFolder + '/' + fname + '.hdf5'      
             h5.save_h5(self, self.ui.workingDataTree)        
 
 
     # -----------------------------------------------------------------------------
     # Tree Methods
-    # -----------------------------------------------------------------------------
-    
+    # -----------------------------------------------------------------------------    
     def update_loadDir(self):
         treefun.set_loadFolder(self, self.ui.dirTree, self.ui.loadFolderInput.text())
     
@@ -208,11 +223,33 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         table.put_dataOnTable(self)
 
     # -----------------------------------------------------------------------------
+    # Analysis Methods
+    # -----------------------------------------------------------------------------
+    def select_analysisTool(self):
+        index = self.ui.oneDimToolSelect.selectedIndexes()[0]
+        self.ui.toolStackedWidget.setCurrentIndex(index.row())
+        return index
+
+    def analyse_data(self):
+        index = self.select_analysisTool()
+        if index:
+            tool = index.data().toString()
+            toolselector.toolselector(self, tool)
+
+    # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------
     def updateTableEntry(self, row, col):
         if row==0: self.ui.workingDataTree.propsDt = self.ui.propsTableWidget.item(row, col).text() 
         if row==1: self.ui.workingDataTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
+
+    # -----------------------------------------------------------------------------
+    # Table Methods
+    # -----------------------------------------------------------------------------
+
+    def show_inTableOnMenu(self):
+        #self.ui.dataTableWidget.setData({'x': [1,2,3], 'y': [4,5,6]})#np.random.random(100))
+        table.put_dataOnTable(self)
 
     # -----------------------------------------------------------------------------
     # Plotting Methods
@@ -228,6 +265,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def zoom_out(self):
         pgplot.zoom_out(self, self.ui.dataPlotsWidget)
 
+    def show_cursors(self):
+        if self.ui.actionShowCursors.isChecked():
+            pgplot.show_cursors(self, self.ui.dataPlotsWidget)
+        else:
+            pgplot.hide_cursors(self, self.ui.dataPlotsWidget)
+        
 
 def main():    
     defaultFont = QtGui.QFont('Ubuntu', 8) 
@@ -239,6 +282,7 @@ def main():
 
 if __name__ == '__main__':
     main() 
+
 
 
 

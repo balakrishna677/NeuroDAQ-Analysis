@@ -2,18 +2,24 @@
 """
 
 import sys, os, re, copy
+import numpy as np
 import sip
 import h5py
 from PyQt4 import QtGui, QtCore
 
 def put_dataOnTable(browser):
-    row, col = 0, 0
+    #row, col = 0, 0
+    dataList = []
     items = browser.ui.workingDataTree.selectedItems()    
     if items:
         for item in items:
             if item.dataIndex is not None:
-                addData(browser, row, col, browser.ui.workingDataTree.data[item.dataIndex])
-            col+=1        
+                 data = browser.ui.workingDataTree.data[item.dataIndex]
+                 dataList.append(data)
+                 #browser.ui.dataTableWidget.setData([browser.ui.workingDataTree.data[item.dataIndex]])
+                 #add_data(browser, row, col, browser.ui.workingDataTree.data[item.dataIndex])
+            #col+=1        
+    browser.ui.dataTableWidget.setData(dataList)
 
 def add_data(browser, row, col, data):
     for dpoint in range(len(data)):

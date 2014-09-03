@@ -80,7 +80,7 @@ class Ui_MainWindow(object):
         self.horizontalsplitter_dataTab.setSizePolicy(preferredSizePolicy)
         self.horizontalsplitter_dataTab.setOrientation(QtCore.Qt.Horizontal)                
         self.gridLayout_dataTab.addWidget(self.verticalsplitter_dataTab, 0, 0, 1, 1)
-        self.dirTree = FileBrowserWidget(0,0)
+        self.dirTree = FileBrowserWidget(0,0, homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/')
         self.horizontalsplitter_dataTab.addWidget(self.dirTree)
         self.dirTree.setSizePolicy(preferredSizePolicy)
         
@@ -113,34 +113,21 @@ class Ui_MainWindow(object):
         self.oneDimToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_oneDimAnalysisTab.addWidget(self.oneDimToolSelect)
         self.oneDimToolSelect.setSizePolicy(preferredSizePolicy)
+        
 
         # TAB 2 content > Tools Stacked Widget        
         self.toolStackedWidget = AnalysisStackWidget(0,0)
         self.splitter_oneDimAnalysisTab.addWidget(self.toolStackedWidget)
-        self.toolStackedWidget.setSizePolicy(preferredSizePolicy)
-        
-        # TOOLS in Stacked Widget
-        # Averaging
-        self.avgTool = NeuroWidget(0,0)
-        self.checkBox = QtGui.QCheckBox(self.avgTool)
-        self.checkBox.setGeometry(QtCore.QRect(10, 30, 97, 22))
-        self.toolStackedWidget.addWidget(self.avgTool)
-        self.avgTool.setSizePolicy(preferredSizePolicy)
-        
-        # Baseline  
-        self.baselineTool = NeuroWidget(0,0)
-        self.toolStackedWidget.addWidget(self.baselineTool)
-        
-        # Measure
-        self.measureTool = NeuroWidget(0,0)
-        self.toolStackedWidget.addWidget(self.measureTool)
+        self.toolStackedWidget.setSizePolicy(preferredSizePolicy)        
         
 
         # SinglePlots Widget
         # -----------------------------------------------------------------------------       
         # Geometry and Layout 
         #self.singlePlotWidget = matplotlibWidget(0,200)
-        self.singlePlotWidget = pg.PlotWidget(background='w')
+        self.singlePlotWidget = pg.PlotWidget(background='#ECEDEB')
+        self.singlePlotWidget.getAxis('bottom').setPen('k')
+        self.singlePlotWidget.getAxis('left').setPen('k')           
         self.splitter_leftPane.addWidget(self.singlePlotWidget)
         self.singlePlotWidget.setSizePolicy(preferredSizePolicy)
 
@@ -169,11 +156,11 @@ class Ui_MainWindow(object):
          
         # TAB 1 content > dataPlotsWidget        
         #self.dataPlotsWidget = matplotlibWidget(0,0)
-        self.dataPlotsWidget = pg.PlotWidget(background='w')
+        self.dataPlotsWidget = pg.PlotWidget(background='#ECEDEB')
+        self.dataPlotsWidget.getAxis('bottom').setPen('k')
+        self.dataPlotsWidget.getAxis('left').setPen('k')        
+        self.dataPlotsWidget.showGrid(x=True, y=True, alpha=0.3)
         self.dataPlotsWidget.setSizePolicy(preferredSizePolicy)
-        #self.displayTabWidget.addTab(self.dataPlotsWidget, _fromUtf8("Plot"))
-        #self.cursor = pg.InfiniteLine(pos=0, angle=90, movable=True, pen=pg.mkPen('c', width=2))
-        #self.dataPlotsWidget.addItem(self.cursor)
         self.gridLayout_plots.addWidget(self.dataPlotsWidget)
         # Toolbar
         self.plotToolBar = QtGui.QToolBar()
@@ -185,13 +172,14 @@ class Ui_MainWindow(object):
         # ------        
         # Geometry and Layout   
         # TAB 2 content > tableWidget         
-        self.dataTableWidget = QtGui.QTableWidget()
-        self.dataTableWidget.setDragEnabled(True)
-        self.dataTableWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
-        self.dataTableWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
+        #self.dataTableWidget = QtGui.QTableWidget()
+        self.dataTableWidget = pg.TableWidget(editable=False)
+        #self.dataTableWidget.setDragEnabled(True)
+        #self.dataTableWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        #self.dataTableWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
         self.dataTableWidget.setAlternatingRowColors(True)
-        self.dataTableWidget.setColumnCount(0)
-        self.dataTableWidget.setRowCount(0)
+        self.dataTableWidget.setColumnCount(100)
+        self.dataTableWidget.setRowCount(100)
         self.displayTabWidget.addTab(self.dataTableWidget, _fromUtf8("Table"))        
 
 
@@ -260,11 +248,12 @@ class Ui_MainWindow(object):
 
         # Plot Toolbar 
         self.actionPlotData = QtGui.QAction('Plot', MainWindow) 
-        self.actionZoomOut = QtGui.QAction('Zoom Out', MainWindow)         
+        #self.actionZoomOut = QtGui.QAction('Zoom Out', MainWindow)         
         self.actionShowCursors = QtGui.QAction('Cursors', MainWindow)
+        self.actionShowCursors.setCheckable(True)
         self.actionAnalyseData = QtGui.QAction('Analyse', MainWindow)
         self.plotToolBar.addAction(self.actionPlotData)
-        self.plotToolBar.addAction(self.actionZoomOut)
+        #self.plotToolBar.addAction(self.actionZoomOut)
         self.plotToolBar.addAction(self.actionShowCursors)
         self.plotToolBar.addAction(self.actionAnalyseData)
                 
@@ -275,26 +264,7 @@ class Ui_MainWindow(object):
         self.actionRenameTreeItem = QtGui.QAction('Rename', MainWindow)
         self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
- 
-        
-        #icon = QtGui.QIcon()
-        #icon.addPixmap(QtGui.QPixmap(_fromUtf8("icons/pencil29.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        #self.actionPlotData.setIcon(icon)
-        #self.actionShowCursors = QtGui.QAction(MainWindow)
-        #self.actionShowCursors.setCheckable(True)
-        #icon1 = QtGui.QIcon()
-        #icon1.addPixmap(QtGui.QPixmap(_fromUtf8("icons/push7.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        #self.actionShowCursors.setIcon(icon1)
-        #self.actionSaveFileAs = QtGui.QAction(MainWindow)
-        #self.actionZoomOut = QtGui.QAction(MainWindow)
-        #icon2 = QtGui.QIcon()
-        #icon2.addPixmap(QtGui.QPixmap(_fromUtf8("icons/home107.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        #self.actionZoomOut.setIcon(icon2)
-        #self.actionBaseline = QtGui.QAction(MainWindow)
-        #self.actionAverage = QtGui.QAction(MainWindow)
-        #self.actionStats = QtGui.QAction(MainWindow)
-        #self.actionShowInTable = QtGui.QAction(MainWindow)
-        #self.toolBar.addAction(self.actionNewFile)
+
    
         
         

@@ -1,5 +1,8 @@
 """ Functions for getting data in and out of .hdf5 files
 and into H5 trees
+
+Currently New File and Save As are saved to the folder currently
+open in the file data tree.
 """
 
 import sys, os, re, copy
@@ -14,6 +17,7 @@ def load_h5(browser, tree, push):
     browser.ui.fileDataTree.data = []
     index = browser.ui.dirTree.selectedIndexes()[0]
     currentFile = str(index.model().filePath(index))
+    browser.currentFolder = os.path.dirname(currentFile)
     if browser.db: browser.db.close()
     if '.hdf5' in currentFile:
         #print self.currentFile
@@ -86,16 +90,12 @@ def create_h5(browser, tree):
         browser.ui.workingDataTree.propsDescription = ''   
         table.update_table(browser)
         browser.ui.workingDataTree.setHeaderLabels([fname])
-        savePath = '/Users/adam/DataAnalysis'
-        #browser.currentSaveFile = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
-        browser.currentSaveFile = savePath + '/' + fname + '.hdf5'           
+        browser.currentSaveFile = browser.currentFolder + '/' + fname + '.hdf5'           
 
 
 def save_h5(browser, tree):
     currentSaveFile = str(browser.currentSaveFile)
-    currentOpenFile = str(browser.currentOpenFile)
     browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
-    #pathName = str(browser.model.rootPath()) + '/' + fname + '.hdf5'
     if browser.db:
         browser.db.close()
         browser.db = None
@@ -105,7 +105,7 @@ def save_h5(browser, tree):
     for i in range(childCount):
         item = root.child(i)
         browser.wdb.create_group(str(item.text(0)))
-        populateH5File(browser, browser.wdb['/'+str(item.text(0))], item)
+        populate_h5File(browser, browser.wdb['/'+str(item.text(0))], item)
     browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
     browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
     browser.wdb.close()

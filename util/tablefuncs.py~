@@ -2,18 +2,24 @@
 """
 
 import sys, os, re, copy
+import numpy as np
 import sip
 import h5py
 from PyQt4 import QtGui, QtCore
 
 def put_dataOnTable(browser):
     row, col = 0, 0
-    items = browser.ui.workingTree.selectedItems()    
+    dataList = []
+    items = browser.ui.workingDataTree.selectedItems()    
     if items:
         for item in items:
             if item.dataIndex is not None:
-                addData(browser, row, col, browser.ui.workingTree.data[item.dataIndex])
+                 data = browser.ui.workingDataTree.data[item.dataIndex]
+                 #dataList.append(np.reshape(data, (len(data),1)))
+                 #browser.ui.dataTableWidget.setData([browser.ui.workingDataTree.data[item.dataIndex]])
+                 add_data(browser, row, col, browser.ui.workingDataTree.data[item.dataIndex])
             col+=1        
+    #browser.ui.dataTableWidget.setData(dataList)
 
 def add_data(browser, row, col, data):
     for dpoint in range(len(data)):
@@ -28,7 +34,7 @@ def clear_table(browser):
             browser.ui.dataTableWidget.setItem(row, col, item) 
 
 def update_table(browser):   
-    browser.ui.workingTree.propsItemDt = QtGui.QTableWidgetItem(browser.ui.workingTree.propsDt)
-    browser.ui.workingTree.propsItemDescription = QtGui.QTableWidgetItem(browser.ui.workingTree.propsDescription)                
-    browser.ui.propsTableWidget.setItem(0,0,browser.ui.workingTree.propsItemDt)
-    browser.ui.propsTableWidget.setItem(1,0,browser.ui.workingTree.propsItemDescription)
+    browser.ui.workingDataTree.propsItemDt = QtGui.QTableWidgetItem(browser.ui.workingDataTree.propsDt)
+    browser.ui.workingDataTree.propsItemDescription = QtGui.QTableWidgetItem(browser.ui.workingDataTree.propsDescription)                
+    browser.ui.propsTableWidget.setItem(0,0,browser.ui.workingDataTree.propsItemDt)
+    browser.ui.propsTableWidget.setItem(1,0,browser.ui.workingDataTree.propsItemDescription)
