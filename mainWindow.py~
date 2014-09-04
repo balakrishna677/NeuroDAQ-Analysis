@@ -240,9 +240,6 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             tool = index.data().toString()
             toolselector.toolselector(self, tool)
 
-    def event_cutOut(self):
-        eventdetection.event_cut(self)
-
     # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------

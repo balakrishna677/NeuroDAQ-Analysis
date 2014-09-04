@@ -22,6 +22,7 @@ class FileBrowserWidget(QtGui.QTreeView):
         # Set home folder and file filters
         if not homeFolder: 
             if platform.system()=='Darwin':
+                print 'Mac OS X detected'
                 homeFolder = '/Users/'
             elif platform.system()=='Linux':
                 homeFolder = '/home/'        

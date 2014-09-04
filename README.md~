@@ -15,7 +15,7 @@ Requirements:
 
 This package has been tested in Ubuntu and Mac OS X.
 
-For Mac OS X the easiest is to use the Anaconda distribution and just get pyqtgraph.
+For Mac OS X the easiest is to use the Anaconda distribution and just get pyqtgraph. XQuartz is also recommended, as plotting is faster than using Terminal.
 
 For Linux get PyQt4 and h5py.
 

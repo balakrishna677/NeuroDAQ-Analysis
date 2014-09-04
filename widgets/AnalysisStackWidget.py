@@ -12,6 +12,9 @@ class AnalysisStackWidget(QtGui.QStackedWidget):
         self._width = width
         self._height = height
         self.make_options()
+
+        # Lists for holding data temporarily
+        self.eventData = []
         
     def sizeHint(self):
         return QtCore.QSize(self._width, self._height)
@@ -48,9 +51,14 @@ class AnalysisStackWidget(QtGui.QStackedWidget):
         self.eventToolOptions.append([QtGui.QLabel('Threshold'), self.eventThreshold])        
         self.eventNoiseSafety = QtGui.QLineEdit()
         self.eventToolOptions.append([QtGui.QLabel('Noise Safety'), self.eventNoiseSafety])
+        self.eventSmooth = QtGui.QLineEdit()
+        self.eventToolOptions.append([QtGui.QLabel('Smooth'), self.eventSmooth])
+        self.eventCutOut = QtGui.QPushButton('Cut events', self)
+        self.eventToolOptions.append([self.eventCutOut])
         make_label_layout(self.eventToolOptions, self.eventTool)
         self.addWidget(self.eventTool)        
-        
+
+
 
 def make_groupBox_layout(optionsList, groupBox):
     """ Layout widgets vertically
@@ -68,8 +76,11 @@ def make_label_layout(optionsList, groupBox):
     gridbox = QtGui.QGridLayout()
     row = 0
     for item in optionsList:
-        gridbox.addWidget(item[0], row, 0)
-        gridbox.addWidget(item[1], row, 1)
+        if len(item)==1:
+            gridbox.addWidget(item[0], row, 0)
+        elif len(item)==2: 
+            gridbox.addWidget(item[0], row, 0)
+            gridbox.addWidget(item[1], row, 1)
         row+=1
     gridbox.setRowMinimumHeight(row,0)
     gridbox.setRowStretch(row,1)    

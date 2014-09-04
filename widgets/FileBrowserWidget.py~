@@ -20,9 +20,9 @@ class FileBrowserWidget(QtGui.QTreeView):
         self.setModel(self.model)
 
         # Set home folder and file filters
-        homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/'
         if not homeFolder: 
             if platform.system()=='Darwin':
+                print 'Mac OS X detected'
                 homeFolder = '/Users/'
             elif platform.system()=='Linux':
                 homeFolder = '/home/'        

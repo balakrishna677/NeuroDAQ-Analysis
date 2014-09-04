@@ -264,7 +264,9 @@ class Ui_MainWindow(object):
         self.actionRenameTreeItem = QtGui.QAction('Rename', MainWindow)
         self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
-     
+
+   
+        
         
         
         
