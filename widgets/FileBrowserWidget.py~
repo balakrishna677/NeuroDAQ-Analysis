@@ -18,6 +18,7 @@ class FileBrowserWidget(QtGui.QTreeView):
         self._height = height 
         self.model = QtGui.QFileSystemModel()
         self.setModel(self.model)
+        self.setIndentation(15)
 
         # Set home folder and file filters
         if not homeFolder: 

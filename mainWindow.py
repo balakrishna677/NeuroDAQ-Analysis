@@ -280,9 +280,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         
 
 def main():    
-    defaultFont = QtGui.QFont('Ubuntu', 8) 
+    #defaultFont = QtGui.QFont('Ubuntu', 8) 
     app = QtGui.QApplication(sys.argv)
-    app.setFont(defaultFont)
+    #app.setFont(defaultFont)
     c = NeuroDaqWindow()
     sys.exit(app.exec_())
 

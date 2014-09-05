@@ -115,9 +115,16 @@ class Ui_MainWindow(object):
         self.oneDimToolSelect.setSizePolicy(preferredSizePolicy)
         
 
-        # TAB 2 content > Tools Stacked Widget        
+        # TAB 2 content > Tools Stacked Widget    
+        self.toolStackContainerWidget = QtGui.QWidget()    
+        self.toolStackGrid = QtGui.QGridLayout(self.toolStackContainerWidget)
+        self.splitter_oneDimAnalysisTab.addWidget(self.toolStackContainerWidget)
+        self.toolDataSourceBox = QtGui.QComboBox()
+        self.toolDataSourceBox.addItem("Plot")
+        self.toolDataSourceBox.addItem("Selection")   
+        self.toolStackGrid.addWidget(self.toolDataSourceBox)
         self.toolStackedWidget = AnalysisStackWidget(0,0)
-        self.splitter_oneDimAnalysisTab.addWidget(self.toolStackedWidget)
+        self.toolStackGrid.addWidget(self.toolStackedWidget)
         self.toolStackedWidget.setSizePolicy(preferredSizePolicy)        
         
 

@@ -240,6 +240,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             tool = index.data().toString()
             toolselector.toolselector(self, tool)
 
+    def event_cutOut(self):
+        eventdetection.event_cut(self)
+
     # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------
@@ -277,7 +280,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         
 
 def main():    
-    defaultFont = QtGui.QFont('Ubuntu', 8) 
+    #defaultFont = QtGui.QFont('Ubuntu', 8) 
     app = QtGui.QApplication(sys.argv)
     app.setFont(defaultFont)
     c = NeuroDaqWindow()
