@@ -7,6 +7,7 @@ from PyQt4 import QtGui, QtCore
 class h5Item(QtGui.QTreeWidgetItem):
 
     """ HDF5 tree item for populating a HDF5 Tree Widget
+    Use .attrs to store useful information, such as dt
     """
 
     def __init__(self, parent=None):
@@ -15,13 +16,14 @@ class h5Item(QtGui.QTreeWidgetItem):
         self.path = ''
         self.dataIndex = None
         self.originalIndex = None
+        self.attrs = {}
         
     def set_name(self, name):
         self.name = name
         self.setText(0, self.name)
 
     def __lt__(self, otherItem):
-        """ Reimplement sorting function to sort numbers properly
+        """ Reimplement sorting function to sort# numbers properly
         """
         column = self.treeWidget().sortColumn()
         try:
@@ -60,7 +62,7 @@ class h5TreeWidget(QtGui.QTreeWidget):
         self.dragData = None        
         self._width = width
         self._height = height
-        self.setSortingEnabled(True)
+        #self.setSortingEnabled(True)
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
                 
     def dropEvent(self, event):   

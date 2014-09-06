@@ -3,6 +3,8 @@ and into H5 trees
 
 Currently New File and Save As are saved to the folder currently
 open in the file data tree.
+
+Attributes are attached to datasets only, not to groups (yet).
 """
 
 import sys, os, re, copy
@@ -53,7 +55,8 @@ def populate_h5tree(browser, parent, parentWidget, push):
             parentWidget.addChild(item)
             populate_h5tree(browser, parent[child], item, push)
     elif isinstance(parent, h5py.Dataset):
-        if push:
+        set_attrs(parent, parentWidget)
+        if push:            
             parentWidget.dataIndex = len(browser.ui.workingDataTree.data)
             browser.ui.workingDataTree.data.append(parent[:])
 
@@ -66,8 +69,8 @@ def populate_h5File(browser, parent, parentWidget):
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
         else:
             #print 'creating dataset', str(item.text(0)), 'in', parent
-            parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
-
+            dset = parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
+            set_attrs(item, dset)
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
@@ -80,12 +83,12 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
             if child.childCount()>0:
                 populate_h5dragItems(browser, child, i)
             else:
+                set_attrs(child, i)
                 i.dataIndex = len(browser.ui.workingDataTree.data)
                 browser.ui.workingDataTree.data.append(browser.db[child.path][:])
     # For transferring datasets directly
     else:
-        #itemName = make_nameUnique(browser, parentWidget.parent(), parentWidget.text(0))
-        #parentWidget.setText(0, itemName)
+        set_attrs(originalParentWidget, parentWidget)
         parentWidget.path = originalParentWidget.path
         parentWidget.dataIndex = len(browser.ui.workingDataTree.data)
         browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
@@ -113,14 +116,17 @@ def save_h5(browser, tree):
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
-    #childCount = root.childCount()
-    #for i in range(childCount):
-    #    item = root.child(i)
-        #browser.wdb.create_group(str(item.text(0)))  # this assumes that is root items are always groups
-        #populate_h5File(browser, browser.wdb['/'+str(item.text(0))], item)
+    # File attributes    
     browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
     browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
     browser.wdb.close()
+
+def set_attrs(source, item):
+    """ Set attributes of h5 item or dataset
+    Source and item can be tree h5item or h5File dataset, the syntax is the same.
+    """
+    for attr in source.attrs:
+        item.attrs[attr] = source.attrs[attr] 
 
 def make_nameUnique(browser, parentWidget, name):
     """ Check existing names in parentWidget that start with 'name'

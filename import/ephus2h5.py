@@ -4,7 +4,7 @@ import scipy.io
 import h5py
 
 
-def ephus2h5(folder):
+def ephus2h5(folder, overwrite=False):
     """ Convert recordings from Ephus into .hdf5 files.
     
     Works with two different formats: .xsg and .fig
@@ -23,8 +23,9 @@ def ephus2h5(folder):
             h5fname = fname.rstrip(ext) + '.hdf5'            
             
             # Skip previoulsy converted files
-            if (h5fname in h5fileList)==True:
-                print 'skipped file', h5fname          
+            if not overwrite:
+                if (h5fname in h5fileList)==True:
+                    print 'skipped file', h5fname          
 
             # Load Ephus file                  
             else:
@@ -40,11 +41,12 @@ def ephus2h5(folder):
                 f = h5py.File(folder+'/'+h5fname, 'w')             
              
                 # Create Channel 1 group and add data
-                f.create_group('Channel_1')
-                f.create_dataset('/Channel_1/data', data=data)
+                #f.create_group('Channel_1')
+                dset = f.create_dataset('/data', data=data)
                 
                 # Add some attributes
                 f.attrs['dt'] = dt
+                dset.attrs['dt'] = dt       
                                 
                 # Close HDF5 file
                 print 'Converted', fname
@@ -54,16 +56,17 @@ def ephus2h5(folder):
 def listdir_fullpath(d):
     return [os.path.join(d, f) for f in os.listdir(d)]
 
-def batchConvert(folder):
+
+def batchConvert(folder, overwrite=False):
     """ Recursively convert all files in all folders from a
     starting folder
     """        
     # Convert files in the current folder
-    ephus2h5(folder)
+    ephus2h5(folder, overwrite=overwrite)
     
     # Recurse through folders
     for folder in listdir_fullpath(folder):
         print 'Converting files in folder', folder    
         if os.path.isdir(folder):
-            batchConvert(folder)
+            batchConvert(folder, overwrite=overwrite)
 

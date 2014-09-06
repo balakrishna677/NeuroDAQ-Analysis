@@ -22,12 +22,16 @@ def plot_multipleData(browser, plotWidget):
     """
     plotWidget.clear()
     plotWidget.plotDataIndex = []
-    plotWidget.dt = 0.04   
     items = browser.ui.workingDataTree.selectedItems()
     if items:
         for item in items:
             if item.dataIndex is not None:
-                x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*plotWidget.dt, plotWidget.dt)
+                try:
+                    dt = item.attrs['dt']
+                except KeyError:
+                    dt = 1
+                print dt
+                x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
                 y = browser.ui.workingDataTree.data[item.dataIndex]
                 plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
                 plotWidget.plotDataIndex.append(item.dataIndex)

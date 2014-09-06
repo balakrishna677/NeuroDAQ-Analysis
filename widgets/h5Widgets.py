@@ -7,6 +7,7 @@ from PyQt4 import QtGui, QtCore
 class h5Item(QtGui.QTreeWidgetItem):
 
     """ HDF5 tree item for populating a HDF5 Tree Widget
+    Use .attrs dictionary to store useful information, such as dt
     """
 
     def __init__(self, parent=None):
@@ -15,6 +16,7 @@ class h5Item(QtGui.QTreeWidgetItem):
         self.path = ''
         self.dataIndex = None
         self.originalIndex = None
+        self.attrs = {}
         
     def set_name(self, name):
         self.name = name

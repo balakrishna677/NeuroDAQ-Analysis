@@ -117,7 +117,7 @@ class Ui_MainWindow(object):
         
 
         # TAB 2 content > Tools Stacked Widget    
-        self.toolStackContainerWidget = QtGui.QWidget()    
+        self.toolStackContainerWidget = NeuroWidget(0,0)   
         self.toolStackGrid = QtGui.QGridLayout(self.toolStackContainerWidget)
         self.splitter_oneDimAnalysisTab.addWidget(self.toolStackContainerWidget)
         self.toolDataSourceBox = QtGui.QComboBox()
