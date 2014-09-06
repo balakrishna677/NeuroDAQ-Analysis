@@ -1,4 +1,4 @@
-import platform
+import platform, os
 from PyQt4 import QtGui, QtCore
 
 
@@ -22,11 +22,13 @@ class FileBrowserWidget(QtGui.QTreeView):
 
         # Set home folder and file filters
         if not homeFolder: 
-            if platform.system()=='Darwin':
+            if os.path.isdir('/home/tiago'):
+                homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/'
+            elif platform.system()=='Darwin':
                 print 'Mac OS X detected'
                 homeFolder = '/Users/'
             elif platform.system()=='Linux':
-                homeFolder = '/home/'        
+                homeFolder = '/home/'                    
         self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder)))
         self.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder))))                
         self.model.setNameFilters(['*.hdf5'])

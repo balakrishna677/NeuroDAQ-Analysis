@@ -20,6 +20,16 @@ class h5Item(QtGui.QTreeWidgetItem):
         self.name = name
         self.setText(0, self.name)
 
+    def __lt__(self, otherItem):
+        """ Reimplement sorting function to sort numbers properly
+        """
+        column = self.treeWidget().sortColumn()
+        try:
+            return int(self.text(column).toLower()) < int(otherItem.text(column).toLower())
+        except ValueError:
+            return self.text(column).toLower() < otherItem.text(column).toLower()
+
+
 
 class h5TreeWidget(QtGui.QTreeWidget):
 
@@ -48,6 +58,10 @@ class h5TreeWidget(QtGui.QTreeWidget):
         QtGui.QTreeWidget.__init__(self, parent)  
         self.setAcceptDrops(True)
         self.dragData = None        
+        self._width = width
+        self._height = height
+        self.setSortingEnabled(True)
+        self.sortByColumn(0, QtCore.Qt.AscendingOrder)
                 
     def dropEvent(self, event):   
         super(h5TreeWidget, self).dropEvent(event)
@@ -66,4 +80,5 @@ class h5TreeWidget(QtGui.QTreeWidget):
     def sizeHint(self):
         return QtCore.QSize(self._width, self._height)                     
                      
+
 

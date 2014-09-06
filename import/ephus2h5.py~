@@ -45,3 +45,25 @@ def ephus2h5(folder):
                 
                 # Add some attributes
                 f.attrs['dt'] = dt
+                                
+                # Close HDF5 file
+                print 'Converted', fname
+                f.close()
+
+
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
+
+def batchConvert(folder):
+    """ Recursively convert all files in all folders from a
+    starting folder
+    """        
+    # Convert files in the current folder
+    ephus2h5(folder)
+    
+    # Recurse through folders
+    for folder in listdir_fullpath(folder):
+        print 'Converting files in folder', folder    
+        if os.path.isdir(folder):
+            batchConvert(folder)
+

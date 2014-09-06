@@ -178,10 +178,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             temp_item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(index))
             sip.delete(temp_item)        
             if parentIndex.isValid():
+                self.make_nameUnique(self.dragTargetParent ,targetItems[row])
                 self.dragTargetParent.insertChild(index.row(), targetItems[row])
                 originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
                 h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
             else:
+                self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row])
                 self.ui.workingDataTree.insertTopLevelItem(index.row(), targetItems[row])     
                 originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
                 h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
@@ -189,6 +191,28 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def set_targetPosition(self, parent, row):
         self.dragTargetParent = parent
         self.dragTargetRow = row
+
+    def make_nameUnique(self, parentWidget, item):
+        """ Check existing names in parentWidget that start with item.text
+        and get the next available index, as item.text_index.
+        Updates item.text if name is not unique.
+        """
+        names = []
+        originalName = str(item.text(0))
+        name = originalName
+        if parentWidget.childCount()>0:
+            for c in range(parentWidget.childCount()):
+                child = parentWidget.child(c)
+                names.append(str(child.text(0)))
+            unique = False
+            i = 1
+            while not unique:
+                if name in names:
+                    name = originalName + '_' + str(i)
+                    i+=1
+                else:
+                    unique = True
+        item.setText(0, name)
 
     def open_workingDataTreeMenu(self, position):
         """ Context menu for working data tree
@@ -253,7 +277,6 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     # Table Methods
     # -----------------------------------------------------------------------------
-
     def show_inTableOnMenu(self):
         #self.ui.dataTableWidget.setData({'x': [1,2,3], 'y': [4,5,6]})#np.random.random(100))
         table.put_dataOnTable(self)

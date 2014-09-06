@@ -93,6 +93,7 @@ class Ui_MainWindow(object):
         self.fileDataTree.setDragDropMode(QtGui.QAbstractItemView.DragOnly)
         self.fileDataTree.setDefaultDropAction(QtCore.Qt.CopyAction)
         self.fileDataTree.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.fileDataTree.setSortingEnabled(True)
         self.fileDataTree.headerItem().setText(0, _fromUtf8("Data"))
 
         self.verticalsplitter_dataTab.setSizes([1,500])

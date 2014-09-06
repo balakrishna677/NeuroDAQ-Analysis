@@ -21,8 +21,7 @@ class h5Item(QtGui.QTreeWidgetItem):
         self.setText(0, self.name)
 
     def __lt__(self, otherItem):
-        """ Reimplement sorting function to sort
-        numbers properly
+        """ Reimplement sorting function to sort# numbers properly
         """
         column = self.treeWidget().sortColumn()
         try:
@@ -61,7 +60,7 @@ class h5TreeWidget(QtGui.QTreeWidget):
         self.dragData = None        
         self._width = width
         self._height = height
-        self.setSortingEnabled(True)
+        #self.setSortingEnabled(True)
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
                 
     def dropEvent(self, event):   
@@ -83,14 +82,3 @@ class h5TreeWidget(QtGui.QTreeWidget):
                      
 
 
-
-class TreeWidgetItem(QtGui.QTreeWidgetItem):
-
-    def __init__(self, parent=None):
-        QtGui.QTreeWidgetItem.__init__(self, parent)
-
-    def __lt__(self, otherItem):
-        column = self.treeWidget().sortColumn()
-        return self.text(column).toLower() < otherItem.text(column).toLower()
-        
-        PedroMorgan

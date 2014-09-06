@@ -1,8 +1,8 @@
 """ Functions for getting data in and out of .hdf5 files
 and into H5 trees
 
-Currently New files and Save As are saved to the folder currently
-open in the file data tree
+Currently New File and Save As are saved to the folder currently
+open in the file data tree.
 """
 
 import sys, os, re, copy
@@ -64,6 +64,7 @@ def populate_h5File(browser, parent, parentWidget):
             parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
         else:
+            #print 'creating dataset', str(item.text(0)), 'in', parent
             parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
 
 
@@ -71,6 +72,7 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
         for c in range(originalParentWidget.childCount()):
             child = originalParentWidget.child(c)
+            #itemName = make_nameUnique(parentWidget, child.text(0))
             i = h5Item([str(child.text(0))])
             i.path = child.path
             parentWidget.addChild(i)
@@ -79,6 +81,14 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
             else:
                 i.dataIndex = len(browser.ui.workingDataTree.data)
                 browser.ui.workingDataTree.data.append(browser.db[child.path][:])
+    # For transferring datasets directly
+    else:
+        #itemName = make_nameUnique(browser, parentWidget.parent(), parentWidget.text(0))
+        #parentWidget.setText(0, itemName)
+        parentWidget.path = originalParentWidget.path
+        parentWidget.dataIndex = len(browser.ui.workingDataTree.data)
+        browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
+        
 
 def create_h5(browser, tree):
     fname, ok = QtGui.QInputDialog.getText(browser, 'New file', 'Enter file name:')
@@ -101,11 +111,37 @@ def save_h5(browser, tree):
         browser.db = None
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
-    childCount = root.childCount()
-    for i in range(childCount):
-        item = root.child(i)
-        browser.wdb.create_group(str(item.text(0)))
-        populate_h5File(browser, browser.wdb['/'+str(item.text(0))], item)
+    populate_h5File(browser, browser.wdb['/'], root) 
+    #childCount = root.childCount()
+    #for i in range(childCount):
+    #    item = root.child(i)
+        #browser.wdb.create_group(str(item.text(0)))  # this assumes that is root items are always groups
+        #populate_h5File(browser, browser.wdb['/'+str(item.text(0))], item)
     browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
     browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
     browser.wdb.close()
+
+def make_nameUnique(browser, parentWidget, name):
+    """ Check existing names in parentWidget that start with 'name'
+    and get the next available index, as 'name_index'.
+    Returns 'name' if unique, or 'name_index'
+    """
+    name = str(name)
+    if not parentWidget:
+        parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+    if parentWidget.childCount()>0:
+        #print 'there are', parentWidget.childCount(), 'children'
+        existingNames = []
+        for c in range(parentWidget.childCount()):
+            child = parentWidget.child(c)
+            s = str(child.text(0)).strip(name+'_')
+            if not s:  # Name is the same, the strip operation gives ''
+                existingNames.append(0)
+            else:
+                existingNames.append(int(s))
+        if np.max(existingNames)>0:
+            name = name + '_' + str(np.max(existingNames)+1)
+    print existingNames
+    print 'name is', name
+    return name
+        
