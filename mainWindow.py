@@ -178,12 +178,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             temp_item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(index))
             sip.delete(temp_item)        
             if parentIndex.isValid():
-                self.make_nameUnique(self.dragTargetParent ,targetItems[row])
+                self.make_nameUnique(self.dragTargetParent, targetItems[row], targetItems[row].text(0))
                 self.dragTargetParent.insertChild(index.row(), targetItems[row])
                 originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
                 h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
             else:
-                self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row])
+                self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row], targetItems[row].text(0))
                 self.ui.workingDataTree.insertTopLevelItem(index.row(), targetItems[row])     
                 originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
                 h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
@@ -192,13 +192,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.dragTargetParent = parent
         self.dragTargetRow = row
 
-    def make_nameUnique(self, parentWidget, item):
+    def make_nameUnique(self, parentWidget, item, originalName):
         """ Check existing names in parentWidget that start with item.text
         and get the next available index, as item.text_index.
         Updates item.text if name is not unique.
         """
         names = []
-        originalName = str(item.text(0))
         name = originalName
         if parentWidget.childCount()>0:
             for c in range(parentWidget.childCount()):

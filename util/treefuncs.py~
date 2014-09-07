@@ -18,8 +18,12 @@ def add_treeGroup(browser, tree, level):
         parentWidget.addChild(item)
 
 def rename_treeItem(browser, tree, text):
-    item = tree.currentItem()
-    item.setText(0, text)
+    item = tree.currentItem()    
+    #item.setText(0, text)
+    parentWidget = item.parent()
+    if not parentWidget:  # item in top level
+        parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+    browser.make_nameUnique(parentWidget, item, text)
     
 def remove_treeItem(browser, tree):
     items = tree.selectedItems()

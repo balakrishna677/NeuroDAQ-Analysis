@@ -57,7 +57,7 @@ def listdir_fullpath(d):
     return [os.path.join(d, f) for f in os.listdir(d)]
 
 
-def batchConvert(folder, overwrite=False):
+def batch_convert(folder, overwrite=False):
     """ Recursively convert all files in all folders from a
     starting folder
     """        
@@ -68,5 +68,6 @@ def batchConvert(folder, overwrite=False):
     for folder in listdir_fullpath(folder):
         print 'Converting files in folder', folder    
         if os.path.isdir(folder):
-            batchConvert(folder, overwrite=overwrite)
+            batch_convert(folder, overwrite=overwrite)
+
 
