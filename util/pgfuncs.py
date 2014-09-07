@@ -37,6 +37,20 @@ def plot_multipleData(browser, plotWidget):
                 plotWidget.plotDataIndex.append(item.dataIndex)
                 plotWidget.plotDataItems.append(item)  # This makes plotDataIndex redundant, change later
 
+def browse_singleData(browser, plotWidget, currentItem):
+    """ Plot single trace of currentItem.
+    Different from plot_singleData just to have dt.
+    """
+    plotWidget.clear()
+    if currentItem.dataIndex is not None:
+        try:
+            dt = currentItem.attrs['dt']
+        except KeyError:
+            dt = 1    
+        x = np.arange(0, len(browser.ui.workingDataTree.data[currentItem.dataIndex])*dt, dt)
+        y = browser.ui.workingDataTree.data[currentItem.dataIndex]
+        plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))        
+
 def replot(browser, plotWidget):
     """ Function to replot the data currently in the data plot tab.
     Useful for visualising the data after any analysis transformation.

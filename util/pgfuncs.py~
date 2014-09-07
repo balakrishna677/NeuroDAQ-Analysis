@@ -37,6 +37,20 @@ def plot_multipleData(browser, plotWidget):
                 plotWidget.plotDataIndex.append(item.dataIndex)
                 plotWidget.plotDataItems.append(item)  # This makes plotDataIndex redundant, change later
 
+def browse_singleData(browser, plotWidget, currentItem):
+    """ Plot single trace of currentItem.
+    Different from plot_singleData just to have dt.
+    """
+    plotWidget.clear()
+    if currentItem.dataIndex is not None:
+        try:
+            dt = item.attrs['dt']
+        except KeyError:
+            dt = 1    
+        x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
+        y = browser.ui.workingDataTree.data[item.dataIndex]
+        plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))        
+
 def replot(browser, plotWidget):
     """ Function to replot the data currently in the data plot tab.
     Useful for visualising the data after any analysis transformation.
@@ -86,7 +100,9 @@ def replot_cursors(browser, plotWidget):
     """ Replot the cursors in the current positions
     after the axis had been clear for some reason
     """
-    plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True, pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
-    plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True, pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
+    plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True, 
+                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
+    plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True,
+                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
     plotWidget.addItem(plotWidget.cursor1)
     plotWidget.addItem(plotWidget.cursor2)     

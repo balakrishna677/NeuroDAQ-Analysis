@@ -76,6 +76,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionSaveFileAs.triggered.connect(self.save_h5OnSaveAsPush)
         self.connect(self.ui.workingDataTree, QtCore.SIGNAL('dropped'), self.move_itemsAcross)
         self.connect(self.ui.workingDataTree, QtCore.SIGNAL('targetPosition'), self.set_targetPosition)
+        self.ui.workingDataTree.currentItemChanged.connect(self.browse_OnSelectionChanged)
         self.ui.workingDataTree.propsDt = ''
         self.ui.workingDataTree.propsDescription = ''   
 
@@ -109,7 +110,6 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Plots tab
         # ----------------------------------------------------------------------------- 
         self.ui.actionPlotData.triggered.connect(self.plot_selected)
-        #self.ui.actionZoomOut.triggered.connect(self.zoom_out)
         self.ui.actionShowCursors.triggered.connect(self.show_cursors)
         self.ui.actionAnalyseData.triggered.connect(self.analyse_data)
 
@@ -290,7 +290,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             if 'dataset' in str(self.db[current.path]):
                 pgplot.plot_singleData(self, self.ui.singlePlotWidget, self.db[current.path][:])    
 
+    def browse_OnSelectionChanged(self, current, previous):
+        if self.ui.actionBrowseData.isChecked():
+            pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
+
     def plot_selected(self):
+        self.ui.actionBrowseData.setChecked(False)
         pgplot.plot_multipleData(self, self.ui.dataPlotsWidget)   
     
     def zoom_out(self):

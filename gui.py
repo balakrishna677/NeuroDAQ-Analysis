@@ -256,12 +256,13 @@ class Ui_MainWindow(object):
 
         # Plot Toolbar 
         self.actionPlotData = QtGui.QAction('Plot', MainWindow) 
-        #self.actionZoomOut = QtGui.QAction('Zoom Out', MainWindow)         
+        self.actionBrowseData = QtGui.QAction('Browse', MainWindow)
+        self.actionBrowseData.setCheckable(True)         
         self.actionShowCursors = QtGui.QAction('Cursors', MainWindow)
         self.actionShowCursors.setCheckable(True)
         self.actionAnalyseData = QtGui.QAction('Analyse', MainWindow)
+        self.plotToolBar.addAction(self.actionBrowseData)
         self.plotToolBar.addAction(self.actionPlotData)
-        #self.plotToolBar.addAction(self.actionZoomOut)
         self.plotToolBar.addAction(self.actionShowCursors)
         self.plotToolBar.addAction(self.actionAnalyseData)
                 
