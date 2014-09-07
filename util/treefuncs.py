@@ -8,13 +8,16 @@ from widgets import h5Item
 from PyQt4 import QtGui, QtCore
 
 
-def add_treeGroup(browser, tree, level):
+def add_treeGroup(browser, tree, level, name):
     if level=='root':
-        item = h5Item(['Group'])
+        item = h5Item([name])
+        parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+        browser.make_nameUnique(parentWidget, item, name)
         tree.addTopLevelItem(item)        
     elif level=='child':
-        item = h5Item(['Group'])
+        item = h5Item([name])
         parentWidget = tree.currentItem()
+        browser.make_nameUnique(parentWidget, item, name) 
         parentWidget.addChild(item)
 
 def rename_treeItem(browser, tree, text):

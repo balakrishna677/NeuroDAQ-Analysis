@@ -31,10 +31,13 @@ def baseline(browser):
     plotWidget.clear()    
     data = aux.get_data(browser)
     dataIndex = plotWidget.plotDataIndex 
+    
+    # Get dt list
+    dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
 
     # Make average between cursors and subract for each trace 
     for t in range(len(data)):
-        bsl = np.mean(data[t][c1:c2])
+        bsl = np.mean(data[t][c1/dtList[t]:c2/dtList[t]])
         browser.ui.workingDataTree.data[dataIndex[t]] = data[t]-bsl
 
     # Re-plot data
@@ -52,6 +55,12 @@ def average_traces(browser):
     toolsWidget = browser.ui.toolStackedWidget
     plotWidget.clear()
     data = aux.get_data(browser)   
+
+    # Get dt list (at this stage they will all be the same 
+    # because otherwise get_data would have thrown an error
+    dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
+    dt = dtList[0]
+
     avgData = np.mean(data,0)
 
     # Check selected options
@@ -59,6 +68,8 @@ def average_traces(browser):
         if option.isChecked():
             if option.text()=='Store result':
                 item = h5Item(['Avg'])
+                parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+                browser.make_nameUnique(parentWidget, item, item.text(0))
                 browser.ui.workingDataTree.addTopLevelItem(item)
                 item.dataIndex = len(browser.ui.workingDataTree.data)
                 browser.ui.workingDataTree.data.append(avgData)
@@ -67,7 +78,7 @@ def average_traces(browser):
                 pgplot.replot(browser, plotWidget)
         
     # Plot average
-    x = np.arange(0, len(avgData)*plotWidget.dt, plotWidget.dt)
+    x = np.arange(0, len(avgData)*dt, dt)
     plotWidget.plot(x, avgData, pen=pg.mkPen('#CF1C04', width=2))
     if browser.ui.actionShowCursors.isChecked(): pgplot.replot_cursors(browser, plotWidget)      
 
@@ -85,6 +96,9 @@ def measure_cursor_stats(browser):
     dataIndex = plotWidget.plotDataIndex     
     saveData = False
 
+    # Get dt list
+    dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
+
     # Go through data and check selected values to measure
     # Can probably do this in a more efficient way
     results = []
@@ -96,29 +110,34 @@ def measure_cursor_stats(browser):
             if option.text()=='Minimum':
                 dataMin = ['Minimum']
                 for t in range(len(data)):
-                    y = np.min(data[t][c1:c2])
+                    dt = dtList[t]
+                    y = np.min(data[t][c1/dt:c2/dt])
                     #x = np.where(data[t][c1:c2]==y)
-                    x = np.argmin(data[t][c1:c2])
+                    x = np.argmin(data[t][c1/dt:c2/dt])
                     dataMin.append(y)
-                    aux.plot_point(plotWidget, c1, x, y)
+                    aux.plot_point(plotWidget, c1, x, y, dt)
                 results.append(dataMin)        
 
             if option.text()=='Maximum':
                 dataMax = ['Maximum']
                 for t in range(len(data)):
-                    y = np.max(data[t][c1:c2])
+                    dt = dtList[t]
+                    y = np.max(data[t][c1/dt:c2/dt])
                     #x = np.where(data[t][c1:c2]==y)
-                    x = np.argmax(data[t][c1:c2])
+                    x = np.argmax(data[t][c1/dt:c2/dt])
                     dataMax.append(y)
-                    aux.plot_point(plotWidget, c1, x, y)
+                    aux.plot_point(plotWidget, c1/dt, x, y, dt)
                 results.append(dataMax)    
 
     # Store results
     if saveData:
         item = h5Item(['Measurements'])
+        parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+        browser.make_nameUnique(parentWidget, item, item.text(0))        
         browser.ui.workingDataTree.addTopLevelItem(item)
         for result in results:
             child = h5Item([result[0]])
+            browser.make_nameUnique(item, child, child.text(0))
             item.addChild(child)  
             child.dataIndex =  len(browser.ui.workingDataTree.data)
             browser.ui.workingDataTree.data.append(np.array(result[1:]))

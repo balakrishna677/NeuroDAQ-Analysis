@@ -233,10 +233,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.workingDataTreeMenu.exec_(self.ui.workingDataTree.viewport().mapToGlobal(position))
 
     def add_rootGroupOnMenu(self):
-        treefun.add_treeGroup(self, self.ui.workingDataTree, 'root')
+        text, ok = QtGui.QInputDialog.getText(self, 'New root group', 'Enter name:')
+        if ok: treefun.add_treeGroup(self, self.ui.workingDataTree, 'root', str(text))
        
     def add_childGroupOnMenu(self):
-        treefun.add_treeGroup(self, self.ui.workingDataTree, 'child')
+        text, ok = QtGui.QInputDialog.getText(self, 'New child group', 'Enter name:')
+        if ok: treefun.add_treeGroup(self, self.ui.workingDataTree, 'child', str(text))
     
     def rename_itemOnMenu(self):
         text, ok = QtGui.QInputDialog.getText(self, 'Rename item', 'Enter new name:')
