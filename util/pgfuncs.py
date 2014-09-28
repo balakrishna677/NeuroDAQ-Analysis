@@ -25,31 +25,39 @@ def plot_multipleData(browser, plotWidget):
     items = browser.ui.workingDataTree.selectedItems()
     if items:
         for item in items:
-            if item.dataIndex is not None:
+            if item.data is not None:
                 try:
                     dt = item.attrs['dt']
                 except KeyError:
                     dt = 1
                 #print 'dt is', dt
-                x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
-                y = browser.ui.workingDataTree.data[item.dataIndex]
+                #x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
+                #y = browser.ui.workingDataTree.data[item.dataIndex]
+                x = np.arange(0, len(item.data)*dt, dt)
+                y = item.data
                 plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
-                plotWidget.plotDataIndex.append(item.dataIndex)
+                #plotWidget.plotDataIndex.append(item.dataIndex)
                 plotWidget.plotDataItems.append(item)  # This makes plotDataIndex redundant, change later
 
 def browse_singleData(browser, plotWidget, currentItem):
     """ Plot single trace of currentItem.
-    Different from plot_singleData just to have dt.
+    Different from plot_singleData because the source is an item
+    instead of the data directly.
     """
     plotWidget.clear()
-    if currentItem.dataIndex is not None:
+    plotWidget.plotDataIndex, plotWidget.plotDataItems = [], []
+    if currentItem.data is not None:
         try:
             dt = currentItem.attrs['dt']
         except KeyError:
             dt = 1    
-        x = np.arange(0, len(browser.ui.workingDataTree.data[currentItem.dataIndex])*dt, dt)
-        y = browser.ui.workingDataTree.data[currentItem.dataIndex]
+        #x = np.arange(0, len(browser.ui.workingDataTree.data[currentItem.dataIndex])*dt, dt)
+        #y = browser.ui.workingDataTree.data[currentItem.dataIndex]
+        x = np.arange(0, len(currentItem.data)*dt, dt)
+        y = currentItem.data
         plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))        
+        #plotWidget.plotDataIndex.append(currentItem.dataIndex)
+        plotWidget.plotDataItems.append(currentItem)  # This makes plotDataIndex redundant, change later
 
 def replot(browser, plotWidget):
     """ Function to replot the data currently in the data plot tab.
@@ -61,8 +69,10 @@ def replot(browser, plotWidget):
             dt = item.attrs['dt']
         except KeyError:
             dt = 1
-        x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
-        y = browser.ui.workingDataTree.data[item.dataIndex]
+        #x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
+        #y = browser.ui.workingDataTree.data[item.dataIndex]
+        x = np.arange(0, len(item.data)*dt, dt)
+        y = item.data
         plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
               
 
@@ -106,3 +116,20 @@ def replot_cursors(browser, plotWidget):
                                          pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
     plotWidget.addItem(plotWidget.cursor1)
     plotWidget.addItem(plotWidget.cursor2)     
+
+def show_thresholdCursor(browser, plotWidget):
+    """ Show horizontal cursor to set threshold 
+    for event detection.
+    """
+    plotWidget.cursorThsPos = 0
+    plotWidget.cursorThs = pg.InfiniteLine(pos=plotWidget.cursorThsPos, angle=0, movable=True,
+                                                 pen=pg.mkPen('#FFD000', width=2))
+    plotWidget.addItem(plotWidget.cursorThs)
+    plotWidget.cursorThs.sigPositionChanged.connect(browser.event_updateThreshold)
+
+def hide_thresholdCursor(browser, plotWidget):
+    """ Remove the threshold cursor.
+    """
+    plotWidget.cursorThsPos = []
+    plotWidget.removeItem(plotWidget.cursorThs)
+    

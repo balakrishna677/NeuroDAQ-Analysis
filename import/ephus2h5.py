@@ -46,7 +46,8 @@ def ephus2h5(folder, overwrite=False):
                 
                 # Add some attributes
                 f.attrs['dt'] = dt
-                dset.attrs['dt'] = dt       
+                dset.attrs['dt'] = dt
+                dset.attrs['Raw_data_file'] = h5fname        
                                 
                 # Close HDF5 file
                 print 'Converted', fname

@@ -7,6 +7,8 @@ def toolselector(browser, tool):
     """
     if tool=='Baseline':
         basic.baseline(browser)
+    elif tool=='Smooth':
+        basic.smooth_traces(browser)
     elif tool=='Average':
         basic.average_traces(browser)
     elif tool=='Measure':

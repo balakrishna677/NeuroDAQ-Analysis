@@ -4,7 +4,7 @@ and into H5 trees
 Currently New File and Save As are saved to the folder currently
 open in the file data tree.
 
-Attributes are attached to datasets only, not to groups (yet)
+Attributes are attached to datasets only, not to groups (yet).
 """
 
 import sys, os, re, copy
@@ -31,6 +31,8 @@ def load_h5(browser, tree, push):
             item.path = '/'+str(group)
             tree.addTopLevelItem(item)
             populate_h5tree(browser, browser.db['/'+str(group)], parentWidget=item, push=push) 
+        # Select first item of loaded list
+        tree.setCurrentItem(tree.itemAt(0,0))
 
     if push:
         browser.ui.workingDataTree.setSortingEnabled(True)
@@ -57,8 +59,10 @@ def populate_h5tree(browser, parent, parentWidget, push):
     elif isinstance(parent, h5py.Dataset):
         set_attrs(parent, parentWidget)
         if push:            
-            parentWidget.dataIndex = len(browser.ui.workingDataTree.data)
-            browser.ui.workingDataTree.data.append(parent[:])
+            parentWidget.listIndex = len(browser.ui.workingDataTree.data)
+            #browser.ui.workingDataTree.data.append(parent[:])
+            parentWidget.data = parent[:]
+            browser.ui.workingDataTree.dataItems.append(parentWidget)
 
 
 def populate_h5File(browser, parent, parentWidget):
@@ -69,7 +73,8 @@ def populate_h5File(browser, parent, parentWidget):
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
         else:
             #print 'creating dataset', str(item.text(0)), 'in', parent
-            dset = parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
+            #dset = parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
+            dset = parent.create_dataset(str(item.text(0)), data=item.data)
             set_attrs(item, dset)
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
@@ -84,15 +89,18 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
                 populate_h5dragItems(browser, child, i)
             else:
                 set_attrs(child, i)
-                i.dataIndex = len(browser.ui.workingDataTree.data)
-                browser.ui.workingDataTree.data.append(browser.db[child.path][:])
+                i.listIndex = len(browser.ui.workingDataTree.data)
+                #browser.ui.workingDataTree.data.append(browser.db[child.path][:])
+                i.data = browser.db[child.path][:]
+                browser.ui.workingDataTree.dataItems.append(i)
     # For transferring datasets directly
     else:
         set_attrs(originalParentWidget, parentWidget)
         parentWidget.path = originalParentWidget.path
-        parentWidget.dataIndex = len(browser.ui.workingDataTree.data)
-        browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
-        
+        parentWidget.listIndex = len(browser.ui.workingDataTree.data)
+        #browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
+        parentWidget.data = browser.db[originalParentWidget.path][:]
+        browser.ui.workingDataTree.dataItems.append(parentWidget)
 
 def create_h5(browser, tree):
     fname, ok = QtGui.QInputDialog.getText(browser, 'New file', 'Enter file name:')

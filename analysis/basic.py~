@@ -6,6 +6,7 @@ from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
 from widgets import h5Item
 from util import pgplot
+import smooth
 import auxfuncs as aux
 
 
@@ -115,7 +116,7 @@ def measure_cursor_stats(browser):
                     #x = np.where(data[t][c1:c2]==y)
                     x = np.argmin(data[t][c1/dt:c2/dt])
                     dataMin.append(y)
-                    aux.plot_point(plotWidget, c1, x, y, dt)
+                    aux.plot_point(plotWidget, c1/dt, x, y, dt)
                 results.append(dataMin)        
 
             if option.text()=='Maximum':
@@ -129,20 +130,91 @@ def measure_cursor_stats(browser):
                     aux.plot_point(plotWidget, c1/dt, x, y, dt)
                 results.append(dataMax)    
 
+            if option.text()=='Mean':
+                dataMean = ['Mean']
+                for t in range(len(data)):
+                    dt = dtList[t]
+                    y = np.mean(data[t][c1/dt:c2/dt])
+                    dataMean.append(y)
+                    plotWidget.plot([c1,c2], [y,y], pen=pg.mkPen('#CF1C04', width=1))
+                results.append(dataMean)
+
     # Store results
-    if saveData:
-        item = h5Item(['Measurements'])
-        parentWidget = browser.ui.workingDataTree.invisibleRootItem()
-        browser.make_nameUnique(parentWidget, item, item.text(0))        
-        browser.ui.workingDataTree.addTopLevelItem(item)
-        for result in results:
-            child = h5Item([result[0]])
-            browser.make_nameUnique(item, child, child.text(0))
-            item.addChild(child)  
-            child.dataIndex =  len(browser.ui.workingDataTree.data)
-            browser.ui.workingDataTree.data.append(np.array(result[1:]))
+    if saveData: save_results(browser, 'Measurements', results)
+    
+
+def smooth_traces(browser):
+    """ Smooth traces
+    
+    Options:
+    1) Window type
+    2) Window length
+    """
+    
+    # Get options
+    window = str(browser.ui.toolStackedWidget.smoothComboBox.currentText())
+    window_len = float(browser.ui.toolStackedWidget.smoothLength.text())
+    
+    # Get data and widgets
+    plotWidget = browser.ui.dataPlotsWidget
+    toolsWidget = browser.ui.toolStackedWidget
+    data = aux.get_data(browser) 
+    
+    # Get dt
+    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
+    
+    # Smooth data
+    results = [] 
+    for t in range(len(data)):  
+        item = plotWidget.plotDataItems[t]
+        
+        # Copy attributes and add some new ones
+        attrs = item.attrs
+        attrs['smooth_window_type'] = window
+        attrs['smooth_window_length'] = window_len
+        
+        # Smooth
+        traceSmooth = smooth.smooth(data[t], window_len=window_len, window=window)
+        results.append([item.text(0), traceSmooth, attrs])
+        
+        # Plot smoothed trace
+        x = np.arange(0, len(traceSmooth)*dt, dt)
+        plotWidget.plot(x, traceSmooth, pen=pg.mkPen('#F2EF44', width=1))
+
+    # Store results
+    parentText = plotWidget.plotDataItems[0].parent().text(0) # Assumes all plotted data have the same parent
+    aux.save_results(browser, parentText+'_smooth', results)           
+    
+    
 
 
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 

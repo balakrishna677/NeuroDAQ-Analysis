@@ -26,8 +26,16 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     
     Data management:
     
+    All H5 items that contain data are stored in workingDataTree.dataItems. The property 
+    item.listIndex contains the location of the item on the list, so that it can be accessed
+    programatically when needed.
+    
+    To keep track of data plotted in dataPlotsWidget, the items plotted are stored in
+    dataPlotsWidget.plotDataItems.
+    
+    OBSOLETE:    
     Data loaded in the Working Data tree are stored in list workingDataTree.data. Each item in 
-    the tree had a property item.dataIndex that is the position of the item's data in the list.
+    the tree has a property item.dataIndex that is the position of the item's data in the list.
     
     To keep track of data plotted in dataPlotsWidget, the indexes of the plotted data are stored 
     in dataPlotsWidget.plotDataIndex
@@ -66,10 +74,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Analysis tools stack
         # -----------------------------------------------------------------------------
         self.ui.toolStackedWidget.eventCutOut.clicked.connect(self.event_cutOut)
+        self.ui.toolStackedWidget.eventThreshold.toggled.connect(self.event_showThresholdCursor)        
 
         # Working data tree
         # -----------------------------------------------------------------------------
         self.ui.workingDataTree.data = []
+        self.ui.workingDataTree.dataItems = []
         self.ui.actionLoadData.triggered.connect(self.load_h5OnLoadPush)
         self.ui.actionNewFile.triggered.connect(self.create_h5OnNewPush)
         self.ui.actionSaveFile.triggered.connect(self.save_h5OnSavePush)
@@ -160,7 +170,42 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.dragItems = []    
         for originalIndex in self.ui.fileDataTree.selectedIndexes():
             item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
+            self.dragItems.append([item.path, item.text(0), item.listIndex, originalIndex])
+
+    def store_Selection_old(self):
+        """ Store user selected tree items in dragItems list to get them back
+        once they have been dropped
+        """
+        self.dragItems = []    
+        for originalIndex in self.ui.fileDataTree.selectedIndexes():
+            item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
             self.dragItems.append([item.path, item.text(0), item.dataIndex, originalIndex]) 
+
+    def move_itemsAcross_old(self):
+        """ Create new tree items and populate the target tree
+        """
+        targetItems = []
+        for item in self.dragItems:
+            i = h5Item([str(item[1])])
+            i.path = item[0]
+            i.dataIndex = item[2]
+            i.originalIndex = item[3]
+            targetItems.append(i)             
+        parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
+        for row in np.arange(0, len(self.dragItems)):
+            index = self.ui.workingDataTree.model().index(self.dragTargetRow+row, 0, parentIndex)        
+            temp_item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(index))
+            sip.delete(temp_item)        
+            if parentIndex.isValid():
+                self.make_nameUnique(self.dragTargetParent, targetItems[row], targetItems[row].text(0))
+                self.dragTargetParent.insertChild(index.row(), targetItems[row])
+                originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
+                h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
+            else:
+                self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row], targetItems[row].text(0))
+                self.ui.workingDataTree.insertTopLevelItem(index.row(), targetItems[row])     
+                originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
+                h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
 
     def move_itemsAcross(self):
         """ Create new tree items and populate the target tree
@@ -169,7 +214,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         for item in self.dragItems:
             i = h5Item([str(item[1])])
             i.path = item[0]
-            i.dataIndex = item[2]
+            i.listIndex = item[2]
             i.originalIndex = item[3]
             targetItems.append(i)             
         parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
@@ -267,6 +312,16 @@ class NeuroDaqWindow(QtGui.QMainWindow):
 
     def event_cutOut(self):
         eventdetection.event_cut(self)
+        
+    def event_showThresholdCursor(self):
+        if self.ui.toolStackedWidget.eventThreshold.isChecked():
+            pgplot.show_thresholdCursor(self, self.ui.dataPlotsWidget)
+        else:
+            pgplot.hide_thresholdCursor(self, self.ui.dataPlotsWidget)
+
+    def event_updateThreshold(self):
+        self.ui.dataPlotsWidget.cursorThsPos = round(self.ui.dataPlotsWidget.cursorThs.value(),2)
+        self.ui.toolStackedWidget.eventThresholdDisplay.setText(str(self.ui.dataPlotsWidget.cursorThsPos))
 
     # -----------------------------------------------------------------------------
     # Properties Methods
@@ -291,6 +346,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                 pgplot.plot_singleData(self, self.ui.singlePlotWidget, self.db[current.path][:])    
 
     def browse_OnSelectionChanged(self, current, previous):
+        if current.data is not None:
+            #dataValue= str(self.ui.workingDataTree.data[current.dataIndex][0])
+            dataValue = str(current.data[0])
+            self.ui.statusbar.showMessage('Fist data point value: ' + dataValue)
+        else:
+            self.ui.statusbar.clearMessage()
         if self.ui.actionBrowseData.isChecked():
             pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
 

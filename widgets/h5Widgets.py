@@ -15,8 +15,9 @@ class h5Item(QtGui.QTreeWidgetItem):
         QtGui.QTreeWidgetItem.__init__(self, parent)
         self.name = ''
         self.path = ''
-        self.dataIndex = None
+        self.listIndex = None
         self.originalIndex = None
+        self.data = None
         self.attrs = {}
         
     def set_name(self, name):
@@ -53,7 +54,6 @@ class h5Item(QtGui.QTreeWidgetItem):
         else:
             # There are no numbers (or only one string has a number)
             return item1 < item2
-   
 
 
 class h5TreeWidget(QtGui.QTreeWidget):
@@ -72,8 +72,8 @@ class h5TreeWidget(QtGui.QTreeWidget):
     
     This is not the proper way of doing it. It would be best to reimplement
     all the main drag and drop methods and transfer the data across as MimeData.
-    I've tried this and it works fine, but it was very clunky and would freeze
-    by no apparent reason. This one is not pretty but works fine. 
+    I've tried this and it works fine, but it was clunky and would freeze
+    by no apparent reason. This one is not pretty but works. 
     
     Allows for setting size hint
     h5TreeWidget(width, height, [parent=None])

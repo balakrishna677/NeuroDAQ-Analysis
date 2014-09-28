@@ -22,7 +22,7 @@ class AnalysisSelectWidget(QtGui.QListView):
         tools = [
             'Baseline',
             'Average',
-            'Measure'
+            'Measure',
             'Event Detection'
         ]
         for tool in tools:

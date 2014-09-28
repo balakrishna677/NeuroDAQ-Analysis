@@ -231,6 +231,8 @@ class Ui_MainWindow(object):
         # -----------------------------------------------------------------------------        
         self.statusbar = QtGui.QStatusBar(MainWindow)
         MainWindow.setStatusBar(self.statusbar)
+        self.statusbar.setLayoutDirection(QtCore.Qt.RightToLeft)
+        #self.statusbar.showMessage('Ready')
         
         # -----------------------------------------------------------------------------
         # ToolBars

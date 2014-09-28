@@ -28,10 +28,31 @@ def rename_treeItem(browser, tree, text):
     browser.make_nameUnique(parentWidget, item, text)
     
 def remove_treeItem(browser, tree):
+    """ Remove selected items from the tree. Because data is stored 
+    separately also need to deal with it, but deleting the matching
+    items from the data list and updating all of the data indexes 
+    is a bit of a headache, so just make them empty.
+    """ 
+    
     items = tree.selectedItems()
-    for item in items:       
+    for item in items:
+        if item.listIndex:   # Only dataset items have a listIndex
+            browser.ui.workingDataTree.dataItems[item.listIndex] = []       
         sip.delete(item)
+
+def clone_item(item):
+    """ Clone h5 item. Useful for Drag & Drop
+    """
+    i = h5Item(item.text(0))
+    i.path = item.path
+    i.listIndex = item.dataIndex
+    i.originalIndex = item.originalIndex
+    i.data = item.data
+    return i
 
 def set_loadFolder(browser, tree, homeFolder):
     tree.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder)))
     tree.setRootIndex(tree.model.index(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder))))      
+    
+    
+
