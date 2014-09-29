@@ -31,21 +31,14 @@ def baseline(browser):
     # Get the data now, in case we are working on a copy
     plotWidget.clear()    
     data = aux.get_data(browser)
-    dataIndex = plotWidget.plotDataIndex 
     
     # Get dt list
-    dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
-    dt = dtList[0]
+    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
 
     # Make average between cursors and subract for each trace 
     for item in plotWidget.plotDataItems:
         bsl = np.mean(item.data[c1/dt:c2/dt])
         item.data = item.data - bsl
-
-    #for t in range(len(data)):
-        #browser.ui.workingDataTree.data[dataIndex[t]] = data[t]-bsl
-    #    bsl = np.mean(data[t][c1/dtList[t]:c2/dtList[t]])
-    #    plotWidget.plotDataItems[dataIndex[t]] = data[t]-bsl
 
     # Re-plot data
     pgplot.replot(browser, plotWidget)
@@ -65,21 +58,23 @@ def average_traces(browser):
 
     # Get dt list (at this stage they will all be the same 
     # because otherwise get_data would have thrown an error
-    dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
-    dt = dtList[0]
-
+    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
+    
+    # Calculate average
     avgData = np.mean(data,0)
 
     # Check selected options
     for option in toolsWidget.avgToolOptions:
         if option.isChecked():
             if option.text()=='Store result':
-                item = h5Item(['Avg'])
-                parentWidget = browser.ui.workingDataTree.invisibleRootItem()
-                browser.make_nameUnique(parentWidget, item, item.text(0))
-                browser.ui.workingDataTree.addTopLevelItem(item)
-                item.dataIndex = len(browser.ui.workingDataTree.data)
-                browser.ui.workingDataTree.data.append(avgData)
+                results = []                
+                # Get attributes from plotted items
+                item = plotWidget.plotDataItems[0]
+                attrs = item.attrs           
+ 
+                # Store data     
+                results.append(['avg_trace', avgData, attrs])
+                aux.save_results(browser, item.parent().text(0)+'_average', results) 
             
             if option.text()=='Show traces':
                 pgplot.replot(browser, plotWidget)
@@ -115,7 +110,7 @@ def measure_cursor_stats(browser):
                 saveData = True        
 
             if option.text()=='Minimum':
-                dataMin = ['Minimum']
+                dataMin = []
                 for t in range(len(data)):
                     dt = dtList[t]
                     y = np.min(data[t][c1/dt:c2/dt])
@@ -123,10 +118,10 @@ def measure_cursor_stats(browser):
                     x = np.argmin(data[t][c1/dt:c2/dt])
                     dataMin.append(y)
                     aux.plot_point(plotWidget, c1/dt, x, y, dt)
-                results.append(dataMin)        
+                results.append(['Minimum', dataMin])        
 
             if option.text()=='Maximum':
-                dataMax = ['Maximum']
+                dataMax = []
                 for t in range(len(data)):
                     dt = dtList[t]
                     y = np.max(data[t][c1/dt:c2/dt])
@@ -134,16 +129,16 @@ def measure_cursor_stats(browser):
                     x = np.argmax(data[t][c1/dt:c2/dt])
                     dataMax.append(y)
                     aux.plot_point(plotWidget, c1/dt, x, y, dt)
-                results.append(dataMax)    
+                results.append(['Maximum', dataMax])    
 
             if option.text()=='Mean':
-                dataMean = ['Mean']
+                dataMean = []
                 for t in range(len(data)):
                     dt = dtList[t]
                     y = np.mean(data[t][c1/dt:c2/dt])
                     dataMean.append(y)
                     plotWidget.plot([c1,c2], [y,y], pen=pg.mkPen('#CF1C04', width=1))
-                results.append(dataMean)
+                results.append(['Mean', dataMean])
 
     # Store results
     if saveData: aux.save_results(browser, 'Measurements', results)
@@ -172,6 +167,7 @@ def smooth_traces(browser):
     # Smooth data
     results = [] 
     for t in range(len(data)):  
+        # Dummy to get attributes
         item = plotWidget.plotDataItems[t]
         
         # Copy attributes and add some new ones
