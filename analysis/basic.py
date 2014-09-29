@@ -35,11 +35,17 @@ def baseline(browser):
     
     # Get dt list
     dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
+    dt = dtList[0]
 
     # Make average between cursors and subract for each trace 
-    for t in range(len(data)):
-        bsl = np.mean(data[t][c1/dtList[t]:c2/dtList[t]])
-        browser.ui.workingDataTree.data[dataIndex[t]] = data[t]-bsl
+    for item in plotWidget.plotDataItems:
+        bsl = np.mean(item.data[c1/dt:c2/dt])
+        item.data = item.data - bsl
+
+    #for t in range(len(data)):
+        #browser.ui.workingDataTree.data[dataIndex[t]] = data[t]-bsl
+    #    bsl = np.mean(data[t][c1/dtList[t]:c2/dtList[t]])
+    #    plotWidget.plotDataItems[dataIndex[t]] = data[t]-bsl
 
     # Re-plot data
     pgplot.replot(browser, plotWidget)

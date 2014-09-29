@@ -58,8 +58,9 @@ def populate_h5tree(browser, parent, parentWidget, push):
             populate_h5tree(browser, parent[child], item, push)
     elif isinstance(parent, h5py.Dataset):
         set_attrs(parent, parentWidget)
+        print parent.attrs['dt']
         if push:            
-            parentWidget.listIndex = len(browser.ui.workingDataTree.data)
+            parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)
             #browser.ui.workingDataTree.data.append(parent[:])
             parentWidget.data = parent[:]
             browser.ui.workingDataTree.dataItems.append(parentWidget)
@@ -89,7 +90,7 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
                 populate_h5dragItems(browser, child, i)
             else:
                 set_attrs(child, i)
-                i.listIndex = len(browser.ui.workingDataTree.data)
+                i.listIndex = len(browser.ui.workingDataTree.dataItems)
                 #browser.ui.workingDataTree.data.append(browser.db[child.path][:])
                 i.data = browser.db[child.path][:]
                 browser.ui.workingDataTree.dataItems.append(i)
@@ -97,7 +98,7 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     else:
         set_attrs(originalParentWidget, parentWidget)
         parentWidget.path = originalParentWidget.path
-        parentWidget.listIndex = len(browser.ui.workingDataTree.data)
+        parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)
         #browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
         parentWidget.data = browser.db[originalParentWidget.path][:]
         browser.ui.workingDataTree.dataItems.append(parentWidget)
