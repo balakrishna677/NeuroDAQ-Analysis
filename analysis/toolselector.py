@@ -15,3 +15,5 @@ def toolselector(browser, tool):
         basic.measure_cursor_stats(browser)
     elif tool=='Event Detection':
         event.event_detect(browser)
+    elif tool=='Custom':
+        basic.custom_func(browser)

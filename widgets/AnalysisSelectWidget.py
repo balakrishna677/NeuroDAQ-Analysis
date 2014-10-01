@@ -24,7 +24,8 @@ class AnalysisSelectWidget(QtGui.QListView):
             'Smooth',
             'Average',
             'Measure',
-            'Event Detection'
+            'Event Detection',
+            'Custom' 
         ]
         for tool in tools:
             item = QtGui.QStandardItem(tool)

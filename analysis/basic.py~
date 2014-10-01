@@ -188,8 +188,42 @@ def smooth_traces(browser):
     aux.save_results(browser, parentText+'_smooth', results)           
     
     
+def custom_func(browser):
+    """ Temporary function for user defined analysis.
 
+    All options are harcoded and results are saved in a 
+    "Analysis_results" folder in Root
+    """
 
+    # Get data and widgets
+    plotWidget = browser.ui.dataPlotsWidget
+    toolsWidget = browser.ui.toolStackedWidget
+    data = aux.get_data(browser) 
+    
+    # Get dt
+    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
+
+    # Analyse data
+    results = [] 
+    for t in range(len(data)):  
+        # Dummy to get attributes
+        item = plotWidget.plotDataItems[t]
+        
+        # Copy attributes and add some new ones
+        attrs = item.attrs
+        
+        # USER DEFINED TRANSFORMATION
+        USER_TRANSFORMED_DATA = item.data    
+
+        # Append to storage list
+        results.append(['NAME', USER_TRANSFORMED_DATA, attrs])
+        
+        # Plot modified trace if needed
+        x = np.arange(0, len(USER_TRANSFORMED_DATA)*dt, dt)
+        plotWidget.plot(x, USER_TRANSFORMED_DATA, pen=pg.mkPen('#F2EF44', width=1))
+
+    # Store results
+    aux.save_results(browser, 'Analysis_results', results)            
 
     
     

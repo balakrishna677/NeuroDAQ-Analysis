@@ -21,6 +21,7 @@ class AnalysisSelectWidget(QtGui.QListView):
         self.model = QtGui.QStandardItemModel(self)
         tools = [
             'Baseline',
+            'Smooth',
             'Average',
             'Measure',
             'Event Detection'
