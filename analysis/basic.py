@@ -159,17 +159,10 @@ def smooth_traces(browser):
     # Get data and widgets
     plotWidget = browser.ui.dataPlotsWidget
     toolsWidget = browser.ui.toolStackedWidget
-    data = aux.get_data(browser) 
-    
-    # Get dt
-    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
     
     # Smooth data
     results = [] 
-    for t in range(len(data)):  
-        # Dummy to get attributes
-        item = plotWidget.plotDataItems[t]
-        
+    for item in plotWidget.plotDataItems:  
         # Copy attributes and add some new ones
         attrs = item.attrs
         attrs['smooth_window_type'] = window
@@ -180,7 +173,7 @@ def smooth_traces(browser):
         results.append([item.text(0), traceSmooth, attrs])
         
         # Plot smoothed trace
-        x = np.arange(0, len(traceSmooth)*dt, dt)
+        x = np.arange(0, len(traceSmooth)*item.dt, item.dt)
         plotWidget.plot(x, traceSmooth, pen=pg.mkPen('#F2EF44', width=1))
 
     # Store results
@@ -201,17 +194,13 @@ def custom_func(browser):
     # Get data and widgets
     plotWidget = browser.ui.dataPlotsWidget
     toolsWidget = browser.ui.toolStackedWidget
-    data = aux.get_data(browser) 
     
     # Get dt
     dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
 
     # Analyse data
     results = [] 
-    for t in range(len(data)):  
-        # Dummy to get attributes
-        item = plotWidget.plotDataItems[t]
-        
+    for item in plotWidget.plotDataItems:          
         # Copy attributes and add some new ones
         attrs = item.attrs
         
