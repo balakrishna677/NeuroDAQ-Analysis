@@ -118,3 +118,45 @@ def save_results(browser, parentText, results):
     return listIndexes
 
 
+# Console functions
+def store_data(browser, data, name='data', attrs={'dt':1}):
+    """ Adds data to the Data Tree
+
+    'data' is a number array of 1 or 2 dimensions
+    'name' is sring
+    'attrs' is a dictionary {attr1: value1, attr2, value2, ...}
+    """
+    # Set root as parent
+    parentWidget = browser.ui.workingDataTree.invisibleRootItem()
+
+    # Make sure data is numpy array
+    data = np.array(data)
+
+    # 1D array - add straight to root with name 'name' 
+    if len(data.shape)==1:
+        item = h5Item([name])
+        browser.make_nameUnique(parentWidget, item, item.text(0))    
+        item.data = data
+        item.attrs = attrs
+        item.listIndex = len(browser.ui.workingDataTree.dataItems)
+        browser.ui.workingDataTree.dataItems.append(item)
+        browser.ui.workingDataTree.addTopLevelItem(item)
+
+    # 2D array - add 'name' group and 'data' datasets
+    elif len(data.shape)==2:
+        item = h5Item([name])
+        browser.make_nameUnique(parentWidget, item, item.text(0)) 
+        browser.ui.workingDataTree.addTopLevelItem(item)
+        for n in np.arange(0, len(data)):
+            child = h5Item(['data_'+str(n)])
+            browser.make_nameUnique(item, child, child.text(0))
+            child.data = data[n,:]
+            child.attrs = attrs
+            child.listIndex = len(browser.ui.workingDataTree.dataItems)
+            browser.ui.workingDataTree.dataItems.append(child)
+            item.addChild(child)
+
+
+    
+
+
