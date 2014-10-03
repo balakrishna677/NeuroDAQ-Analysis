@@ -308,7 +308,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def analyse_data(self):
         index = self.select_analysisTool()
         if index:
-            tool = index.data().toString()
+            tool = index.data() #.toString()
             toolselector.toolselector(self, tool)
 
     def event_cutOut(self):
