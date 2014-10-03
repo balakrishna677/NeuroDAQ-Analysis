@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import os
+from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+from IPython.qt.inprocess import QtInProcessKernelManager
+from IPython.lib import guisupport
+
 from PyQt4 import QtCore, QtGui
 from widgets import *
 import pyqtgraph as pg
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -220,6 +226,14 @@ class Ui_MainWindow(object):
         self.dataTableWidget.setColumnCount(100)
         self.dataTableWidget.setRowCount(100)
         self.displayTabWidget.addTab(self.dataTableWidget, _fromUtf8("Table"))        
+
+        # ------
+        # TAB 3   (IPythonTab)
+        # ------        
+        # Geometry and Layout   
+        # TAB 3 content > IPython console         
+        self.IPythonWidget = QIPythonWidget()
+        self.displayTabWidget.addTab(self.IPythonWidget, _fromUtf8("IPython"))        
 
 
 

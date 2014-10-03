@@ -113,6 +113,8 @@ def save_results(browser, parentText, results):
         if len(result)>2: child.attrs = result[2]
         child.listIndex =  len(browser.ui.workingDataTree.dataItems)
         listIndexes.append(child.listIndex)
-        #browser.ui.workingDataTree.data.append(result[1])
+        browser.ui.workingDataTree.dataItems.append(child)
         child.data = result[1]   
     return listIndexes
+
+
