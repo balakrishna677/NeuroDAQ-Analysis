@@ -12,7 +12,7 @@ def plot_singleData(browser, plotWidget, data):
     plotWidget.plot(data, pen=pg.mkPen('#3790CC'))
 
     
-def plot_multipleData(browser, plotWidget):
+def plot_multipleData(browser, plotWidget, itemList):
     """ Plot user-selected traces from the working data tree.
 
     Store the data indexes of the plotted items for use in 
@@ -22,29 +22,23 @@ def plot_multipleData(browser, plotWidget):
     """
     plotWidget.clear()
     plotWidget.plotDataIndex, plotWidget.plotDataItems = [], []
-    items = browser.ui.workingDataTree.selectedItems()
-    if items:
-        for item in items:
-            if item.data is not None:
-                try:
-                    dt = item.attrs['dt']
-                except KeyError:
-                    dt = 1
-                #print 'dt is', dt
-                #x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
-                #y = browser.ui.workingDataTree.data[item.dataIndex]
-                x = np.arange(0, len(item.data)*dt, dt)
-                y = item.data
-                plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
-                #plotWidget.plotDataIndex.append(item.dataIndex)
-                plotWidget.plotDataItems.append(item)  # This makes plotDataIndex redundant, change later
+    for item in itemList:
+        if item.data is not None:
+            try:
+                dt = item.attrs['dt']
+            except KeyError:
+                dt = 1
+            x = np.arange(0, len(item.data)*dt, dt)
+            y = item.data
+            plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
+            plotWidget.plotDataItems.append(item)
 
-def browse_singleData(browser, plotWidget, currentItem):
+def browse_singleData(browser, plotWidget, currentItem, clear=True, color='#3790CC'):
     """ Plot single trace of currentItem.
     Different from plot_singleData because the source is an item
     instead of the data directly.
     """
-    plotWidget.clear()
+    if clear: plotWidget.clear()
     plotWidget.plotDataIndex, plotWidget.plotDataItems = [], []
     if currentItem.data is not None:
         try:
@@ -55,7 +49,7 @@ def browse_singleData(browser, plotWidget, currentItem):
         #y = browser.ui.workingDataTree.data[currentItem.dataIndex]
         x = np.arange(0, len(currentItem.data)*dt, dt)
         y = currentItem.data
-        plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))        
+        plotWidget.plot(x, y, pen=pg.mkPen(color))        
         #plotWidget.plotDataIndex.append(currentItem.dataIndex)
         plotWidget.plotDataItems.append(currentItem)  # This makes plotDataIndex redundant, change later
 

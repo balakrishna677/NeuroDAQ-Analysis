@@ -3,7 +3,9 @@
 
 from NeuroWidget import NeuroWidget
 from AnalysisSelectWidget import AnalysisSelectWidget
+from AnalysisSelectWidget2 import AnalysisSelectWidget2
 from AnalysisStackWidget import AnalysisStackWidget
+from AnalysisStackWidget2 import AnalysisStackWidget2
 from FileBrowserWidget import FileBrowserWidget
 from TabWidget import TabWidget
 

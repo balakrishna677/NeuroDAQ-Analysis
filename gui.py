@@ -130,40 +130,40 @@ class Ui_MainWindow(object):
         self.toolDataSourceBox.addItem("Plot")
         self.toolDataSourceBox.addItem("Selection")   
         self.toolStackGrid.addWidget(self.toolDataSourceBox)
-        self.toolStackedWidget = AnalysisStackWidget(0,0)
-        self.toolStackGrid.addWidget(self.toolStackedWidget)
-        self.toolStackedWidget.setSizePolicy(preferredSizePolicy)        
+        self.oneDimToolStackedWidget = AnalysisStackWidget(0,0)
+        self.toolStackGrid.addWidget(self.oneDimToolStackedWidget)
+        self.oneDimToolStackedWidget.setSizePolicy(preferredSizePolicy)        
         
 
         # -----
-        # TAB 3   (vrAnalysisTab) -> toolSelect and toolStackedWidget
+        # TAB 3   (customAnalysisTab) -> toolSelect and toolStackedWidget
         # -----
         # Geometry and Layout
-        self.vrAnalysisTab = NeuroWidget(0,0)
-        self.selectionTabWidget.addTab(self.vrAnalysisTab, _fromUtf8("VR Analysis"))
-        self.gridLayout_vrAnalysisTab = QtGui.QGridLayout(self.vrAnalysisTab)
-        self.splitter_vrAnalysisTab = QtGui.QSplitter(self.vrAnalysisTab)
-        self.splitter_vrAnalysisTab.setSizePolicy(preferredSizePolicy)        
-        self.splitter_vrAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
-        self.gridLayout_vrAnalysisTab.addWidget(self.splitter_vrAnalysisTab, 0, 0, 1, 1)
+        self.customAnalysisTab = NeuroWidget(0,0)
+        self.selectionTabWidget.addTab(self.customAnalysisTab, _fromUtf8("Custom Analysis"))
+        self.gridLayout_customAnalysisTab = QtGui.QGridLayout(self.customAnalysisTab)
+        self.splitter_customAnalysisTab = QtGui.QSplitter(self.customAnalysisTab)
+        self.splitter_customAnalysisTab.setSizePolicy(preferredSizePolicy)        
+        self.splitter_customAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
+        self.gridLayout_customAnalysisTab.addWidget(self.splitter_customAnalysisTab, 0, 0, 1, 1)
 
         # TAB 3 content > Tool Select        
-        self.vrToolSelect = AnalysisSelectWidget(0,0)
-        self.splitter_vrAnalysisTab.addWidget(self.vrToolSelect)
-        self.vrToolSelect.setSizePolicy(preferredSizePolicy)
+        self.customToolSelect = AnalysisSelectWidget(0,0)
+        self.splitter_customAnalysisTab.addWidget(self.customToolSelect)
+        self.customToolSelect.setSizePolicy(preferredSizePolicy)
         
 
         # TAB 3 content > Tools Stacked Widget    
-        self.VRtoolStackContainerWidget = NeuroWidget(0,0)   
-        self.VRtoolStackGrid = QtGui.QGridLayout(self.VRtoolStackContainerWidget)
-        self.splitter_vrAnalysisTab.addWidget(self.VRtoolStackContainerWidget)
-        self.VRtoolDataSourceBox = QtGui.QComboBox()
-        self.VRtoolDataSourceBox.addItem("Plot")
-        self.VRtoolDataSourceBox.addItem("Selection")   
-        self.VRtoolStackGrid.addWidget(self.VRtoolDataSourceBox)
-        self.VRtoolStackedWidget = AnalysisStackWidget(0,0)
-        self.VRtoolStackGrid.addWidget(self.VRtoolStackedWidget)
-        self.VRtoolStackedWidget.setSizePolicy(preferredSizePolicy) 
+        self.customToolStackContainerWidget = NeuroWidget(0,0)   
+        self.customToolStackGrid = QtGui.QGridLayout(self.customToolStackContainerWidget)
+        self.splitter_customAnalysisTab.addWidget(self.customToolStackContainerWidget)
+        self.customToolDataSourceBox = QtGui.QComboBox()
+        self.customToolDataSourceBox.addItem("Plot")
+        self.customToolDataSourceBox.addItem("Selection")   
+        self.customToolStackGrid.addWidget(self.customToolDataSourceBox)
+        self.customToolStackedWidget = AnalysisStackWidget(0,0)
+        self.customToolStackGrid.addWidget(self.customToolStackedWidget)
+        self.customToolStackedWidget.setSizePolicy(preferredSizePolicy) 
         
 
         # SinglePlots Widget
