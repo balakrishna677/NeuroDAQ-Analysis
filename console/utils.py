@@ -6,6 +6,7 @@ from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
 from widgets import h5Item
 from util import pgplot
+from analysis import auxfuncs as aux
 
 
 # Get browser instance
@@ -32,6 +33,12 @@ def get_data():
         return data.ravel()
     else:    
         return data
+            
+def get_items():
+    items = []
+    for item in browser.ui.dataPlotsWidget.plotDataItems:       
+        items.append(item)
+    return items
 
 def store_data(data, name='data', attrs={'dt':1}):
     """ Adds data to the Data Tree
@@ -69,7 +76,7 @@ def store_data(data, name='data', attrs={'dt':1}):
             child.listIndex = len(browser.ui.workingDataTree.dataItems)
             browser.ui.workingDataTree.dataItems.append(child)
             item.addChild(child)
-            
+
             
 # Ploting functions
 def plot_data(data, clear=False):
@@ -80,5 +87,37 @@ def plot_data(data, clear=False):
     plotWidget = browser.ui.dataPlotsWidget
     if clear: plotWidget.clear()
     plotWidget.plot(data, pen=pg.mkPen('#3790CC'))
+
+def get_cursors(X=False):
+    """ Returns the position of the 2 vertical cursors
+    in the data plot tab. 
+
+    c1, c2 = get_cursors()
+
+    Default is to return in position in sampling points,
+    set X=True to return positions in X-axis coordinates.
+    """
+    plotWidget = browser.ui.dataPlotsWidget
+    c1 = plotWidget.cursor1.value()
+    c2 = plotWidget.cursor2.value() 
+    if c2<c1:        
+        temp = c2
+        c2 = c1
+        c1 = temp
+    dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]  # Assumes dt is the same for all plotted items
+    if X:
+        return int(c1), int(c2)
+    else:
+        return int(c1/dt), int(c2/dt)
+
+
+
+
+
+
+ 
+
+
+
 
 
