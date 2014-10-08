@@ -79,14 +79,25 @@ def store_data(data, name='data', attrs={'dt':1}):
 
             
 # Ploting functions
-def plot_data(data, clear=False):
+def plot_data(*args, **kwargs): #color='#3790CC', clear=False):
     """ Plot a single trace.
     
-    Set clear = True to clear plot
+    *args: x, y
+    **kwargs: color='color', clear=True|False
     """
     plotWidget = browser.ui.dataPlotsWidget
+
+    # Read option arguments
+    options = {'color':'#3790CC', 'clear':False}
+    options.update(kwargs)
+    color = options['color']
+    clear = options['clear']
+    
     if clear: plotWidget.clear()
-    plotWidget.plot(data, pen=pg.mkPen('#3790CC'))
+    if len(args)==1:
+        plotWidget.plot(args[0], pen=pg.mkPen(color))
+    elif len(args)==2:
+        plotWidget.plot(args[0], args[1], pen=pg.mkPen(color))
 
 def get_cursors(X=False):
     """ Returns the position of the 2 vertical cursors
