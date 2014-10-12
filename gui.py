@@ -78,8 +78,16 @@ class Ui_MainWindow(object):
         self.verticalsplitter_dataTab.setOrientation(QtCore.Qt.Vertical)        
 
         # TAB 1 content > Folder input
+        #self.loadFolderGroupBox = QtGui.QGroupBox('test', self.verticalsplitter_dataTab)
+        #self.loadFolderLayout = QtGui.QGridLayout()
         self.loadFolderInput = QtGui.QLineEdit(self.verticalsplitter_dataTab)
-        self.loadFolderInput.setSizePolicy(preferredSizePolicy)
+        self.loadFolderInput.setSizePolicy(expandingSizePolicy)
+        #self.loadFolderLabel = QtGui.QLabel('Load Folder')
+        #self.loadFolderLayout.addWidget(self.loadFolderInput, 0, 0)
+        #self.loadFolderLayout.addWidget(self.loadFolderLabel, 0, 1)
+        #self.loadFolderLayout.setRowMinimumHeight(0,0)  
+        #self.loadFolderGroupBox.setLayout(self.loadFolderLayout)
+        
                
         # TAB 1 content > DirTree
         self.horizontalsplitter_dataTab = QtGui.QSplitter(self.verticalsplitter_dataTab)

@@ -28,7 +28,7 @@ def plot_multipleData(browser, plotWidget, itemList):
                 dt = item.attrs['dt']
             except KeyError:
                 dt = 1
-            x = make_xvector(currentItem.data, dt)     
+            x = make_xvector(item.data, dt)     
             #x = np.arange(0, len(item.data)*dt, dt)
             y = item.data
             plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
@@ -63,7 +63,7 @@ def replot(browser, plotWidget):
         except KeyError:
             dt = 1
         #x = np.arange(0, len(item.data)*dt, dt)
-        x = make_xvector(currentItem.data, dt) 
+        x = make_xvector(item.data, dt) 
         y = item.data
         plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
               
