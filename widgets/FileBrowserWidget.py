@@ -24,7 +24,7 @@ class FileBrowserWidget(QtGui.QTreeView):
         if not homeFolder: 
             if os.path.isdir('/home/tiago'):
                 #homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/'
-                homeFolder = '/home/tiago/Janelia/Data/ChrisRNA_round2'
+                homeFolder = '/home/tiago/Data/Lab/local/'
             elif platform.system()=='Darwin':
                 print 'Mac OS X detected'
                 homeFolder = '/Users/'

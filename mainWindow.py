@@ -368,7 +368,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def plot_OnSelectionChanged(self, current, previous):
         if current:
             if 'dataset' in str(self.db[current.path]):
-                pgplot.plot_singleData(self, self.ui.singlePlotWidget, self.db[current.path][:])    
+                try:
+                    pgplot.plot_singleData(self, self.ui.singlePlotWidget, self.db[current.path][:])    
+                except ValueError:
+                    pass
 
     def browse_OnSelectionChanged(self, current, previous):
         if current.data is not None:

@@ -28,7 +28,8 @@ def plot_multipleData(browser, plotWidget, itemList):
                 dt = item.attrs['dt']
             except KeyError:
                 dt = 1
-            x = np.arange(0, len(item.data)*dt, dt)
+            x = make_xvector(currentItem.data, dt)     
+            #x = np.arange(0, len(item.data)*dt, dt)
             y = item.data
             plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
             plotWidget.plotDataItems.append(item)
@@ -45,13 +46,11 @@ def browse_singleData(browser, plotWidget, currentItem, clear=True, color='#3790
             dt = currentItem.attrs['dt']
         except KeyError:
             dt = 1    
-        #x = np.arange(0, len(browser.ui.workingDataTree.data[currentItem.dataIndex])*dt, dt)
-        #y = browser.ui.workingDataTree.data[currentItem.dataIndex]
-        x = np.arange(0, len(currentItem.data)*dt, dt)
+        x = make_xvector(currentItem.data, dt)    
+        #x = np.arange(0, len(currentItem.data)*dt, dt)
         y = currentItem.data
         plotWidget.plot(x, y, pen=pg.mkPen(color))        
-        #plotWidget.plotDataIndex.append(currentItem.dataIndex)
-        plotWidget.plotDataItems.append(currentItem)  # This makes plotDataIndex redundant, change later
+        plotWidget.plotDataItems.append(currentItem) 
 
 def replot(browser, plotWidget):
     """ Function to replot the data currently in the data plot tab.
@@ -63,9 +62,8 @@ def replot(browser, plotWidget):
             dt = item.attrs['dt']
         except KeyError:
             dt = 1
-        #x = np.arange(0, len(browser.ui.workingDataTree.data[item.dataIndex])*dt, dt)
-        #y = browser.ui.workingDataTree.data[item.dataIndex]
-        x = np.arange(0, len(item.data)*dt, dt)
+        #x = np.arange(0, len(item.data)*dt, dt)
+        x = make_xvector(currentItem.data, dt) 
         y = item.data
         plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
               
@@ -112,4 +110,13 @@ def replot_cursors(browser, plotWidget):
     plotWidget.addItem(plotWidget.cursor2)     
 
 
-    
+def make_xvector(ydata, dt):
+    """ Make a X vector to plot data against 
+    and ensure it is has the same lenght as Y
+    """ 
+    x = np.arange(0, len(ydata)*dt, dt)
+    if len(x)<len(ydata):
+        x = np.append(x, dt)
+    elif len(x)>len(ydata):
+        x = np.delete(x, len(x)-1)
+    return x 
