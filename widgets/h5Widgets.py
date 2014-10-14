@@ -106,5 +106,11 @@ class h5TreeWidget(QtGui.QTreeWidget):
     def sizeHint(self):
         return QtCore.QSize(self._width, self._height)                     
                      
+    def keyPressEvent(self, event):
+        """ Specify some key press events.
+        """
+        super(h5TreeWidget, self).keyPressEvent(event)
+        if event.key() == QtCore.Qt.Key_Delete:
+            self.emit(QtCore.SIGNAL('deletePressed'))
 
 

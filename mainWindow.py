@@ -112,6 +112,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionSaveFileAs.triggered.connect(self.save_h5OnSaveAsPush)
         self.connect(self.ui.workingDataTree, QtCore.SIGNAL('dropped'), self.move_itemsAcross)
         self.connect(self.ui.workingDataTree, QtCore.SIGNAL('targetPosition'), self.set_targetPosition)
+        self.connect(self.ui.workingDataTree, QtCore.SIGNAL('deletePressed'), self.remove_itemOnMenu)
         self.ui.workingDataTree.currentItemChanged.connect(self.browse_OnSelectionChanged)
         self.ui.workingDataTree.propsDt = ''
         self.ui.workingDataTree.propsDescription = ''   
