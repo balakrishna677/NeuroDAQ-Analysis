@@ -23,6 +23,7 @@ from console import utils as utilsconsole
 
 import pyqtgraph as pg
 from analysis.modules import *
+from analysis.acq4 import filterfuncs as acq4filter
 from analysis import moduleLoader
 
 class NeuroDaqWindow(QtGui.QMainWindow):

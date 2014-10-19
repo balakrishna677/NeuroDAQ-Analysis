@@ -56,6 +56,8 @@ class AnalysisModule():
         self.toolOptions.append([QtGui.QLabel('Noise Safety'), self.eventNoiseSafety])
         self.eventSmooth = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Smooth'), self.eventSmooth])
+        self.eventMinDuration = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Min Duration'), self.eventMinDuration])        
         self.eventCutOut = QtGui.QPushButton('Cut events')
         self.toolOptions.append([self.eventCutOut])
         self.eventBaseline = QtGui.QLineEdit()
@@ -86,8 +88,12 @@ class AnalysisModule():
         noiseSafety = float(self.eventNoiseSafety.text())
         smoothFactor = float(self.eventSmooth.text())
         direction = str(self.eventDirection.currentText())
+        minDuration = float(self.eventMinDuration.text())
         c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget) 
-
+        bslWindow = 1.0
+        slowestRise = 0.5
+        minEventInterval = 10.0
+ 
         # Ensure that noise safety has the same sign as the threshold
         noiseSafety = np.sign(threshold) * abs(noiseSafety)
 
@@ -112,15 +118,28 @@ class AnalysisModule():
             comp = lambda a, b: a < b
         elif direction=='positive':
             comp = lambda a, b: a > b
-        eventCounter,i = 0,0
+        eventCounter,i = 0,0+bslWindow/dt+slowestRise/dt
+        iLastDetection = 0
         xOnsets, yOnsets = [], []
+        minEventInterval = minEventInterval/dt
+        minDuration = minDuration/dt
+        bslWindow = bslWindow/dt
+        slowestRise = slowestRise/dt
         while i<len(data):
-            if comp(data[i],threshold):
+            # Sliding baseline
+            bsl = np.mean(data[i-bslWindow-slowestRise:i])
+            if comp(data[i]-bsl,threshold):
+              #if i-iLastDetection>minEventInterval:  # Min inter-event interval
                 xOnsets.append(i)
                 yOnsets.append(data[i])
-                eventCounter +=1
-                while i<len(data) and comp(data[i],(threshold-noiseSafety)):
+                eventCounter+=1
+                iLastDetection = i
+                while i<len(data) and comp(data[i]-bsl,(threshold-noiseSafety)):
                     i+=1 # skip values if index in bounds AND until the value is below/above threshold again
+                if i-iLastDetection < minDuration: # Event is too brief
+                    xOnsets.pop()
+                    yOnsets.pop()
+                    eventCounter-=1
             else:
                 i+=1
 
@@ -203,6 +222,7 @@ class AnalysisModule():
     def set_defaultValues(self):
         self.eventNoiseSafety.setText('5')
         self.eventSmooth.setText('1')
+        self.eventMinDuration.setText('2')
         self.eventBaseline.setText('2')
         self.eventDuration.setText('20')
 

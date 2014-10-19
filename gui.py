@@ -76,12 +76,14 @@ class Ui_MainWindow(object):
         self.verticalsplitter_dataTab = QtGui.QSplitter(self.dataTab)
         self.verticalsplitter_dataTab.setSizePolicy(preferredSizePolicy)
         self.verticalsplitter_dataTab.setOrientation(QtCore.Qt.Vertical)        
+        self.verticalsplitter_dataTab_layout = QtGui.QGridLayout(self.verticalsplitter_dataTab)
 
         # TAB 1 content > Folder input
         #self.loadFolderGroupBox = QtGui.QGroupBox('test', self.verticalsplitter_dataTab)
         #self.loadFolderLayout = QtGui.QGridLayout()
         self.loadFolderInput = QtGui.QLineEdit(self.verticalsplitter_dataTab)
         self.loadFolderInput.setSizePolicy(expandingSizePolicy)
+        #self.testInput = QtGui.QLineEdit(self.verticalsplitter_dataTab)
         #self.loadFolderLabel = QtGui.QLabel('Load Folder')
         #self.loadFolderLayout.addWidget(self.loadFolderInput, 0, 0)
         #self.loadFolderLayout.addWidget(self.loadFolderLabel, 0, 1)
