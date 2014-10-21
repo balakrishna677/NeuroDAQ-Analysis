@@ -18,7 +18,8 @@ class NavigationToolbar(NavigationToolbar2QTAgg):
         NavigationToolbar2QTAgg.__init__(self,canvas,parent)
         for c in self.findChildren(QtGui.QToolButton):
             #print str(c.text())
-            if str(c.text()) in ('Subplots','Customize','Back','Forward','Home'):
+            #if str(c.text()) in ('Subplots','Customize','Back','Forward','Home'):
+            if str(c.text()) in ('Customize','Back','Forward'):
                 c.defaultAction().setVisible(False)
         self.parent = parent
         self.browser = browser
@@ -48,8 +49,8 @@ class NavigationToolbar(NavigationToolbar2QTAgg):
                 self.parent.showCursorLastPos()
  
 
-class matplotlibWidget(QtGui.QWidget):
-    def __init__(self, width, height, parent = None):
+class dataPlotMatplotlibWidget(QtGui.QWidget):
+    def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)                        
         self.canvas = mplCanvas()
         #self.toolbar = NavigationToolbar(self.canvas, self)
@@ -59,8 +60,8 @@ class matplotlibWidget(QtGui.QWidget):
         self.setLayout(self.vbl)
         self.cursor1Pos = None
         self.cursor2Pos = None        
-        self._width = width
-        self._height = height
+        #self._width = width
+        #self._height = height
 
     def insertNavigationBar(self, browser):
         self.toolbar = NavigationToolbar(self.canvas, self, browser)
@@ -125,5 +126,24 @@ class matplotlibWidget(QtGui.QWidget):
         self.canvas.ax.draw_artist(self.cursor2)
         self.canvas.blit(self.canvas.ax.bbox)      
         
-    def sizeHint(self):
-        return QtCore.QSize(self._width, self._height)
+   #def sizeHint(self):
+   #     return QtCore.QSize(self._width, self._height)
+
+class matplotlibWidget(QtGui.QWidget):
+    def __init__(self, parent = None):
+        QtGui.QWidget.__init__(self, parent)                        
+        self.canvas = mplCanvas()
+        self.layout = QtGui.QGridLayout()
+        self.layout.addWidget(self.canvas)
+        self.toolbar = NavigationToolbar(self.canvas, self, parent)
+        self.layout.addWidget(self.toolbar)
+        self.setLayout(self.layout)
+        #self.vbl.addWidget(self.toolbar)
+
+
+    def insertNavigationBar(self, browser):
+        self.toolbar = NavigationToolbar(self.canvas, self, browser)
+        self.layout.addWidget(self.toolbar)
+        #self.setLayout(self.vbl)
+    
+

@@ -1,8 +1,9 @@
 import numpy as np
+import matplotlib.pylab as plt
 import scipy.signal as signal
 from analysis import smooth
 from console import utils as ndaq
-       
+
 # Get data and items
 data = ndaq.get_data()
 items = ndaq.get_items()
@@ -27,7 +28,10 @@ for trace in data:
 
     # Get decay part only
     decay = trace[xpeak+25:]
-    avgDecay = avg[xpeak+25:]
+    avgDecay = scaledAvg[xpeak+25:]
+    plt.plot(scaledAvg, 'r')
+    plt.plot(trace, 'k')
+    plt.plot((decay-avgDecay)**2)
 
     # Divide into bins
     binSize = decay.min()/nbins    
@@ -39,7 +43,7 @@ for trace in data:
         ymax = (b+1)*binSize
         i = (decay<ymin) & (decay>ymax)  # For inward currents
         current = decay[i].mean()
-        var = np.mean((decay[i]-avgDecay[i])**2)
+        var = (np.sum((decay[i]-avgDecay[i])**2))/(np.sum(i)-1)
         
         m.append(current)
         v.append(var)
@@ -48,7 +52,8 @@ for trace in data:
     results2.append(np.array(v)) 
     #ndaq.plot_data(np.array(m), np.array(v))
 
+plt.show()
 # Store
-ndaq.store_data(results1)
-ndaq.store_data(results2)
+#ndaq.store_data(results1)
+#ndaq.store_data(results2)
 

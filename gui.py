@@ -245,6 +245,13 @@ class Ui_MainWindow(object):
         self.IPythonWidget = QIPythonWidget()
         self.displayTabWidget.addTab(self.IPythonWidget, _fromUtf8("IPython"))        
 
+        # ------
+        # TAB 4   (Matplotlib Tab)
+        # ------        
+        # Geometry and Layout   
+        # TAB 4 content > Matplotlib axes
+        self.mplWidget = matplotlibWidget()
+        self.displayTabWidget.addTab(self.mplWidget, _fromUtf8("MatplotLib"))
 
 
         # -----------------------------------------------------------------------------
