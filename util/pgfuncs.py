@@ -100,7 +100,7 @@ def hide_cursors(browser, plotWidget):
 
 def replot_cursors(browser, plotWidget):
     """ Replot the cursors in the current positions
-    after the axis had been clear for some reason
+    after the axis had been cleared for some reason
     """
     plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True, 
                                          pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))

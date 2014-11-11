@@ -50,7 +50,7 @@ for trace in data:
     
     results1.append(np.array(m))
     results2.append(np.array(v)) 
-    #ndaq.plot_data(np.array(m), np.array(v))
+    ndaq.plot_data(np.array(m), np.array(v))
 
 plt.show()
 # Store

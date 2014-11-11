@@ -125,9 +125,10 @@ class AnalysisModule():
         minDuration = minDuration/dt
         bslWindow = bslWindow/dt
         slowestRise = slowestRise/dt
+        bsl = 0
         while i<len(data):
             # Sliding baseline
-            bsl = np.mean(data[i-bslWindow-slowestRise:i])
+            #bsl = np.mean(data[i-bslWindow-slowestRise:i])
             if comp(data[i]-bsl,threshold):
               #if i-iLastDetection>minEventInterval:  # Min inter-event interval
                 xOnsets.append(i)
