@@ -83,6 +83,8 @@ class AnalysisModule():
     
         # Initialise Fitting Class
         dataFit = Fitting()
+        dataFit.c1 = c1
+        dataFit.c2 = c2
 
         # Fit data
         results = [] 
@@ -94,16 +96,13 @@ class AnalysisModule():
             xRange = np.arange(c1, c2, dt)
         
             # Fit
-            fitParams = fit(fitFunc2, xRange, yData, [0.0, -1.0, c1, 20.0]) 
+            fitParams = dataFit.fit(dataFit.exp1, xRange, yData, [0.0, -1.0, c1, 20.0]) 
             print fitParams
-            #results.append([item.text(0), traceSmooth, attrs])
+            results.append([item.text(0), traceSmooth, attrs])
         
             # Plot fitted function over trace
-            fittedTrace = fitFunc2(xRange, fitParams[0], fitParams[1], fitParams[2], fitParams[3])
+            fittedTrace = dataFit.exp1(xRange, fitParams[0], fitParams[1], fitParams[2], fitParams[3])
             plotWidget.plot(xRange, fittedTrace, pen=pg.mkPen('r', width=1))
-            plt.plot(xRange, yData)
-            plt.plot(xRange, fittedTrace, 'r')
-            plt.show()
 
             #x = np.arange(0, len(traceSmooth)*item.attrs['dt'], item.attrs['dt'])
             #plotWidget.plot(x, traceSmooth, pen=pg.mkPen('#F2EF44', width=1))            
@@ -115,21 +114,8 @@ class AnalysisModule():
          
         ############################################  
 
-def fitFunc2(x, p1, p2, p3, p4):
-    y = p1 + p2 * np.exp(-(x+p3)/p4)
-    return y
 
-def fitFunc(x, p1, p2):
-    y = p1 + p2*x
-    return y
-      
-def fit(fitFunc, x, y, p0):
-    fitParams, fitCovariances = curve_fit(fitFunc, x, y, p0)  
-    return fitParams
-
-
-
-class Fitting():
+class Fitting:
     """ Class for fitting data.
     Dictionary with functions contains: function call, initial parameters, names
     of parameters
@@ -139,22 +125,24 @@ class Fitting():
     """
 
     def __init__(self):
+        self.c1 = 0
+        self.c2 = 0
         self.fitfuncmap = {
-        'exp1'  : (self.exp1, [0.0, 1.0, 20.0], ['DC', 'A0', 'tau']),
+        'exp1'  : (self.exp1, [0.0, 1.0, self.c1, 20.0], ['X0', 'A0', 'Y0', 'tau']),
         'exp2'  : (self.exp2, [0.0, 0.0, 20.0, 0.0, 0.0, 20.0], ['DC', 'A0', 'tau0', 'A1', 'tau1']),
         'parab' : (self.parab, [-10.0, 10.0, 0.0], ['i', 'N', 'bsl']),
         }
 
     def exp1old(self, x, p):
-        """ Exponential function with amplitude and offset
+        """ Exponential function with amplitude and X and Y offset
         """
         y = p[0] + p[1] * np.exp(-x/p[2])
         return y
 
-    def exp1(self, x, p1, p2, p3):
+    def exp1(self, x, *p):
         """ Exponential function with amplitude and offset
         """
-        y = p1 + p2 * np.exp(-x/p3)
+        y = p[0] + p[1] * np.exp(-(x-p[2])/p[3])
         return y
 
     def exp2(self, x, p):

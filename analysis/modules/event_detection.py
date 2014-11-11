@@ -89,11 +89,10 @@ class AnalysisModule():
         smoothFactor = float(self.eventSmooth.text())
         direction = str(self.eventDirection.currentText())
         minDuration = float(self.eventMinDuration.text())
-        c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget) 
         bslWindow = 1.0
         slowestRise = 0.5
         minEventInterval = 10.0
- 
+
         # Ensure that noise safety has the same sign as the threshold
         noiseSafety = np.sign(threshold) * abs(noiseSafety)
 
@@ -105,7 +104,12 @@ class AnalysisModule():
 
         # Get data currently plotted within the cursors and concatenate in a single sweep
         data = aux.get_data(self.browser)
-        if browser.ui.dataPlotsWidget.cursor1Pos: data = data[:,c1/dt:c2/dt]
+        try:
+            c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
+        except NameError:
+            c1 = 0
+            c2 = len(data)-1
+        data = data[:,c1/dt:c2/dt]
         data = data.ravel()
 
         # Smooth
