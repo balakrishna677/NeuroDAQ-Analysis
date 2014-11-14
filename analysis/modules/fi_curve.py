@@ -28,8 +28,7 @@ class AnalysisModule():
         browser.customToolSelector.add_tool(self.entryName, self.func)
         # Add option widgets
         self.make_option_widgets()
-        # Set default values
-        self.set_defaultValues()
+
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.oneDimToolStackedWidget
