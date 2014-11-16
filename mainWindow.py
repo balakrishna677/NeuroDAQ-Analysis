@@ -96,6 +96,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.customToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
         self.selectionList = []
         self.selectionList.append([self.ui.oneDimToolSelect, self.ui.oneDimToolStackedWidget, '1D Analysis'])
+        self.selectionList.append([self.ui.behaviourToolSelect, self.ui.behaviourToolStackedWidget, 'Behaviour Analysis'])
         self.selectionList.append([self.ui.customToolSelect, self.ui.customToolStackedWidget, 'Custom Analysis'])
 
         # Analysis tools stack
@@ -357,9 +358,17 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def updateItemAttrs(self, row, col):
         if row==0:
             itemList = self.ui.workingDataTree.selectedItems()
-            if itemList:
-                for item in itemList:
-                    item.attrs['dt'] = self.ui.propsTableWidget.item(row, col).text() 
+            #if len(itemList)>1:
+            #    for item in itemList:
+                    #print item.text(0)
+                    #dt = item.attrs['dt']
+                    #item.attrs['dt'] = float(self.ui.propsTableWidget.item(row, col).text())
+                    #print item.text(0),'old dt was', dt, 'new dt is', item.attrs['dt']
+            #elif len(itemList)==1:
+            #    item = self.ui.workingDataTree.currentItem()
+            #    print item.text(0)
+            #else:
+            #    pass 
         #if row==1: self.ui.workingDataTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
 
     # -----------------------------------------------------------------------------
@@ -385,7 +394,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         if current.data is not None:
             #dataValue= str(self.ui.workingDataTree.data[current.dataIndex][0])
             dataValue = str(current.data[0])
-            self.ui.statusbar.showMessage('Fist data point value: ' + dataValue)
+            self.ui.statusbar.showMessage('First data point value: ' + dataValue)
         else:
             self.ui.statusbar.clearMessage()
         # Plot data if Browse is selected

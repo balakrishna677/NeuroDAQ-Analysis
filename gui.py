@@ -307,7 +307,8 @@ class Ui_MainWindow(object):
         
         # Properties Table Widget
         # -----------------------------------------------------------------------------
-        self.propsTableWidget = pg.TableWidget(self.splitter_rightPane, editable=True)
+        #self.propsTableWidget = pg.TableWidget(self.splitter_rightPane, editable=True)
+        self.propsTableWidget = TablePropsWidget(self.splitter_rightPane, editable=True)
         #self.propsTableWidget = QtGui.QTableWidget(self.splitter_rightPane)
         self.propsTableWidget.setSizePolicy(preferredSizePolicy)
         self.propsTableWidget.setRowCount(0)
