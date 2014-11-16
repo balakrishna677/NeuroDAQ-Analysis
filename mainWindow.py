@@ -128,18 +128,19 @@ class NeuroDaqWindow(QtGui.QMainWindow):
 
         # Properties table        
         # -----------------------------------------------------------------------------        
-        self.ui.propsTableWidget.setRowCount(2)
+        self.ui.propsTableWidget.setRowCount(1)
         self.ui.propsTableWidget.setColumnCount(1)
         self.ui.propsTableWidget.horizontalHeader().setVisible(False)
-        self.ui.workingDataTree.propsItemDtLabel = QtGui.QTableWidgetItem('dt')
-        self.ui.workingDataTree.propsItemDt = QtGui.QTableWidgetItem(self.ui.workingDataTree.propsDt)
-        self.ui.workingDataTree.propsItemDescriptionLabel = QtGui.QTableWidgetItem('Description')
-        self.ui.workingDataTree.propsItemDescription = QtGui.QTableWidgetItem(self.ui.workingDataTree.propsDescription)                
-        self.ui.propsTableWidget.setVerticalHeaderItem(0, self.ui.workingDataTree.propsItemDtLabel)
-        self.ui.propsTableWidget.setItem(0,0,self.ui.workingDataTree.propsItemDt)
-        self.ui.propsTableWidget.setVerticalHeaderItem(1, self.ui.workingDataTree.propsItemDescriptionLabel)
-        self.ui.propsTableWidget.setItem(1,0,self.ui.workingDataTree.propsItemDescription)
-        self.ui.propsTableWidget.cellChanged.connect(self.updateTableEntry)        
+        self.ui.propsTableWidget.setData({'dt':['']})
+        #self.ui.workingDataTree.propsItemDtLabel = QtGui.QTableWidgetItem('dt')
+        #self.ui.workingDataTree.propsItemDt = QtGui.QTableWidgetItem(self.ui.workingDataTree.propsDt)
+        #self.ui.workingDataTree.propsItemDescriptionLabel = QtGui.QTableWidgetItem('Description')
+        #self.ui.workingDataTree.propsItemDescription = QtGui.QTableWidgetItem(self.ui.workingDataTree.propsDescription)                
+        #self.ui.propsTableWidget.setVerticalHeaderItem(0, self.ui.workingDataTree.propsItemDtLabel)
+        #self.ui.propsTableWidget.setItem(0,0,self.ui.workingDataTree.propsItemDt)
+        #self.ui.propsTableWidget.setVerticalHeaderItem(1, self.ui.workingDataTree.propsItemDescriptionLabel)
+        #self.ui.propsTableWidget.setItem(1,0,self.ui.workingDataTree.propsItemDescription)
+        self.ui.propsTableWidget.cellChanged.connect(self.updateItemAttrs)        
         
         # IPython tab
         # -----------------------------------------------------------------------------        
@@ -353,9 +354,13 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------
-    def updateTableEntry(self, row, col):
-        if row==0: self.ui.workingDataTree.propsDt = self.ui.propsTableWidget.item(row, col).text() 
-        if row==1: self.ui.workingDataTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
+    def updateItemAttrs(self, row, col):
+        if row==0:
+            itemList = self.ui.workingDataTree.selectedItems()
+            if itemList:
+                for item in itemList:
+                    item.attrs['dt'] = self.ui.propsTableWidget.item(row, col).text() 
+        #if row==1: self.ui.workingDataTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
 
     # -----------------------------------------------------------------------------
     # Table Methods
@@ -376,14 +381,18 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                     pass
 
     def browse_OnSelectionChanged(self, current, previous):
+        # Show data values in status bar
         if current.data is not None:
             #dataValue= str(self.ui.workingDataTree.data[current.dataIndex][0])
             dataValue = str(current.data[0])
             self.ui.statusbar.showMessage('Fist data point value: ' + dataValue)
         else:
             self.ui.statusbar.clearMessage()
+        # Plot data if Browse is selected
         if self.ui.actionBrowseData.isChecked():
             pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
+        # Show dt
+        self.ui.propsTableWidget.setData({'dt':[current.attrs['dt']]})
 
     def plot_selected(self):
         self.ui.actionBrowseData.setChecked(False)

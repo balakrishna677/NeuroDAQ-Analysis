@@ -144,9 +144,39 @@ class Ui_MainWindow(object):
         self.toolStackGrid.addWidget(self.oneDimToolStackedWidget)
         self.oneDimToolStackedWidget.setSizePolicy(preferredSizePolicy)        
         
+        # -----
+        # TAB 3   (behaviourAnalysisTab) -> toolSelect and toolStackedWidget
+        # -----
+        # Geometry and Layout
+        self.behaviourAnalysisTab = NeuroWidget(0,0)
+        self.selectionTabWidget.addTab(self.behaviourAnalysisTab, _fromUtf8("Behaviour Analysis"))
+        self.gridLayout_behaviourAnalysisTab = QtGui.QGridLayout(self.behaviourAnalysisTab)
+        self.splitter_behaviourAnalysisTab = QtGui.QSplitter(self.behaviourAnalysisTab)
+        self.splitter_behaviourAnalysisTab.setSizePolicy(preferredSizePolicy)        
+        self.splitter_behaviourAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
+        self.gridLayout_behaviourAnalysisTab.addWidget(self.splitter_behaviourAnalysisTab, 0, 0, 1, 1)
+
+        # TAB 2 content > Tool Select        
+        self.behaviourToolSelect = AnalysisSelectWidget(0,0)
+        self.splitter_behaviourAnalysisTab.addWidget(self.behaviourToolSelect)
+        self.behaviourToolSelect.setSizePolicy(preferredSizePolicy)
+        
+
+        # TAB 2 content > Tools Stacked Widget    
+        self.behaviourToolStackContainerWidget = NeuroWidget(0,0)   
+        self.behaviourToolStackGrid = QtGui.QGridLayout(self.behaviourToolStackContainerWidget)
+        self.splitter_behaviourAnalysisTab.addWidget(self.behaviourToolStackContainerWidget)
+        self.behaviourToolDataSourceBox = QtGui.QComboBox()
+        self.behaviourToolDataSourceBox.addItem("Plot")
+        self.behaviourToolDataSourceBox.addItem("Selection")   
+        self.behaviourToolStackGrid.addWidget(self.behaviourToolDataSourceBox)
+        self.behaviourToolStackedWidget = AnalysisStackWidget(0,0)
+        self.behaviourToolStackGrid.addWidget(self.behaviourToolStackedWidget)
+        self.behaviourToolStackedWidget.setSizePolicy(preferredSizePolicy)        
+        
 
         # -----
-        # TAB 3   (customAnalysisTab) -> toolSelect and toolStackedWidget
+        # TAB 4   (customAnalysisTab) -> toolSelect and toolStackedWidget
         # -----
         # Geometry and Layout
         self.customAnalysisTab = NeuroWidget(0,0)
@@ -277,7 +307,8 @@ class Ui_MainWindow(object):
         
         # Properties Table Widget
         # -----------------------------------------------------------------------------
-        self.propsTableWidget = QtGui.QTableWidget(self.splitter_rightPane)
+        self.propsTableWidget = pg.TableWidget(self.splitter_rightPane, editable=True)
+        #self.propsTableWidget = QtGui.QTableWidget(self.splitter_rightPane)
         self.propsTableWidget.setSizePolicy(preferredSizePolicy)
         self.propsTableWidget.setRowCount(0)
         self.propsTableWidget.setColumnCount(0)
@@ -286,7 +317,6 @@ class Ui_MainWindow(object):
     
         self.splitter_centralwidget.setSizes([400,800,200])
         self.splitter_rightPane.setSizes([500,1])
-        
         
         # -----------------------------------------------------------------------------
         # Status Bar

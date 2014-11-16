@@ -54,6 +54,6 @@ for trace in data:
 
 plt.show()
 # Store
-#ndaq.store_data(results1)
-#ndaq.store_data(results2)
+ndaq.store_data(results1)
+ndaq.store_data(results2)
 

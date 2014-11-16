@@ -33,7 +33,7 @@ def clear_table(browser):
             item = QtGui.QTableWidgetItem('')
             browser.ui.dataTableWidget.setItem(row, col, item) 
 
-def update_table(browser):   
+def update_props(browser):   
     browser.ui.workingDataTree.propsItemDt = QtGui.QTableWidgetItem(browser.ui.workingDataTree.propsDt)
     browser.ui.workingDataTree.propsItemDescription = QtGui.QTableWidgetItem(browser.ui.workingDataTree.propsDescription)                
     browser.ui.propsTableWidget.setItem(0,0,browser.ui.workingDataTree.propsItemDt)

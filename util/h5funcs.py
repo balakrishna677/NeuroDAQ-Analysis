@@ -38,11 +38,11 @@ def load_h5(browser, tree, push):
         browser.ui.workingDataTree.setSortingEnabled(True)
         browser.ui.workingDataTree.propsDt = ''
         browser.ui.workingDataTree.propsDescription = ''
-        for attr in browser.db.attrs:
+        #for attr in browser.db.attrs:
             #print attr, browser.db.attrs[attr]
-            if 'dt' in attr: browser.ui.workingDataTree.propsDt = str(browser.db.attrs[attr])
-            if 'description' in attr:  browser.ui.workingDataTree.propsDescription = browser.db.attrs[attr]
-        table.update_table(browser)
+        #    if 'dt' in attr: browser.ui.workingDataTree.propsDt = str(browser.db.attrs[attr])
+        #    if 'description' in attr:  browser.ui.workingDataTree.propsDescription = browser.db.attrs[attr]
+        #table.update_props(browser)
         browser.currentOpenFile = currentFile
         browser.currentSaveFile = currentFile
         browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentFile)[1]])
