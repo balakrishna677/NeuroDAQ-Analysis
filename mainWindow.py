@@ -141,7 +141,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         #self.ui.propsTableWidget.setItem(0,0,self.ui.workingDataTree.propsItemDt)
         #self.ui.propsTableWidget.setVerticalHeaderItem(1, self.ui.workingDataTree.propsItemDescriptionLabel)
         #self.ui.propsTableWidget.setItem(1,0,self.ui.workingDataTree.propsItemDescription)
-        self.ui.propsTableWidget.cellChanged.connect(self.updateItemAttrs)        
+        #self.connect(self.ui.propsTableWidget, QtCore.SIGNAL('updateAttr'), self.updateItemAttrs)     
+        self.ui.propsTableWidget.itemSelectionChanged.connect(self.updateItemAttrs)        
+
         
         # IPython tab
         # -----------------------------------------------------------------------------        
@@ -355,21 +357,16 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------
-    def updateItemAttrs(self, row, col):
-        if row==0:
-            itemList = self.ui.workingDataTree.selectedItems()
-            #if len(itemList)>1:
-            #    for item in itemList:
-                    #print item.text(0)
-                    #dt = item.attrs['dt']
-                    #item.attrs['dt'] = float(self.ui.propsTableWidget.item(row, col).text())
-                    #print item.text(0),'old dt was', dt, 'new dt is', item.attrs['dt']
-            #elif len(itemList)==1:
-            #    item = self.ui.workingDataTree.currentItem()
-            #    print item.text(0)
-            #else:
-            #    pass 
-        #if row==1: self.ui.workingDataTree.propsDescription = self.ui.propsTableWidget.item(row, col).text() 
+    def updateItemAttrs(self):
+        itemList = self.ui.workingDataTree.selectedItems()
+        for item in itemList:
+            attr = str(self.ui.propsTableWidget.verticalHeaderItem(0).text())
+            #attrValue = float(self.ui.propsTableWidget.item(self.ui.propsTableWidget.currentItem().row(), 0).text()) # for dt
+            attrValue = float(self.ui.propsTableWidget.currentItem().text())
+            item.attrs[attr] = attrValue
+
+    def test(self):
+        print self.ui.propsTableWidget.currentItem().text()
 
     # -----------------------------------------------------------------------------
     # Table Methods
@@ -408,7 +405,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         itemList = self.ui.workingDataTree.selectedItems()
         if itemList:
             pgplot.plot_multipleData(self, self.ui.dataPlotsWidget, itemList)   
-    
+            print itemList[0].attrs['dt']    
+
     def zoom_out(self):
         pgplot.zoom_out(self, self.ui.dataPlotsWidget)
 

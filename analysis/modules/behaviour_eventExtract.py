@@ -15,7 +15,7 @@ class AnalysisModule():
     
         ############################################
         # NAME THAT IS LISTED IN THE TAB
-        self.entryName = 'Tracking event overlay'  
+        self.entryName = 'Event extract'  
         ############################################
         
         # Get main browser
@@ -36,24 +36,36 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-          
+        self.eventBaseline = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Baseline'), self.eventBaseline])
+        self.eventDuration = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration])             
         ############################################        
 
+        stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
 
     def func(self, browser):
-        """ Overlay triggered events (e.g.: visual or laser stimulation)
-        over tracking trace.
-        
-        Plots current selected tigger data over current ploted trace
+        """ Extract snippets of tracking trace triggered on events trace
+        (e.g.: loom or laser stimulation)
+
+        Analyses the currently plotted tracking trace with the currently
+        selected event trigger trace
         """
     
         ############################################
         # ANALYSIS FUNCTION      
-    
+
+        # Read options 
+        baseline = float(self.eventBaseline.text())
+        duration = float(self.eventDuration.text())
+   
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
     
+        # Get plotted tracking data
+        trackData = plotWidget.plotDataItems[0].data
+
         # Get selected trigger data
         item = browser.ui.workingDataTree.currentItem()
         triggers = item.data
@@ -66,11 +78,23 @@ class AnalysisModule():
         tarray = np.arange(0, len(triggers))
         tevents = tarray[triggers>0]
 
-        # Make infinte vertical lines on trigger events        
+        # Extract events        
+        events = []
         for t in tevents:
-            line = pg.InfiniteLine(pos=t*dt, angle=90, movable=False, pen=pg.mkPen('k', width=2))        
-            plotWidget.addItem(line)
+            event = trackData[t-int(baseline/dt):t+int(duration/dt)]
+            events.append(event)
+
+        # Store data
+        results = []
+        attrs = {}
+        attrs['dt'] = dt 
+        for e in np.arange(0, len(events)):
+            results.append(['event'+str(e), events[e], attrs])  
+        aux.save_results(self.browser, 'Events', results)        
         ############################################  
        
+
+
+
 
 
