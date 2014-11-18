@@ -15,7 +15,7 @@ class AnalysisModule():
     
         ############################################
         # NAME THAT IS LISTED IN THE TAB
-        self.entryName = 'Event extract'  
+        self.entryName = 'Get trigger Events'  
         ############################################
         
         # Get main browser
@@ -39,48 +39,78 @@ class AnalysisModule():
         self.eventBaseline = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Baseline'), self.eventBaseline])
         self.eventDuration = QtGui.QLineEdit()
-        self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration])             
+        self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration]) 
+        self.eventCutOut = QtGui.QPushButton('Cut events')
+        self.toolOptions.append([self.eventCutOut])          
+
+        # Connect buttons to functions
+        self.eventCutOut.clicked.connect(self.event_cut) 
         ############################################        
 
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
 
     def func(self, browser):
-        """ Extract snippets of tracking trace triggered on events trace
+        """ Analyse tracking data using triggered events 
+        (e.g.: visual or laser stimulation)
+  
+        Analyses the currently plotted tracking trace with the currently
+        selected event trigger trace.
+
+        Main function overlays triggered events on tracking trace and gets
+        trigger times for event cut out.
+
+        Event Cut: extract snippets of tracking trace triggered on events trace
         (e.g.: loom or laser stimulation)
 
-        Analyses the currently plotted tracking trace with the currently
-        selected event trigger trace
+        Options:
+        1) Baseline and Duration for event cut out
         """
-    
+
         ############################################
         # ANALYSIS FUNCTION      
-
-        # Read options 
-        baseline = float(self.eventBaseline.text())
-        duration = float(self.eventDuration.text())
-   
-        # Get widgets
-        plotWidget = browser.ui.dataPlotsWidget
-        toolsWidget = browser.ui.oneDimToolStackedWidget
     
-        # Get plotted tracking data
-        trackData = plotWidget.plotDataItems[0].data
-
+        # Get widgets
+        self.plotWidget = browser.ui.dataPlotsWidget
+        self.toolsWidget = browser.ui.oneDimToolStackedWidget
+    
         # Get selected trigger data
-        item = browser.ui.workingDataTree.currentItem()
+        item = self.browser.ui.workingDataTree.currentItem()
         triggers = item.data
         
         # Make sure dt is matched
-        dt = plotWidget.plotDataItems[0].attrs['dt']
+        dt = self.plotWidget.plotDataItems[0].attrs['dt']
         item.attrs['dt'] = dt
         
         # Get trigger times (in data points)
         tarray = np.arange(0, len(triggers))
-        tevents = tarray[triggers>0]
+        self.tevents = tarray[triggers>0]
+
+        # Make infinte vertical lines on trigger events        
+        for t in self.tevents:
+            line = pg.InfiniteLine(pos=t*dt, angle=90, movable=False, pen=pg.mkPen('k', width=2))        
+            self.plotWidget.addItem(line)
+        ############################################  
+
+    def event_cut(self):
+
+        # Read options 
+        baseline = float(self.eventBaseline.text())
+        duration = float(self.eventDuration.text())
+    
+        # Get plotted tracking data
+        trackData = self.plotWidget.plotDataItems[0].data
+
+        # Get selected trigger data
+        item = self.browser.ui.workingDataTree.currentItem()
+        triggers = item.data
+        
+        # Deal with dt
+        dt = self.plotWidget.plotDataItems[0].attrs['dt']
+        item.attrs['dt'] = dt
 
         # Extract events        
         events = []
-        for t in tevents:
+        for t in self.tevents:
             event = trackData[t-int(baseline/dt):t+int(duration/dt)]
             events.append(event)
 
@@ -88,7 +118,9 @@ class AnalysisModule():
         results = []
         attrs = {}
         attrs['dt'] = dt 
+        attrs['t0'] = baseline  # in sampling points
         for e in np.arange(0, len(events)):
+            attrs['trigger_time'] = self.tevents[e]  # in sampling points 
             results.append(['event'+str(e), events[e], attrs])  
         aux.save_results(self.browser, 'Events', results)        
         ############################################  
