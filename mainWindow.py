@@ -149,7 +149,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # IPython tab
         # -----------------------------------------------------------------------------        
         self.ui.IPythonWidget.pushVariables({'browser': self, 'aux': auxfuncs, 'dataTree': self.ui.workingDataTree,
-                                    'dataPlot': self.ui.dataPlotsWidget, 'ndaq': utilsconsole})
+                                    'dataPlot': self.ui.dataPlotsWidget, 'ndaq': utilsconsole, 
+                                    'canvas': self.ui.mplWidget.canvas, 'ax': self.ui.mplWidget.canvas.ax})
 
         # Plots tab
         # ----------------------------------------------------------------------------- 
