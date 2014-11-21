@@ -48,7 +48,7 @@ class AnalysisModule():
         self.toolOptions.append([self.comboBox])
         self.funcLabel = QtGui.QLabel('')
         self.toolOptions.append([self.funcLabel])
-        self.toolOptions.append([QtGui.QLabel('Initial guess')])
+        self.toolOptions.append([QtGui.QLabel('Initial guesses')])
         self.p, self.plabels = [], []
         self.make_parameterWidgets(10)   
 

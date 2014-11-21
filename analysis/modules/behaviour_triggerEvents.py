@@ -36,15 +36,21 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
+        self.trigger = QtGui.QComboBox()
+        self.trigger.addItem('1')
+        self.trigger.addItem('2')
+        self.trigger.addItem('3')
+        self.triggerLabel = QtGui.QLabel('Trigger level')
+        self.toolOptions.append([self.triggerLabel, self.trigger])
         self.eventBaseline = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Baseline'), self.eventBaseline])
         self.eventDuration = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration]) 
-        self.eventCutOut = QtGui.QPushButton('Cut events')
-        self.toolOptions.append([self.eventCutOut])          
+        #self.eventCutOut = QtGui.QPushButton('Cut events')
+        #self.toolOptions.append([self.eventCutOut])          
 
         # Connect buttons to functions
-        self.eventCutOut.clicked.connect(self.event_cut) 
+        #self.eventCutOut.clicked.connect(self.event_cut) 
         ############################################        
 
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -69,6 +75,9 @@ class AnalysisModule():
         ############################################
         # ANALYSIS FUNCTION      
     
+        # Read options
+        level = int(self.trigger.currentText())
+
         # Get widgets
         self.plotWidget = browser.ui.dataPlotsWidget
         self.toolsWidget = browser.ui.oneDimToolStackedWidget
@@ -83,12 +92,15 @@ class AnalysisModule():
         
         # Get trigger times (in data points)
         tarray = np.arange(0, len(triggers))
-        self.tevents = tarray[triggers>0]
+        self.tevents = tarray[triggers==level]
 
         # Make infinte vertical lines on trigger events        
         for t in self.tevents:
             line = pg.InfiniteLine(pos=t*dt, angle=90, movable=False, pen=pg.mkPen('k', width=2))        
             self.plotWidget.addItem(line)
+
+        # Automatically cut events
+        self.event_cut()
         ############################################  
 
     def event_cut(self):

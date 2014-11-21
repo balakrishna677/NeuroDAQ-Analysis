@@ -81,7 +81,7 @@ class AnalysisModule():
         # Get plotted traces
         traces = self.plotWidget.plotDataItems
         dt = traces[0].attrs['dt']
-        
+       
         # Get X and Y data
         X = traces[0].data
         Y = traces[1].data
@@ -89,6 +89,14 @@ class AnalysisModule():
             Yold = Y
             Y = X
             X = Yold
+
+        # Cut to cursor position if set
+        try:
+            c1, c2 = aux.get_cursors(self.plotWidget)
+            X = X[c1:c2]
+            Y = Y[c1:c2]
+        except NameError:
+            pass                  
 
         # Remove all existing axes
         for ax in self.canvas.fig.axes:
