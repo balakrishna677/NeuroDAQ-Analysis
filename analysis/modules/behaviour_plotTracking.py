@@ -93,10 +93,11 @@ class AnalysisModule():
         # Cut to cursor position if set
         try:
             c1, c2 = aux.get_cursors(self.plotWidget)
-            X = X[c1:c2]
-            Y = Y[c1:c2]
+            c1, c2 = aux.check_cursors(c1, c2, X, dt)
+            X = X[c1/dt:c2/dt]
+            Y = Y[c1/dt:c2/dt]       
         except NameError:
-            pass                  
+            pass
 
         # Remove all existing axes
         for ax in self.canvas.fig.axes:
@@ -131,8 +132,9 @@ class AnalysisModule():
 
         # Plot histogram
         if hist:
-            ax[histAx].hist(Y, bins=30, orientation='horizontal', histtype='stepfilled',
-                           normed=True, color=color)
+            h = ax[histAx].hist(Y, bins=30, orientation='horizontal', histtype='stepfilled',
+                               normed=True, color=color)
+
 
         self.canvas.draw()
         ############################################  

@@ -104,11 +104,9 @@ class AnalysisModule():
 
         # Get data currently plotted within the cursors and concatenate in a single sweep
         data = aux.get_data(self.browser)
-        try:
-            c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
-        except NameError:
-            c1 = 0
-            c2 = len(data)-1
+        c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
+        # Check cursor range
+        c1, c2 = aux.check_cursors(c1, c2, data[0], dt)
         data = data[:,c1/dt:c2/dt]
         data = data.ravel()
 

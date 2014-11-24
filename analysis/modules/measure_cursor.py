@@ -65,6 +65,9 @@ class AnalysisModule():
         # Get dt list
         dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
 
+        # Check cursor range
+        c1, c2 = aux.check_cursors(c1, c2, data[0], dtList[0])
+
         # Go through data and check selected values to measure
         # Can probably do this in a more efficient way
         results = []

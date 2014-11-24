@@ -6,6 +6,7 @@
 # -----------------------------------------------------------------------------
 
 import sys, os, re, copy
+import IPython
 
 import h5py
 import sip

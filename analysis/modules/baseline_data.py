@@ -71,6 +71,8 @@ class AnalysisModule():
 
         # Make average between cursors and subract for each trace 
         for item in plotWidget.plotDataItems:
+            # Check cursor range
+            c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
             bsl = np.mean(item.data[c1/dt:c2/dt])
             item.data = item.data - bsl
 

@@ -53,6 +53,15 @@ def get_cursors(plotWidget):
     #return int(c1/plotWidget.dt), int(c2/plotWidget.dt)
     return int(c1), int(c2)
 
+def check_cursors(c1, c2, data, dt):
+    """ Check that cursor positions are within data limits
+    and coerce if necessary. Data is a 1D array.
+    """
+    if c1/dt < 0: c1 = 0
+    if c2/dt > len(data) : c2 = (len(data)-1)*dt
+    return c1, c2
+    
+
 def make_h5item(name, data, attrs):
     """ Makes a new h5item for general use 
     """
