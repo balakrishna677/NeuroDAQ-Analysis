@@ -79,16 +79,16 @@ class Ui_MainWindow(object):
         self.verticalsplitter_dataTab_layout = QtGui.QGridLayout(self.verticalsplitter_dataTab)
 
         # TAB 1 content > Folder input
-        #self.loadFolderGroupBox = QtGui.QGroupBox('test', self.verticalsplitter_dataTab)
-        #self.loadFolderLayout = QtGui.QGridLayout()
-        self.loadFolderInput = QtGui.QLineEdit(self.verticalsplitter_dataTab)
-        self.loadFolderInput.setSizePolicy(expandingSizePolicy)
-        #self.testInput = QtGui.QLineEdit(self.verticalsplitter_dataTab)
-        #self.loadFolderLabel = QtGui.QLabel('Load Folder')
-        #self.loadFolderLayout.addWidget(self.loadFolderInput, 0, 0)
-        #self.loadFolderLayout.addWidget(self.loadFolderLabel, 0, 1)
-        #self.loadFolderLayout.setRowMinimumHeight(0,0)  
-        #self.loadFolderGroupBox.setLayout(self.loadFolderLayout)
+        self.dataFolderWidget = NeuroWidget(0,0, parent=self.verticalsplitter_dataTab)
+        self.folderLayout = QtGui.QGridLayout(self.dataFolderWidget)
+        self.loadFolderInput = QtGui.QLineEdit()
+        self.loadFolderLabel = QtGui.QLabel('Load')
+        self.folderLayout.addWidget(self.loadFolderInput, 0, 0)
+        self.folderLayout.addWidget(self.loadFolderLabel, 0, 1)
+        self.saveFolderInput = QtGui.QLineEdit()
+        self.saveFolderLabel = QtGui.QLabel('Save')
+        self.folderLayout.addWidget(self.saveFolderInput, 1, 0)
+        self.folderLayout.addWidget(self.saveFolderLabel, 1, 1)
         
                
         # TAB 1 content > DirTree

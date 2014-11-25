@@ -7,8 +7,8 @@ class NeuroWidget(QtGui.QWidget):
         NeuroWidget(width, height)
     """
 
-    def __init__(self, width, height):
-        QtGui.QWidget.__init__(self)
+    def __init__(self, width, height, parent=None):
+        QtGui.QWidget.__init__(self, parent=parent)
         self._width = width
         self._height = height
         

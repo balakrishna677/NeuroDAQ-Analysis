@@ -184,7 +184,7 @@ def histogramDetrend(data, window=500, bins=50, threshold=3.0, offsetOnly=False)
     return d3
     
 
-def removePeriodic(data, f0=60.0, dt=None, harmonics=10, samples=4):
+def removePeriodic(data, f0=60.0, dt=None, harmonics=10, samples=4, magScale=0.1):
 
     ft = np.fft.fft(data)
     
@@ -203,7 +203,7 @@ def removePeriodic(data, f0=60.0, dt=None, harmonics=10, samples=4):
             print f, 'breaking'
             break
         mag = (abs(ft[ind1-1]) + abs(ft[ind2+1])) * 0.5
-        mag = mag * 0.1
+        mag = mag * magScale
         for j in range(ind1, ind2+1):
             phase = np.angle(ft[j])   ## Must preserve the phase of each point, otherwise any transients in the trace might lead to large artifacts.
             re = mag * np.cos(phase)

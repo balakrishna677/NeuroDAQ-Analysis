@@ -43,7 +43,9 @@ class AnalysisModule():
         self.freqRemoveHarmonics = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Harmonics'), self.freqRemoveHarmonics]) 
         self.freqRemoveSamples = QtGui.QLineEdit()
-        self.toolOptions.append([QtGui.QLabel('Samples'), self.freqRemoveSamples])               
+        self.toolOptions.append([QtGui.QLabel('Samples'), self.freqRemoveSamples])
+        self.freqRemoveMag = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Magnitude'), self.freqRemoveMag])                 
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -55,6 +57,7 @@ class AnalysisModule():
         1) Frequency
         2) Number of harmonics
         3) Number of FFT data samples to blank centered on the Frequency  
+        4) Scale factor for how much the frequency is dampened (0<x<1)
         
         Note: frequencies are in Hz, make sure dt is in seconds
         """
@@ -66,6 +69,7 @@ class AnalysisModule():
         frequency = float(self.freqRemoveFrequency.text())
         harmonics = int(self.freqRemoveHarmonics.text())
         samples = int(self.freqRemoveSamples.text())
+        mag = float(self.freqRemoveMag.text())
     
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
@@ -85,7 +89,8 @@ class AnalysisModule():
             attrs['frequency_removed'] = frequency
         
             # Remove
-            traceFilter = acq4filter.removePeriodic(item.data, frequency, float(item.attrs['dt'])/1000, harmonics, samples)
+            traceFilter = acq4filter.removePeriodic(item.data, frequency,
+                         float(item.attrs['dt'])/1000, harmonics, samples, mag)
             results.append([item.text(0), traceFilter, attrs])
         
             # Store and plot filtered trace            
@@ -101,3 +106,5 @@ class AnalysisModule():
         self.freqRemoveFrequency.setText('50')
         self.freqRemoveHarmonics.setText('20')
         self.freqRemoveSamples.setText('400')
+        self.freqRemoveMag.setText('0.1')
+

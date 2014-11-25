@@ -90,6 +90,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.fileDataTree.currentItemChanged.connect(self.plot_OnSelectionChanged)
         self.ui.fileDataTree.itemSelectionChanged.connect(self.store_Selection)
         self.ui.loadFolderInput.returnPressed.connect(self.update_loadDir)
+        self.ui.saveFolderInput.textChanged.connect(self.update_saveDir)
 
         # Analysis selection list
         # -----------------------------------------------------------------------------
@@ -199,6 +200,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------    
     def update_loadDir(self):
         treefun.set_loadFolder(self, self.ui.dirTree, self.ui.loadFolderInput.text())
+
+    def update_saveDir(self):
+        self.currentFolder = self.ui.saveFolderInput.text()
     
     def store_Selection(self):
         """ Store user selected tree items in dragItems list to get them back

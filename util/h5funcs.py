@@ -128,8 +128,8 @@ def save_h5(browser, tree):
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
     # File attributes    
-    browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
-    browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
+    #browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
+    #browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
     browser.wdb.close()
 
 def set_attrs(source, item):
