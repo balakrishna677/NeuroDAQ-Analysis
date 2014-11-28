@@ -33,7 +33,6 @@ def remove_treeItem(browser, tree):
     items from the data list and updating all of the data indexes 
     is a bit of a headache, so just make them empty.
     """ 
-    
     items = tree.selectedItems()
     for item in items:
         if item.listIndex:   # Only dataset items have a listIndex

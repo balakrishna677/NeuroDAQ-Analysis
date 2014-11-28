@@ -88,7 +88,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # -----------------------------------------------------------------------------
         self.ui.fileDataTree.data = []
         self.ui.fileDataTree.currentItemChanged.connect(self.plot_OnSelectionChanged)
-        self.ui.fileDataTree.itemSelectionChanged.connect(self.store_Selection)
+        self.ui.fileDataTree.itemSelectionChanged.connect(lambda: self.store_Selection(1))
+        self.ui.workingDataTree.itemSelectionChanged.connect(lambda: self.store_Selection(2))
         self.ui.loadFolderInput.returnPressed.connect(self.update_loadDir)
         self.ui.saveFolderInput.textChanged.connect(self.update_saveDir)
 
@@ -128,7 +129,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionAddChildGroup.triggered.connect(self.add_childGroupOnMenu)
         self.ui.actionRenameTreeItem.triggered.connect(self.rename_itemOnMenu)
         self.ui.actionRemoveTreeItem.triggered.connect(self.remove_itemOnMenu)
-        self.ui.actionShowInTable.triggered.connect(self.show_inTableOnMenu)   
+        self.ui.actionShowInTable.triggered.connect(self.show_inTableOnMenu)    
 
         # Properties table        
         # -----------------------------------------------------------------------------        
@@ -204,62 +205,66 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def update_saveDir(self):
         self.currentFolder = self.ui.saveFolderInput.text()
     
-    def store_Selection(self):
+    def store_Selection(self, source):
         """ Store user selected tree items in dragItems list to get them back
-        once they have been dropped
+        once they have been dropped. Source '1' is fileDataTree and '2' is
+        workingDataTree. 
         """
-        self.dragItems = []    
-        for originalIndex in self.ui.fileDataTree.selectedIndexes():
-            item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
-            self.dragItems.append([item.path, item.text(0), item.listIndex, originalIndex])
+        if source==1:   # Move
+            self.dragItems = []
+            dataTree = self.ui.fileDataTree
+            for originalIndex in dataTree.selectedIndexes():
+                item = dataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
+                self.dragItems.append([item.path, item.text(0), item.listIndex, originalIndex])
+        elif source==2: # Copy
+            dataTree = self.ui.workingDataTree
+            self.copyItems = []
+            for item in self.ui.workingDataTree.selectedItems():          
+                self.copyItems.append(item)        
 
-    def store_Selection_old(self):
-        """ Store user selected tree items in dragItems list to get them back
-        once they have been dropped
+    def move_itemsAcross(self, source, modifiers):
+        """ Create new tree items and populate the target tree. Originally made 
+        for moving items from fileDataTree to workingDataTree, but then modified
+        to copy items when the move is internal in workingDataTree and Ctrl is 
+        pressed.
         """
-        self.dragItems = []    
-        for originalIndex in self.ui.fileDataTree.selectedIndexes():
-            item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
-            self.dragItems.append([item.path, item.text(0), item.dataIndex, originalIndex]) 
-
-    def move_itemsAcross_old(self):
-        """ Create new tree items and populate the target tree
-        """
-        targetItems = []
-        for item in self.dragItems:
-            i = h5Item([str(item[1])])
-            i.path = item[0]
-            i.dataIndex = item[2]
-            i.originalIndex = item[3]
+        if (source==self.ui.workingDataTree) and (modifiers==QtCore.Qt.ControlModifier):
+          # Copy internally
+          print 'copying'
+          targetItems = []
+          for item in self.copyItems:
+            i = h5Item([str(item.text(0))])
+            i.data = item.data
             targetItems.append(i)             
-        parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
-        for row in np.arange(0, len(self.dragItems)):
+          parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
+          for row in np.arange(0, len(self.copyItems)):
             index = self.ui.workingDataTree.model().index(self.dragTargetRow+row, 0, parentIndex)        
             temp_item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(index))
             sip.delete(temp_item)        
             if parentIndex.isValid():
                 self.make_nameUnique(self.dragTargetParent, targetItems[row], targetItems[row].text(0))
                 self.dragTargetParent.insertChild(index.row(), targetItems[row])
-                originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
-                h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
+                originalParentWidget = self.copyItems[row]
+                h5.populate_h5copyItems(self, originalParentWidget, targetItems[row])
             else:
                 self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row], targetItems[row].text(0))
                 self.ui.workingDataTree.insertTopLevelItem(index.row(), targetItems[row])     
-                originalParentWidget = self.ui.fileDataTree.itemFromIndex(QtCore.QModelIndex(targetItems[row].originalIndex))
-                h5.populate_h5dragItems(self, originalParentWidget, targetItems[row])
-
-    def move_itemsAcross(self):
-        """ Create new tree items and populate the target tree
-        """
-        targetItems = []
-        for item in self.dragItems:
+                originalParentWidget = self.copyItems[row]
+                h5.populate_h5copyItems(self, originalParentWidget, targetItems[row])       
+        elif source==self.ui.workingDataTree:
+          pass
+        else:
+          # Move across
+          print 'moving'
+          targetItems = []
+          for item in self.dragItems:
             i = h5Item([str(item[1])])
             i.path = item[0]
             i.listIndex = item[2]
             i.originalIndex = item[3]
             targetItems.append(i)             
-        parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
-        for row in np.arange(0, len(self.dragItems)):
+          parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
+          for row in np.arange(0, len(self.dragItems)):
             index = self.ui.workingDataTree.model().index(self.dragTargetRow+row, 0, parentIndex)        
             temp_item = self.ui.workingDataTree.itemFromIndex(QtCore.QModelIndex(index))
             sip.delete(temp_item)        
@@ -306,9 +311,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.workingDataTreeMenu.addAction(self.ui.actionAddRootGroup)
         self.workingDataTreeMenu.addAction(self.ui.actionAddChildGroup)
         self.workingDataTreeMenu.addAction(self.ui.actionAddDataset)
+        self.workingDataTreeMenu.addSeparator()
         self.workingDataTreeMenu.addAction(self.ui.actionRenameTreeItem)
-        self.workingDataTreeMenu.addAction(self.ui.actionRemoveTreeItem)
         self.workingDataTreeMenu.addAction(self.ui.actionShowInTable)
+        self.workingDataTreeMenu.addAction(self.ui.actionRemoveTreeItem)
 
         if len(self.ui.workingDataTree.selectedItems())==0: 
             self.ui.actionAddChildGroup.setDisabled(True)

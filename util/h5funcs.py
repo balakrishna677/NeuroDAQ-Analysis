@@ -1,8 +1,8 @@
 """ Functions for getting data in and out of .hdf5 files
 and into H5 trees
 
-Currently New File and Save As are saved to the folder currently
-open in the file data tree.
+Save overwrites the current file, New File and Save As are 
+saved to the folder selected in the Save text input.
 
 Attributes are attached to datasets only, not to groups (yet).
 """
@@ -67,7 +67,6 @@ def populate_h5tree(browser, parent, parentWidget, push):
             except ValueError:   # No data in the dataset
                 sip.delete(parentWidget)
 
-
 def populate_h5File(browser, parent, parentWidget):
     for i in range(parentWidget.childCount()):
         item = parentWidget.child(i)        
@@ -103,6 +102,30 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
         parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)
         #browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
         parentWidget.data = browser.db[originalParentWidget.path][:]
+        browser.ui.workingDataTree.dataItems.append(parentWidget)
+
+def populate_h5copyItems(browser, originalParentWidget, parentWidget):
+    if originalParentWidget.childCount()>0:
+        for c in range(originalParentWidget.childCount()):
+            child = originalParentWidget.child(c)
+            #itemName = make_nameUnique(parentWidget, child.text(0))
+            i = h5Item([str(child.text(0))])
+            parentWidget.addChild(i)
+            if child.childCount()>0:
+                populate_h5copyItems(browser, child, i)
+            else:
+                set_attrs(child, i)
+                i.listIndex = len(browser.ui.workingDataTree.dataItems)
+                #browser.ui.workingDataTree.data.append(browser.db[child.path][:])
+                i.data = child.data
+                browser.ui.workingDataTree.dataItems.append(i)
+    # For transferring datasets directly
+    else:
+        set_attrs(originalParentWidget, parentWidget)
+        parentWidget.path = originalParentWidget.path
+        parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)
+        #browser.ui.workingDataTree.data.append(browser.db[originalParentWidget.path][:])
+        parentWidget.data = originalParentWidget.data
         browser.ui.workingDataTree.dataItems.append(parentWidget)
 
 def create_h5(browser, tree):

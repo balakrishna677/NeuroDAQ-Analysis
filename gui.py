@@ -300,7 +300,9 @@ class Ui_MainWindow(object):
         self.workingDataTree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.workingDataTree.setAcceptDrops(True)
         self.workingDataTree.setDragEnabled(True)
-        self.workingDataTree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.workingDataTree.setDropIndicatorShown(True)
+        #self.workingDataTree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        #self.workingDataTree.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
         self.workingDataTree.setDefaultDropAction(QtCore.Qt.MoveAction)
         self.workingDataTree.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.workingDataTree.headerItem().setText(0, _fromUtf8("Working Data"))
@@ -366,9 +368,8 @@ class Ui_MainWindow(object):
         self.actionAddChildGroup = QtGui.QAction('Add Child Group', MainWindow)
         self.actionAddDataset = QtGui.QAction('Add Dataset', MainWindow)
         self.actionRenameTreeItem = QtGui.QAction('Rename', MainWindow)
-        self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
-     
+        self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)     
         
         
         

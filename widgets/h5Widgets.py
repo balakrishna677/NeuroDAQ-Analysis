@@ -74,7 +74,7 @@ class h5TreeWidget(QtGui.QTreeWidget):
     This is not the proper way of doing it. It would be best to reimplement
     all the main drag and drop methods and transfer the data across as MimeData.
     I've tried this and it works fine, but it was clunky and would freeze
-    by no apparent reason. This one is not pretty but works. 
+    by no apparent reason. This one is not pretty but works better. 
     
     Allows for setting size hint
     h5TreeWidget(width, height, [parent=None])
@@ -91,18 +91,17 @@ class h5TreeWidget(QtGui.QTreeWidget):
                 
     def dropEvent(self, event):   
         super(h5TreeWidget, self).dropEvent(event)
-        if event.source() == self:
-            pass
-        else:
-            self.emit(QtCore.SIGNAL('dropped'))
+        modifiers = QtGui.QApplication.keyboardModifiers()
+        #modifiers = event.keyboardModifiers()
+        self.emit(QtCore.SIGNAL('dropped'), event.source(), modifiers)
             
     def dropMimeData(self, parent, row, data, action):
         super(h5TreeWidget, self).dropMimeData(parent, row, data, action)
         self.emit(QtCore.SIGNAL('targetPosition'), parent, row)
         if action == QtCore.Qt.MoveAction:
             return True
-        return False
-                     
+        return False                   
+ 
     def sizeHint(self):
         return QtCore.QSize(self._width, self._height)                     
                      
