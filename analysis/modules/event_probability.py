@@ -15,7 +15,7 @@ class AnalysisModule():
     
         ############################################
         # NAME THAT IS LISTED IN THE TAB
-        self.entryName = 'FI curve'  
+        self.entryName = 'Event probability'  
         ############################################
         
         # Get main browser
@@ -37,7 +37,13 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-        self.apThreshold = QtGui.QPushButton('Set AP threshold')
+        self.eventDirection = QtGui.QComboBox()
+        self.eventDirection.addItem('negative')
+        self.eventDirection.addItem('positive')
+        self.toolOptions.append([self.eventDirection])
+        self.timeBin = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Time bin'), self.timeBin])
+        self.apThreshold = QtGui.QPushButton('Set event threshold')
         self.apThreshold.setCheckable(True)
         self.apThresholdDisplay = QtGui.QLabel('None')
         self.toolOptions.append([self.apThreshold, self.apThresholdDisplay])   
@@ -49,10 +55,13 @@ class AnalysisModule():
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
 
     def func(self, browser):
-        """ Generate a FI curve from current steps
-    
+        """ Calculate the probability of having an event per time bin
+        Very simple threshold crossing event detection.    
+
         Options:
         1) Threshold for detecting spikes
+        2) Time bin size
+        3) Event direction
         """
     
         ############################################
@@ -60,6 +69,8 @@ class AnalysisModule():
         
         # Read detection options 
         threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        direction = str(self.eventDirection.currentText())
+        timeBin = float(self.timeBin.text())
     
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
@@ -72,16 +83,21 @@ class AnalysisModule():
         except AttributeError:   # Parent = None
             parentText = 'Data'
     
-        # Detect APs in each trace
-        comp = lambda a, b: a > b
-        apNumber, apFrequency = [], []
+        # Detect events in each trace
+        if direction=='negative':
+            comp = lambda a, b: a < b
+        elif direction=='positive':
+            comp = lambda a, b: a > b
+  
         results = []        
         for item in plotWidget.plotDataItems:
-            c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
+           #c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
             dt = item.attrs['dt']
+
             # Check cursor range
-            c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
-            data = item.data[c1/dt:c2/dt]
+            #c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
+            #data = item.data[c1/dt:c2/dt]
+            data = item.data
             apCounter, i = 0, 0
             xOnsets, yOnsets  = [], []
             while i<len(data):
@@ -94,22 +110,22 @@ class AnalysisModule():
                 else:
                     i+=1
             
-            # Calculate AP frequency as 1/mean(ISI)
-            isi = np.mean(np.diff(xOnsets))*dt # in ms
-            print isi
-            freq = 1/(isi/1000.)
+            # Get events per time bin
+            binSize = int(timeBin/dt)
+            nbins = np.ceil(len(data)/binSize)
+            eventCounter = []
+            for b in np.arange(1, nbins):
+                count = np.sum((xOnsets>(b-1)*binSize) & (xOnsets<(b*binSize)))
+                eventCounter.append(count)
 
-            # Store number of APs and mean frequency
-            apNumber.append(apCounter)
-            apFrequency.append(freq)         
+            # Store data     
+            results.append(['event_counts', eventCounter]) 
 
-            # Plot detected APs
+            # Plot detected events
             self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)  
 
         # Store results
-        results.append(['AP_number', apNumber])
-        results.append(['AP_frequency', apFrequency]) 
-        aux.save_results(browser, parentText+'_FI', results)     
+        aux.save_results(browser, parentText+'_eventProbability', results)     
          
         ############################################  
 
