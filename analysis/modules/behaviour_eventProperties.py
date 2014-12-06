@@ -96,7 +96,7 @@ class AnalysisModule():
         for event in events:
         
             # Get data range          
-            #data, c1 = aux.get_dataRange(plotWidget, event):
+            #data, c1 = aux.get_dataRange(plotWidget, event)
 
             # Mark failures depending on position reached nest
             if np.sum(event.data<nestPos)==0:

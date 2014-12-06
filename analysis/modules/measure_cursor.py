@@ -35,11 +35,15 @@ class AnalysisModule():
         self.toolOptions = []
         
         ############################################
-        # WIDGETS FOR USER DEFINED OPTIONS
-        self.toolOptions.append(QtGui.QCheckBox('Store result', self.toolGroupBox))
-        self.toolOptions.append(QtGui.QCheckBox('Minimum', self.toolGroupBox))
-        self.toolOptions.append(QtGui.QCheckBox('Maximum', self.toolGroupBox))
-        self.toolOptions.append(QtGui.QCheckBox('Mean', self.toolGroupBox)) 
+        # WIDGETS FOR USER DEFINED OPTIONS   
+        self.storeBox = QtGui.QCheckBox('Store results')
+        self.toolOptions.append([self.storeBox])
+        self.minBox = QtGui.QCheckBox('Minimum')
+        self.toolOptions.append([self.minBox])
+        self.maxBox = QtGui.QCheckBox('Maximum')
+        self.toolOptions.append([self.maxBox])
+        self.meanBox = QtGui.QCheckBox('Mean')
+        self.toolOptions.append([self.meanBox])
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -54,58 +58,43 @@ class AnalysisModule():
     
         ############################################
         # ANALYSIS FUNCTION
-       
+        
+        # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
-        data = aux.get_data(browser)  
-        c1, c2 = aux.get_cursors(plotWidget) 
-        dataIndex = plotWidget.plotDataIndex     
-        saveData = False
 
-        # Get dt list
-        dtList = aux.get_attr(plotWidget.plotDataItems, 'dt')
+        # Iterate through traces
+        dataMin, dataMax, dataMean = [], [], []
+        for item in plotWidget.plotDataItems:
+            
+            # Get dt and data range
+            dt = item.attrs['dt']
+            data, c1, cx1, cx2 = aux.get_dataRange(plotWidget, item, cursors=True)
+            
+            # Measure selected parameters
+            if self.minBox.isChecked():
+                y = np.min(data)
+                x = np.argmin(data)
+                dataMin.append(y)
+                aux.plot_point(plotWidget, c1, x, y, dt)                
 
-        # Check cursor range
-        c1, c2 = aux.check_cursors(c1, c2, data[0], dtList[0])
+            if self.maxBox.isChecked():
+                y = np.max(data)
+                x = np.argmax(data)
+                dataMax.append(y)
+                aux.plot_point(plotWidget, c1, x, y, dt)  
 
-        # Go through data and check selected values to measure
-        # Can probably do this in a more efficient way
-        results = []
-        for option in self.toolOptions:
-            if option.isChecked():
-                if option.text()=='Store result':
-                    saveData = True        
-
-                if option.text()=='Minimum':
-                    dataMin = []
-                    for t in range(len(data)):
-                        dt = dtList[t]
-                        y = np.min(data[t][c1/dt:c2/dt])
-                        x = np.argmin(data[t][c1/dt:c2/dt])
-                        dataMin.append(y)
-                        aux.plot_point(plotWidget, c1/dt, x, y, dt)
-                    results.append(['Minimum', dataMin])        
-
-                if option.text()=='Maximum':
-                    dataMax = []
-                    for t in range(len(data)):
-                        dt = dtList[t]
-                        y = np.max(data[t][c1/dt:c2/dt])
-                        x = np.argmax(data[t][c1/dt:c2/dt])
-                        dataMax.append(y)
-                        aux.plot_point(plotWidget, c1/dt, x, y, dt)
-                    results.append(['Maximum', dataMax])    
-
-                if option.text()=='Mean':
-                    dataMean = []
-                    for t in range(len(data)):
-                        dt = dtList[t]
-                        y = np.mean(data[t][c1/dt:c2/dt])
-                        dataMean.append(y)
-                        plotWidget.plot([c1,c2], [y,y], pen=pg.mkPen('#CF1C04', width=1))
-                    results.append(['Mean', dataMean])
+            if self.meanBox.isChecked():
+                y = np.mean(data)
+                dataMean.append(y)
+                plotWidget.plot([cx1,cx2], [y,y], pen=pg.mkPen('#CF1C04', width=1))  
 
         # Store results
-        if saveData: aux.save_results(browser, 'Measurements', results)             
+        results = []
+        if self.storeBox.isChecked():
+            if self.minBox.isChecked(): results.append(['Minimum', dataMin])
+            if self.maxBox.isChecked(): results.append(['Maximum', dataMax])
+            if self.meanBox.isChecked(): results.append(['Mean', dataMean])
+            aux.save_results(browser, 'Measurements', results)             
         ############################################  
 
