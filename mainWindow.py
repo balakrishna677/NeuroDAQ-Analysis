@@ -58,7 +58,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.db = None
         self.wdb = None
         
-        # Current working file and folder for saving)
+        # Current working file and folder for saving
         self.currentSaveFile = []
         self.currentFolder = []
 
@@ -191,6 +191,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         
     def save_h5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
+        if self.ui.saveFolderInput.text()<>'': self.update_saveDir()
         if ok:
             self.currentSaveFile = self.currentFolder + '/' + fname + '.hdf5'      
             h5.save_h5(self, self.ui.workingDataTree)        
@@ -426,9 +427,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     def show_cursors(self):
         if self.ui.actionShowCursors.isChecked():
             pgplot.show_cursors(self, self.ui.dataPlotsWidget)
+            self.ui.dataPlotsWidget.cursor = True
         else:
             pgplot.hide_cursors(self, self.ui.dataPlotsWidget)
-        
+            self.ui.dataPlotsWidget.cursor = False
 
 def main():    
     #defaultFont = QtGui.QFont('Ubuntu', 8) 

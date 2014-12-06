@@ -61,6 +61,31 @@ def check_cursors(c1, c2, data, dt):
     if c2/dt > len(data) : c2 = (len(data)-1)*dt
     return c1, c2
     
+def get_dataRange(plotWidget, item):
+    """ Get plot item data within cursor limits or all
+    data if there are no cursors. Coerce to data limits
+    if cursors are out of data boundaries.
+    
+    Return data array and c1 position in datapoints for
+    superimposing on original data if required 
+    """
+    dt = item.attrs['dt']
+    if plotWidget.cursor:
+        c1 = int(plotWidget.cursor1.value()/dt)
+        c2 = int(plotWidget.cursor2.value()/dt)  
+        # Ensure c1 is less than c2  
+        if c2<c1:        
+            temp = c2
+            c2 = c1
+            c1 = temp
+        # Coerce to data limits if necessary
+        if c1 < 0: c1 = 0
+        if c2 > len(item.data) : c2 = (len(item.data)-1)        
+    else:
+        c1 = 0
+        c2 = len(item.data)-1
+    return item.data[c1:c2], c1    
+    
 
 def make_h5item(name, data, attrs):
     """ Makes a new h5item for general use 

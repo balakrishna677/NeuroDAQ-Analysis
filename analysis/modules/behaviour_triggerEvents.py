@@ -28,6 +28,8 @@ class AnalysisModule():
         browser.customToolSelector.add_tool(self.entryName, self.func)
         # Add option widgets
         self.make_option_widgets()
+        # Set default values
+        self.set_defaultValues()        
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.behaviourToolStackedWidget
@@ -36,6 +38,11 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
+        self.stimType = QtGui.QComboBox()
+        self.stimType.addItem('Visual')
+        self.stimType.addItem('Pulse')
+        self.stimTypeLabel = QtGui.QLabel('Type')
+        self.toolOptions.append([self.stimTypeLabel, self.stimType])        
         self.trigger = QtGui.QComboBox()
         self.trigger.addItem('1')
         self.trigger.addItem('2')
@@ -46,6 +53,8 @@ class AnalysisModule():
         self.toolOptions.append([QtGui.QLabel('Baseline'), self.eventBaseline])
         self.eventDuration = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration]) 
+        self.stimProfile = QtGui.QCheckBox('Get stim profile')
+        self.toolOptions.append([self.stimProfile])
         #self.eventCutOut = QtGui.QPushButton('Cut events')
         #self.toolOptions.append([self.eventCutOut])          
 
@@ -59,10 +68,11 @@ class AnalysisModule():
         """ Analyse tracking data using triggered events 
         (e.g.: visual or laser stimulation)
   
-        Analyses the currently plotted tracking trace with the currently
-        selected event trigger trace.
+        Analyses the currently plotted tracking trace. Currently it looks for 
+        Visual or Pulse items in root, this will need changing if there are
+        ever more than one per experiment.
 
-        Main function overlays triggered events on tracking trace and gets
+        Overlays triggered events on tracking trace and gets
         trigger times for event cut out.
 
         Event Cut: extract snippets of tracking trace triggered on events trace
@@ -70,6 +80,9 @@ class AnalysisModule():
 
         Options:
         1) Baseline and Duration for event cut out
+        2) Trigger level
+        3) Type of stimulation
+        4) Extract trigger profile (e.g.: spot diameter)
         """
 
         ############################################
@@ -77,14 +90,22 @@ class AnalysisModule():
     
         # Read options
         level = int(self.trigger.currentText())
+        stimType = str(self.stimType.currentText())
 
         # Get widgets
         self.plotWidget = browser.ui.dataPlotsWidget
         self.toolsWidget = browser.ui.oneDimToolStackedWidget
     
-        # Get selected trigger data
-        item = self.browser.ui.workingDataTree.currentItem()
-        triggers = item.data
+        # Iterate through root and get chosen trigger data
+        root = browser.ui.workingDataTree.invisibleRootItem()
+        for c in range(root.childCount()):
+            if stimType in root.child(c).text(0): item = root.child(c)
+
+        # Temporary 
+        if stimType=='Visual':
+            triggers = item.child(1).data
+        else:
+            triggers = item.child(0).data
         
         # Make sure dt is matched
         dt = self.plotWidget.plotDataItems[0].attrs['dt']
@@ -99,11 +120,18 @@ class AnalysisModule():
             line = pg.InfiniteLine(pos=t*dt, angle=90, movable=False, pen=pg.mkPen('k', width=2))        
             self.plotWidget.addItem(line)
 
-        # Automatically cut events
-        self.event_cut()
+        # Automatically cut events and stimulation profiles
+        if self.stimProfile.isChecked():
+           if stimType=='Visual':
+               self.triggerProfileData = item.child(0).data          
+               self.event_cut(profile=True)
+        else:
+            self.event_cut()
+         
+        
         ############################################  
 
-    def event_cut(self):
+    def event_cut(self, profile=False):
 
         # Read options 
         baseline = float(self.eventBaseline.text())
@@ -121,10 +149,13 @@ class AnalysisModule():
         item.attrs['dt'] = dt
 
         # Extract events        
-        events = []
+        events, stimProfiles = [], []
         for t in self.tevents:
             event = trackData[t-int(baseline/dt):t+int(duration/dt)]
             events.append(event)
+            if profile:
+                eventProfile = self.triggerProfileData[t-int(baseline/dt):t+int(duration/dt)]
+                stimProfiles.append(eventProfile)                
 
         # Store data
         results = []
@@ -134,9 +165,19 @@ class AnalysisModule():
         for e in np.arange(0, len(events)):
             attrs['trigger_time'] = self.tevents[e]  # in sampling points 
             results.append(['event'+str(e), events[e], attrs])  
-        aux.save_results(self.browser, 'Events', results)        
-        ############################################  
-       
+        aux.save_results(self.browser, 'Events', results)
+                
+        if profile:
+            results = []
+            for e in np.arange(0, len(stimProfiles)):
+                attrs['trigger_time'] = self.tevents[e]  # in sampling points 
+                results.append(['stim'+str(e), stimProfiles[e], attrs])  
+            aux.save_results(self.browser, 'Stimulation Profiles', results)     
+        
+
+    def set_defaultValues(self):
+        self.eventBaseline.setText('200')
+        self.eventDuration.setText('200')
 
 
 

@@ -51,6 +51,7 @@ def browse_singleData(browser, plotWidget, currentItem, clear=True, color='#3790
         y = currentItem.data
         plotWidget.plot(x, y, pen=pg.mkPen(color))        
         plotWidget.plotDataItems.append(currentItem) 
+    if plotWidget.cursor: replot_cursors(plotWidget)
 
 def replot(browser, plotWidget):
     """ Function to replot the data currently in the data plot tab.
@@ -83,10 +84,12 @@ def show_cursors(browser, plotWidget):
     y1, y2 = axisRange[1]
     plotWidget.cursor1Pos = x1+(x2-x1)/2.-(x2-x1)*0.2  # start cursors 20% from the midline 
     plotWidget.cursor2Pos = x1+(x2-x1)/2.+(x2-x1)*0.2 
-    plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True,
-                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
-    plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True, 
-                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
+    plotWidget.cursor1.setValue(plotWidget.cursor1Pos)
+    plotWidget.cursor2.setValue(plotWidget.cursor2Pos)    
+    #plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True,
+    #                                     pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
+    #plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True, 
+    #                                     pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
     plotWidget.addItem(plotWidget.cursor1)
     plotWidget.addItem(plotWidget.cursor2)
 
@@ -97,15 +100,17 @@ def hide_cursors(browser, plotWidget):
     plotWidget.cursor2Pos = []   
     plotWidget.removeItem(plotWidget.cursor1)
     plotWidget.removeItem(plotWidget.cursor2)
+    plotWidget.cursor1.setValue('NaN')
+    plotWidget.cursor2.setValue('NaN')
 
-def replot_cursors(browser, plotWidget):
+def replot_cursors(plotWidget):
     """ Replot the cursors in the current positions
     after the axis had been cleared for some reason
     """
-    plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True, 
-                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
-    plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True,
-                                         pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
+    #plotWidget.cursor1 = pg.InfiniteLine(pos=plotWidget.cursor1Pos, angle=90, movable=True, 
+    #                                     pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
+    #plotWidget.cursor2 = pg.InfiniteLine(pos=plotWidget.cursor2Pos, angle=90, movable=True,
+    #                                     pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))    
     plotWidget.addItem(plotWidget.cursor1)
     plotWidget.addItem(plotWidget.cursor2)     
 

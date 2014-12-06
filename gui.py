@@ -247,10 +247,17 @@ class Ui_MainWindow(object):
         self.dataPlotsWidget.showGrid(x=True, y=True, alpha=0.3)
         self.dataPlotsWidget.setSizePolicy(preferredSizePolicy)
         self.gridLayout_plots.addWidget(self.dataPlotsWidget)
+        # Cursors     
+        self.dataPlotsWidget.cursor1 = pg.InfiniteLine(angle=90, movable=True,
+                                      pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))
+        self.dataPlotsWidget.cursor2 = pg.InfiniteLine(angle=90, movable=True, 
+                                      pen=pg.mkPen('#2AB825', width=2, style=QtCore.Qt.DotLine))           
+        self.dataPlotsWidget.cursor = False
         # Toolbar
         self.plotToolBar = QtGui.QToolBar()
         self.plotToolBar.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.gridLayout_plots.addWidget(self.plotToolBar)
+        self.gridLayout_plots.addWidget(self.plotToolBar)       
+        
         
         # ------
         # TAB 2   (TableTab)

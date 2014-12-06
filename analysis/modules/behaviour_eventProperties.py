@@ -94,6 +94,9 @@ class AnalysisModule():
         latencies, timeToNest, avgSpeed, maxSpeed = [], [], [], []
         comp = lambda a, b: a < b
         for event in events:
+        
+            # Get data range          
+            #data, c1 = aux.get_dataRange(plotWidget, event):
 
             # Mark failures depending on position reached nest
             if np.sum(event.data<nestPos)==0:
@@ -101,20 +104,27 @@ class AnalysisModule():
             else:
                 failures.append(0)
 
-                # Get latency 
+                # Get latency to reaction
                 t0 = event.attrs['t0']
-                i = t0
+                i = t0  # start from stimulus trigger
                 dtrace = np.diff(event.data)
                 while i<len(dtrace):
                     if comp(dtrace[i], derivativeThs):
-                        latencies.append(i)
+                        latencies.append(i-t0)
                         break
                     i+=1     
 
-                # Get other measures
-                timeToNest.append(i-t0)
+                # Get latency to nest
+                i = t0
+                while i<len(event.data):
+                    if comp(event.data[i], nestPos):
+                        timeToNest.append(i-t0)
+                        break
+                    i+=1
+
+                # Get other measures         
                 avgSpeed.append(np.mean(dtrace[t0:i]))
-                maxSpeed.append(dtrace.max())
+                maxSpeed.append(dtrace[t0:i].min())
 
         # Store data
         results = []
