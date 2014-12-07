@@ -136,7 +136,7 @@ def create_h5(browser, tree):
         browser.ui.workingDataTree.saveStr = fname     
         browser.ui.workingDataTree.propsDt = ''
         browser.ui.workingDataTree.propsDescription = ''   
-        table.update_table(browser)
+        #table.update_table(browser)
         browser.ui.workingDataTree.setHeaderLabels([fname])
         browser.currentSaveFile = browser.currentFolder + '/' + fname + '.hdf5'           
 

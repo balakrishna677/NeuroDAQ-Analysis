@@ -103,7 +103,10 @@ class AnalysisModule():
 
         # Temporary 
         if stimType=='Visual':
-            triggers = item.child(1).data
+            if item.childCount()==1:
+                triggers = item.child(0).data
+            else:
+                triggers = item.child(1).data
         else:
             triggers = item.child(0).data
         

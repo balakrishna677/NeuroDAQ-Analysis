@@ -81,23 +81,16 @@ class AnalysisModule():
         # Get plotted traces
         traces = self.plotWidget.plotDataItems
         dt = traces[0].attrs['dt']
+
+        # Get X and Y data and check cursors
+        X, c1 = aux.get_dataRange(self.plotWidget, traces[0])
+        Y, c1 = aux.get_dataRange(self.plotWidget, traces[1])        
        
-        # Get X and Y data
-        X = traces[0].data
-        Y = traces[1].data
+        # Make sure Y is the long axis
         if X.max() > Y.max():
             Yold = Y
             Y = X
             X = Yold
-
-        # Cut to cursor position if set
-        try:
-            c1, c2 = aux.get_cursors(self.plotWidget)
-            c1, c2 = aux.check_cursors(c1, c2, X, dt)
-            X = X[c1/dt:c2/dt]
-            Y = Y[c1/dt:c2/dt]       
-        except NameError:
-            pass
 
         # Remove all existing axes
         for ax in self.canvas.fig.axes:

@@ -333,8 +333,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         text, ok = QtGui.QInputDialog.getText(self, 'New child group', 'Enter name:')
         if ok: treefun.add_treeGroup(self, self.ui.workingDataTree, 'child', str(text))
     
-    def rename_itemOnMenu(self):
-        text, ok = QtGui.QInputDialog.getText(self, 'Rename item', 'Enter new name:')
+    def rename_itemOnMenu(self):        
+        currentText = self.ui.workingDataTree.currentItem().text(0)
+        text, ok = QtGui.QInputDialog.getText(self, 'Rename item', 'Enter new name:', text=currentText)
         if ok: treefun.rename_treeItem(self, self.ui.workingDataTree, str(text))
 
     def remove_itemOnMenu(self):
