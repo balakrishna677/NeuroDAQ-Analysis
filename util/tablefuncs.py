@@ -1,4 +1,4 @@
-""" Functions for managing trees
+""" Functions for managing tables
 """
 
 import sys, os, re, copy
