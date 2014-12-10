@@ -101,6 +101,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.selectionList = []
         self.selectionList.append([self.ui.oneDimToolSelect, self.ui.oneDimToolStackedWidget, '1D Analysis'])
         self.selectionList.append([self.ui.behaviourToolSelect, self.ui.behaviourToolStackedWidget, 'Behaviour Analysis'])
+        self.selectionList.append([self.ui.graphToolSelect, self.ui.graphToolStackedWidget, 'Graph'])
         self.selectionList.append([self.ui.customToolSelect, self.ui.customToolStackedWidget, 'Custom Analysis'])
 
         # Analysis tools stack

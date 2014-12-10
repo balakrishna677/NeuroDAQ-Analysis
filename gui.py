@@ -156,13 +156,12 @@ class Ui_MainWindow(object):
         self.splitter_behaviourAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
         self.gridLayout_behaviourAnalysisTab.addWidget(self.splitter_behaviourAnalysisTab, 0, 0, 1, 1)
 
-        # TAB 2 content > Tool Select        
+        # TAB 3 content > Tool Select        
         self.behaviourToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_behaviourAnalysisTab.addWidget(self.behaviourToolSelect)
         self.behaviourToolSelect.setSizePolicy(preferredSizePolicy)
         
-
-        # TAB 2 content > Tools Stacked Widget    
+        # TAB 3 content > Tools Stacked Widget    
         self.behaviourToolStackContainerWidget = NeuroWidget(0,0)   
         self.behaviourToolStackGrid = QtGui.QGridLayout(self.behaviourToolStackContainerWidget)
         self.splitter_behaviourAnalysisTab.addWidget(self.behaviourToolStackContainerWidget)
@@ -176,7 +175,33 @@ class Ui_MainWindow(object):
         
 
         # -----
-        # TAB 4   (customAnalysisTab) -> toolSelect and toolStackedWidget
+        # TAB 4   (graphTab) -> toolSelect and toolStackedWidget
+        # -----
+        # Geometry and Layout
+        self.graphTab = NeuroWidget(0,0)
+        self.selectionTabWidget.addTab(self.graphTab, _fromUtf8("Graph"))
+        self.gridLayout_graphTab = QtGui.QGridLayout(self.graphTab)
+        self.splitter_graphTab = QtGui.QSplitter(self.graphTab)
+        self.splitter_graphTab.setSizePolicy(preferredSizePolicy)        
+        self.splitter_graphTab.setOrientation(QtCore.Qt.Horizontal)
+        self.gridLayout_graphTab.addWidget(self.splitter_graphTab, 0, 0, 1, 1)
+
+        # TAB 4 content > Tool Select        
+        self.graphToolSelect = AnalysisSelectWidget(0,0)
+        self.splitter_graphTab.addWidget(self.graphToolSelect)
+        self.graphToolSelect.setSizePolicy(preferredSizePolicy)        
+
+        # TAB 4 content > Tools Stacked Widget    
+        self.graphToolStackContainerWidget = NeuroWidget(0,0)   
+        self.graphToolStackGrid = QtGui.QGridLayout(self.graphToolStackContainerWidget)
+        self.splitter_graphTab.addWidget(self.graphToolStackContainerWidget)
+        self.graphToolStackedWidget = AnalysisStackWidget(0,0)
+        self.graphToolStackGrid.addWidget(self.graphToolStackedWidget)
+        self.graphToolStackedWidget.setSizePolicy(preferredSizePolicy)       
+
+
+        # -----
+        # TAB 5   (customAnalysisTab) -> toolSelect and toolStackedWidget
         # -----
         # Geometry and Layout
         self.customAnalysisTab = NeuroWidget(0,0)
@@ -187,13 +212,13 @@ class Ui_MainWindow(object):
         self.splitter_customAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
         self.gridLayout_customAnalysisTab.addWidget(self.splitter_customAnalysisTab, 0, 0, 1, 1)
 
-        # TAB 3 content > Tool Select        
+        # TAB 5 content > Tool Select        
         self.customToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_customAnalysisTab.addWidget(self.customToolSelect)
         self.customToolSelect.setSizePolicy(preferredSizePolicy)
         
 
-        # TAB 3 content > Tools Stacked Widget    
+        # TAB 5 content > Tools Stacked Widget    
         self.customToolStackContainerWidget = NeuroWidget(0,0)   
         self.customToolStackGrid = QtGui.QGridLayout(self.customToolStackContainerWidget)
         self.splitter_customAnalysisTab.addWidget(self.customToolStackContainerWidget)
