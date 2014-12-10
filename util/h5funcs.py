@@ -151,7 +151,7 @@ def save_h5(browser, tree):
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
     # Notes   
-    browser.wdb.attrs['Notes'] =  browser.ui.notesWidget.toPlainText()   
+    browser.wdb.attrs['Notes'] =  str(browser.ui.notesWidget.toPlainText())   
     browser.wdb.close()
 
 def set_attrs(source, item):
