@@ -36,10 +36,10 @@ def load_h5(browser, tree, push):
 
     if push:
         browser.ui.workingDataTree.setSortingEnabled(True)
-        browser.ui.workingDataTree.propsDt = ''
-        browser.ui.workingDataTree.propsDescription = ''
-        #for attr in browser.db.attrs:
+        browser.ui.notesWidget.clear()
+        for attr in browser.db.attrs:
             #print attr, browser.db.attrs[attr]
+            if 'Notes' in attr: browser.ui.notesWidget.setText(browser.db.attrs['Notes'])
         #    if 'dt' in attr: browser.ui.workingDataTree.propsDt = str(browser.db.attrs[attr])
         #    if 'description' in attr:  browser.ui.workingDataTree.propsDescription = browser.db.attrs[attr]
         #table.update_props(browser)
@@ -150,9 +150,8 @@ def save_h5(browser, tree):
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
-    # File attributes    
-    #browser.wdb.attrs['dt'] =  str(browser.ui.workingDataTree.propsDt) 
-    #browser.wdb.attrs['description'] =  str(browser.ui.workingDataTree.propsDescription)     
+    # Notes   
+    browser.wdb.attrs['Notes'] =  browser.ui.notesWidget.toPlainText()   
     browser.wdb.close()
 
 def set_attrs(source, item):

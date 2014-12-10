@@ -290,6 +290,14 @@ class Ui_MainWindow(object):
         self.mplWidget = matplotlibWidget()
         self.displayTabWidget.addTab(self.mplWidget, _fromUtf8("MatplotLib"))
 
+        # ------
+        # TAB 5   (Notes Tab)
+        # ------        
+        # Geometry and Layout   
+        # TAB 5 content > Notes text edit
+        self.notesWidget = QtGui.QTextEdit()
+        self.displayTabWidget.addTab(self.notesWidget, _fromUtf8("Notes"))
+
 
         # -----------------------------------------------------------------------------
         # Right pane -> Working Data Tree and Properties Table
