@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore
 import numpy as np
 from analysis import auxfuncs as aux
 from util import pgplot
+from widgets import *
 import pyqtgraph as pg
 from analysis.acq4 import filterfuncs as acq4filter
 import matplotlib.gridspec as gridspec
@@ -41,8 +42,20 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-        self.nbins = QtGui.QLineEdit()
-        self.toolOptions.append([QtGui.QLabel('Number of bins'), self.nbins])
+        self.clearAxis = QtGui.QCheckBox('Clear axis')
+        self.toolOptions.append([self.clearAxis]) 
+        self.binSize = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Bin size'), self.binSize])
+        self.orientation = QtGui.QComboBox()
+        self.orientation.addItem('vertical')
+        self.orientation.addItem('horizontal')      
+        self.toolOptions.append([QtGui.QLabel('Orientation'), self.orientation])
+        self.type = QtGui.QComboBox()
+        self.type.addItem('bar')
+        self.type.addItem('barstacked')      
+        self.type.addItem('step')
+        self.type.addItem('stepfilled')    
+        self.toolOptions.append([QtGui.QLabel('Type'), self.type])                             
         ############################################        
 
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -51,45 +64,41 @@ class AnalysisModule():
         """ Plot histogram from selected data
 
         Options:
-        1) number of bins
+        1) clear axes
+        2) bin size
+        3) normalised
+        4) orientation
+        5) type
+        6) color
         """
 
         ############################################
         # ANALYSIS FUNCTION      
 
         # Read options
-        nbins = int(self.nbins.text())
+        clearAxis = self.clearAxis.isChecked()
+        binSize = float(self.binSize.text())
+        orientation = str(self.orientation.currentText())
+        histtype = str(self.type.currentText())
 
         # Get selected item in data tree
         traces = self.plotWidget.plotDataItems
         dt = traces[0].attrs['dt']
 
         # Get X and Y data and check cursors
-        X, c1 = aux.get_dataRange(self.plotWidget, traces[0])
-        Y, c1 = aux.get_dataRange(self.plotWidget, traces[1])        
-       
-        # Make sure Y is the long axis
-        if X.max() > Y.max():
-            Yold = Y
-            Y = X
-            X = Yold
+        data, c1 = aux.get_dataRange(self.plotWidget, traces[0])             
+
+        # Calculate number of bins
+        dataRange = np.abs(data.max()-data.min())
+        nbins = np.ceil(dataRange/binSize)
 
         # Remove all existing axes
-        for ax in self.canvas.fig.axes:
-            self.canvas.fig.delaxes(ax)
+        if clearAxis:
+            for ax in self.canvas.fig.axes:
+                self.canvas.fig.delaxes(ax)
        
         # Create grid
-        if hist: 
-            if axisTime:
-                nPlots, width_ratios = 3, [1,4,1] 
-                histAx = 2
-            else:
-                nPlots, width_ratios = 2, [1,1]
-                histAx = 1
-        elif axisTime:
-            nPlots, width_ratios = 2, [1,5]
-        else:
-            nPlots, width_ratios = 1, [1]
+        nPlots, width_ratios = 1, [1]
         gs = gridspec.GridSpec(1, nPlots, width_ratios=width_ratios)    
 
         # Create subplots
@@ -97,19 +106,9 @@ class AnalysisModule():
         for plot in range(nPlots):
             ax.append(self.canvas.fig.add_subplot(gs[plot]))
 
-        # Plot tracking
-        ax[0].plot(X, Y, color)
-
-        # Plot long axis over time
-        if axisTime:
-            xaxis = np.arange(0, len(Y), dt)
-            ax[1].plot(xaxis, Y, color)
-
         # Plot histogram
-        if hist:
-            h = ax[histAx].hist(Y, bins=30, orientation='horizontal', histtype='stepfilled',
-                               normed=True, color=color)
-
+        h = ax[0].hist(data, bins=nbins, orientation=orientation, histtype=histtype,
+                             normed=True, color='k')
 
         self.canvas.draw()
         ############################################  

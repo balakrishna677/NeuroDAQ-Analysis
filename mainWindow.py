@@ -60,7 +60,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         
         # Current working file and folder for saving
         self.currentSaveFile = []
-        self.currentFolder = []
+        self.currentFolder = self.ui.dirTree.homeFolder
 
         # Share instance with other modules by setting global variable browser
         utilsconsole.set_browser(self)
@@ -171,7 +171,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         """ Load hdf5 file
         """
         if self.db: 
-            self.db.close()
+            if self.dbType=='hdf5':
+                self.db.close()
             self.db = None
         h5.load_h5(self, self.ui.fileDataTree, push=False)
 
@@ -232,7 +233,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         """
         if (source==self.ui.workingDataTree) and (modifiers==QtCore.Qt.ControlModifier):
           # Copy internally
-          print 'copying'
+          #print 'copying'
           targetItems = []
           for item in self.copyItems:
             i = h5Item([str(item.text(0))])
@@ -257,7 +258,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
           pass
         else:
           # Move across
-          print 'moving'
+          #print 'moving'
           targetItems = []
           for item in self.dragItems:
             i = h5Item([str(item[1])])
@@ -396,11 +397,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     def plot_OnSelectionChanged(self, current, previous):
         if current:
-            if 'dataset' in str(self.db[current.path]):
-                try:
-                    pgplot.plot_singleData(self, self.ui.singlePlotWidget, self.db[current.path][:])    
-                except ValueError:
-                    pass
+            data = h5.get_dataFromFile(self, current)
+            if data is not None:
+                pgplot.plot_singleData(self, self.ui.singlePlotWidget, data)    
 
     def browse_OnSelectionChanged(self, current, previous):
         # Show data values in status bar

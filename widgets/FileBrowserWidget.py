@@ -24,15 +24,15 @@ class FileBrowserWidget(QtGui.QTreeView):
         if not homeFolder: 
             if os.path.isdir('/home/tiago'):
                 #homeFolder = '/home/tiago/Code/py/NeuroDAQanalysis/testData/'
-                homeFolder = '/home/tiago/Data/Lab.local/'
+                self.homeFolder = '/home/tiago/Data/Lab.local/'
             elif platform.system()=='Darwin':
                 print 'Mac OS X detected'
-                homeFolder = '/Users/'
+                self.homeFolder = '/Users/'
             elif platform.system()=='Linux':
-                homeFolder = '/home/'                    
-        self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder)))
-        self.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir(homeFolder))))                
-        self.model.setNameFilters(['*.hdf5'])
+                self.homeFolder = '/home/'                    
+        self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder)))
+        self.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder))))                
+        self.model.setNameFilters(['*.hdf5', '*.tdms'])
  
         # Hide some default columns
         self.setColumnHidden(1, True)

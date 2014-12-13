@@ -40,12 +40,14 @@ def get_items():
         items.append(item)
     return items
 
-def store_data(data, name='data', attrs={'dt':1}):
+def store_data(data, array2D=False, name='data', attrs={'dt':1}):
     """ Adds data to the Data Tree
 
     'data' is a number array of 1 or 2 dimensions
     'name' is sring
     'attrs' is a dictionary {attr1: value1, attr2, value2, ...}
+    
+    If array2D==True the data are stored as a 2D-array
     """
     # Set root as parent
     parentWidget = browser.ui.workingDataTree.invisibleRootItem()
@@ -54,7 +56,7 @@ def store_data(data, name='data', attrs={'dt':1}):
     data = np.array(data)
 
     # 1D array - add straight to root with name 'name' 
-    if len(data.shape)==1:
+    if (len(data.shape)==1) or ((len(data.shape)==2) and (array2D==True)):
         item = h5Item([name])
         browser.make_nameUnique(parentWidget, item, item.text(0))    
         item.data = data
@@ -64,7 +66,7 @@ def store_data(data, name='data', attrs={'dt':1}):
         browser.ui.workingDataTree.addTopLevelItem(item)
 
     # 2D array - add 'name' group and 'data' datasets
-    elif len(data.shape)==2:
+    elif (len(data.shape)==2) and (array2D==False):
         item = h5Item([name])
         browser.make_nameUnique(parentWidget, item, item.text(0)) 
         browser.ui.workingDataTree.addTopLevelItem(item)
