@@ -96,6 +96,7 @@ def show_cursors(browser, plotWidget):
 def hide_cursors(browser, plotWidget):
     """ Remove the data cursors.
     """
+    print plotWidget.cursor1.value()
     plotWidget.cursor1Pos = []   
     plotWidget.cursor2Pos = []   
     plotWidget.removeItem(plotWidget.cursor1)
