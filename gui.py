@@ -82,13 +82,15 @@ class Ui_MainWindow(object):
         self.dataFolderWidget = NeuroWidget(0,0, parent=self.verticalsplitter_dataTab)
         self.folderLayout = QtGui.QGridLayout(self.dataFolderWidget)
         self.loadFolderInput = QtGui.QLineEdit()
-        self.loadFolderLabel = QtGui.QLabel('Load')
+        #self.loadFolderLabel = QtGui.QLabel('Load Folder')
+        self.loadFolderButton = QtGui.QPushButton('Load Folder')
         self.folderLayout.addWidget(self.loadFolderInput, 0, 0)
-        self.folderLayout.addWidget(self.loadFolderLabel, 0, 1)
+        self.folderLayout.addWidget(self.loadFolderButton, 0, 1)
         self.saveFolderInput = QtGui.QLineEdit()
-        self.saveFolderLabel = QtGui.QLabel('Save')
+        #self.saveFolderLabel = QtGui.QLabel('Save Folder')
+        self.saveFolderButton = QtGui.QPushButton('Save Folder')
         self.folderLayout.addWidget(self.saveFolderInput, 1, 0)
-        self.folderLayout.addWidget(self.saveFolderLabel, 1, 1)
+        self.folderLayout.addWidget(self.saveFolderButton, 1, 1)
         
                
         # TAB 1 content > DirTree
