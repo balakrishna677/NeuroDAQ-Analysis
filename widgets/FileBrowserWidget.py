@@ -29,7 +29,9 @@ class FileBrowserWidget(QtGui.QTreeView):
                 print 'Mac OS X detected'
                 self.homeFolder = '/Users/'
             elif platform.system()=='Linux':
-                self.homeFolder = '/home/'                    
+                self.homeFolder = '/home/'      
+            else:
+                self.homeFolder = '/'              
         self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder)))
         self.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder))))                
         self.model.setNameFilters(['*.hdf5', '*.tdms'])
