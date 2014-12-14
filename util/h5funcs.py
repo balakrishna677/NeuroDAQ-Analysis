@@ -103,7 +103,7 @@ def populate_h5tree(browser, parent, parentWidget, push):
         if push:
             try:
                 #parentWidget.data = parent[:]            
-                parentWidget.data = get_dataFromFile(browser, item)
+                parentWidget.data = get_dataFromFile(browser, parentWidget)
                 parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)          
                 browser.ui.workingDataTree.dataItems.append(parentWidget)
             except ValueError:   # No data in the dataset
