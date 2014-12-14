@@ -45,7 +45,7 @@ def load_h5(browser, tree, push):
             browser.ui.workingDataTree.setSortingEnabled(True)
             browser.ui.notesWidget.clear()
             for attr in browser.db.attrs:
-                #print attr, browser.db.attrs[attr]
+                browser.ui.workingDataTree.root.attrs[attr] = browser.db.attrs[attr]
                 if 'Notes' in attr: browser.ui.notesWidget.setText(browser.db.attrs['Notes'])
                 #if 'dt' in attr: browser.ui.workingDataTree.propsDt = str(browser.db.attrs[attr])
                 #if 'description' in attr:  browser.ui.workingDataTree.propsDescription = browser.db.attrs[attr]
@@ -64,16 +64,16 @@ def load_h5(browser, tree, push):
             browser.ui.workingDataTree.setSortingEnabled(True)
             browser.ui.notesWidget.clear()
             browser.currentOpenFile = currentFile
-            browser.currentSaveFile = currentFile
-            browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentFile)[1]])
+            browser.currentSaveFile = os.path.splitext(currentFile)[0]+'.hdf5'
+            #currentFileName = os.path.split(currentFile)[1]
+            #currentFileName = os.path.splitext(currentFileName)[0]
+            browser.ui.workingDataTree.setHeaderLabels([os.path.split(browser.currentSaveFile)[1]])
             browser.ui.workingDataTree.setSortingEnabled(False)  # Otherwise it screws up drag and drop
-            root = browser.ui.workingDataTree.invisibleRootItem()
-            root.attrs = {}
             for attr in browser.db.object().properties:
                 if 'kHz' in attr:
-                    root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
+                    browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
                 else:
-                    root.attrs[attr] = browser.db.object().properties[attr]
+                    browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]
         for group in browser.db.groups():
             item = h5Item([str(group)])
             tree.addTopLevelItem(item)
@@ -87,7 +87,8 @@ def load_h5(browser, tree, push):
                     child.data = get_dataFromFile(browser, child)
                     child.listIndex = len(browser.ui.workingDataTree.dataItems)
                     browser.ui.workingDataTree.dataItems.append(child)
-                    if 'kHz' in str(root.attrs): child.attrs['dt'] = 1./root.attrs['sampling_rate(kHz)']       
+                    if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
+                        child.attrs['dt'] = 1./browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)']       
 
 def populate_h5tree(browser, parent, parentWidget, push):   
     if isinstance(parent, h5py.Group):
@@ -114,11 +115,9 @@ def populate_h5File(browser, parent, parentWidget):
         if item.childCount()>0:
             parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
-        else:
-            #print 'creating dataset', str(item.text(0)), 'in', parent
-            #dset = parent.create_dataset(str(item.text(0)), data=browser.ui.workingDataTree.data[item.dataIndex])
-            dset = parent.create_dataset(str(item.text(0)), data=item.data)
-            set_attrs(item, dset)
+        elif item.data is not None:
+                dset = parent.create_dataset(str(item.text(0)), data=item.data)
+                set_attrs(item, dset)
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
@@ -188,12 +187,14 @@ def save_h5(browser, tree):
     currentSaveFile = str(browser.currentSaveFile)
     browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
     if browser.db:
-        browser.db.close()
+        if browser.dbType=='hdf5':
+            browser.db.close()
         browser.db = None
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
-    # Notes   
+    # File attributes
+    set_attrs(browser.ui.workingDataTree.root, browser.wdb)   
     browser.wdb.attrs['Notes'] =  str(browser.ui.notesWidget.toPlainText())   
     browser.wdb.close()
 
@@ -202,7 +203,10 @@ def set_attrs(source, item):
     Source and item can be tree h5item or h5File dataset, the syntax is the same.
     """
     for attr in source.attrs:
-        item.attrs[attr] = source.attrs[attr] 
+        if type(source.attrs[attr]) is unicode:
+            item.attrs[attr] = str(source.attrs[attr])
+        else:
+            item.attrs[attr] = source.attrs[attr] 
 
 def make_nameUnique(browser, parentWidget, name):
     """ Check existing names in parentWidget that start with 'name'

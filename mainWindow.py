@@ -113,6 +113,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # -----------------------------------------------------------------------------
         self.ui.workingDataTree.data = []
         self.ui.workingDataTree.dataItems = []
+        self.ui.workingDataTree.root = self.ui.workingDataTree.invisibleRootItem()
+        self.ui.workingDataTree.root.attrs = {}
         self.ui.actionLoadData.triggered.connect(self.load_h5OnLoadPush)
         self.ui.actionNewFile.triggered.connect(self.create_h5OnNewPush)
         self.ui.actionSaveFile.triggered.connect(self.save_h5OnSavePush)
