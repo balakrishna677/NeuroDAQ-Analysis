@@ -18,7 +18,7 @@ from PyQt4 import QtGui, QtCore
 
 from gui import Ui_MainWindow
 from widgets import h5Item
-from util import h5, mplplot, treefun, table, pgplot
+from util import h5, mplplot, treefun, table, pgplot, imagefun
 from analysis import toolselector, auxfuncs, template
 from console import utils as utilsconsole
 
@@ -61,6 +61,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Current working file and folder for saving
         self.currentSaveFile = []
         self.currentFolder = self.ui.dirTree.homeFolder
+        self.saveFolder = self.currentFolder
 
         # Share instance with other modules by setting global variable browser
         utilsconsole.set_browser(self)
@@ -102,10 +103,13 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.oneDimToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
         self.ui.customToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
         self.ui.behaviourToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
+        self.ui.graphToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
+        self.ui.imageToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)                
         self.selectionList = []
         self.selectionList.append([self.ui.oneDimToolSelect, self.ui.oneDimToolStackedWidget, '1D Analysis'])
         self.selectionList.append([self.ui.behaviourToolSelect, self.ui.behaviourToolStackedWidget, 'Behaviour Analysis'])
-        self.selectionList.append([self.ui.graphToolSelect, self.ui.graphToolStackedWidget, 'Graph'])
+        self.selectionList.append([self.ui.imageToolSelect, self.ui.imageToolStackedWidget, 'Image Analysis'])
+        self.selectionList.append([self.ui.graphToolSelect, self.ui.graphToolStackedWidget, 'Graph'])        
         self.selectionList.append([self.ui.customToolSelect, self.ui.customToolStackedWidget, 'Custom Analysis'])
 
         # Analysis tools stack
@@ -190,18 +194,20 @@ class NeuroDaqWindow(QtGui.QMainWindow):
 
     def save_h5OnSavePush(self):
         if self.currentSaveFile:
+            fname = os.path.split(self.currentSaveFile)[1] # update save folder to user selected if necessary
+            self.currentSaveFile = str(self.saveFolder) + '/' + fname
             h5.save_h5(self, self.ui.workingDataTree)
         else: 
             fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
             if ok:
-                self.currentSaveFile = str(self.model.rootPath()) + '/' + fname + '.hdf5'
+                self.currentSaveFile = str(self.saveFolder) + '/' + fname + '.hdf5'
                 h5.save_h5(self, self.ui.workingDataTree)
         
     def save_h5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
         if self.ui.saveFolderInput.text()<>'': self.update_saveDir()
         if ok:
-            self.currentSaveFile = self.currentFolder + '/' + fname + '.hdf5'      
+            self.currentSaveFile = self.saveFolder + '/' + fname + '.hdf5'      
             h5.save_h5(self, self.ui.workingDataTree)        
 
 
@@ -212,16 +218,16 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         treefun.set_loadFolder(self, self.ui.dirTree, self.ui.loadFolderInput.text())
 
     def update_saveDir(self):
-        self.currentFolder = self.ui.saveFolderInput.text()
+        self.saveFolder = self.ui.saveFolderInput.text()
 
     def select_loadFolder(self):
-        folder = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Folder"))
+        folder = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Folder", self.currentFolder))
         treefun.set_loadFolder(self, self.ui.dirTree, folder)
         self.ui.loadFolderInput.setText(folder)
 
     def select_saveFolder(self):
-        self.currentFolder = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Folder"))        
-        self.ui.saveFolderInput.setText(self.currentFolder)
+        self.saveFolder = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Folder", self.saveFolder))        
+        self.ui.saveFolderInput.setText(self.saveFolder)
     
     def store_Selection(self, source):
         """ Store user selected tree items in dragItems list to get them back
@@ -417,18 +423,21 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                 pgplot.plot_singleData(self, self.ui.singlePlotWidget, data)    
 
     def browse_OnSelectionChanged(self, current, previous):
-        # Show data values in status bar
-        if current.data is not None:
-            #dataValue= str(self.ui.workingDataTree.data[current.dataIndex][0])
-            dataValue = str(current.data[0])
-            self.ui.statusbar.showMessage('First data point value: ' + dataValue)
-        else:
-            self.ui.statusbar.clearMessage()
-        # Plot data if Browse is selected
-        if self.ui.actionBrowseData.isChecked():
-            pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
-        # Show dt
-        self.ui.propsTableWidget.setData({'dt':[current.attrs['dt']]})
+        if hasattr(current, 'data'): 
+            # Show data values in status bar
+            if current.data is not None:
+                dataValue = str(current.data[0])
+                self.ui.statusbar.showMessage('First data point value: ' + dataValue)
+            else:
+                self.ui.statusbar.clearMessage()
+            # Plot data if Browse is selected
+            if self.ui.actionBrowseData.isChecked():
+                if len(current.data.shape)==1:
+                    pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
+                elif len(current.data.shape)==2:
+                    pgplot.browse_image(self, self.ui.dataImageWidget, current)
+            # Show dt
+            self.ui.propsTableWidget.setData({'dt':[current.attrs['dt']]})
 
     def plot_selected(self):
         self.ui.actionBrowseData.setChecked(False)

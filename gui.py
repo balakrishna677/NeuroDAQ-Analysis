@@ -174,10 +174,35 @@ class Ui_MainWindow(object):
         self.behaviourToolStackedWidget = AnalysisStackWidget(0,0)
         self.behaviourToolStackGrid.addWidget(self.behaviourToolStackedWidget)
         self.behaviourToolStackedWidget.setSizePolicy(preferredSizePolicy)        
+
+        # -----
+        # TAB 4   (imageAnalysisTab) -> toolSelect and toolStackedWidget
+        # -----
+        # Geometry and Layout
+        self.imageTab = NeuroWidget(0,0)
+        self.selectionTabWidget.addTab(self.imageTab, _fromUtf8("Image Anaysis"))
+        self.gridLayout_imageTab = QtGui.QGridLayout(self.imageTab)
+        self.splitter_imageTab = QtGui.QSplitter(self.imageTab)
+        self.splitter_imageTab.setSizePolicy(preferredSizePolicy)        
+        self.splitter_imageTab.setOrientation(QtCore.Qt.Horizontal)
+        self.gridLayout_imageTab.addWidget(self.splitter_imageTab, 0, 0, 1, 1)
+
+        # TAB 4 content > Tool Select        
+        self.imageToolSelect = AnalysisSelectWidget(0,0)
+        self.splitter_imageTab.addWidget(self.imageToolSelect)
+        self.imageToolSelect.setSizePolicy(preferredSizePolicy)        
+
+        # TAB 4 content > Tools Stacked Widget    
+        self.imageToolStackContainerWidget = NeuroWidget(0,0)   
+        self.imageToolStackGrid = QtGui.QGridLayout(self.imageToolStackContainerWidget)
+        self.splitter_imageTab.addWidget(self.imageToolStackContainerWidget)
+        self.imageToolStackedWidget = AnalysisStackWidget(0,0)
+        self.imageToolStackGrid.addWidget(self.imageToolStackedWidget)
+        self.imageToolStackedWidget.setSizePolicy(preferredSizePolicy)       
         
 
         # -----
-        # TAB 4   (graphTab) -> toolSelect and toolStackedWidget
+        # TAB 5   (graphTab) -> toolSelect and toolStackedWidget
         # -----
         # Geometry and Layout
         self.graphTab = NeuroWidget(0,0)
@@ -188,12 +213,12 @@ class Ui_MainWindow(object):
         self.splitter_graphTab.setOrientation(QtCore.Qt.Horizontal)
         self.gridLayout_graphTab.addWidget(self.splitter_graphTab, 0, 0, 1, 1)
 
-        # TAB 4 content > Tool Select        
+        # TAB 5 content > Tool Select        
         self.graphToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_graphTab.addWidget(self.graphToolSelect)
         self.graphToolSelect.setSizePolicy(preferredSizePolicy)        
 
-        # TAB 4 content > Tools Stacked Widget    
+        # TAB 5 content > Tools Stacked Widget    
         self.graphToolStackContainerWidget = NeuroWidget(0,0)   
         self.graphToolStackGrid = QtGui.QGridLayout(self.graphToolStackContainerWidget)
         self.splitter_graphTab.addWidget(self.graphToolStackContainerWidget)
@@ -203,7 +228,7 @@ class Ui_MainWindow(object):
 
 
         # -----
-        # TAB 5   (customAnalysisTab) -> toolSelect and toolStackedWidget
+        # TAB 6   (customAnalysisTab) -> toolSelect and toolStackedWidget
         # -----
         # Geometry and Layout
         self.customAnalysisTab = NeuroWidget(0,0)
@@ -214,13 +239,13 @@ class Ui_MainWindow(object):
         self.splitter_customAnalysisTab.setOrientation(QtCore.Qt.Horizontal)
         self.gridLayout_customAnalysisTab.addWidget(self.splitter_customAnalysisTab, 0, 0, 1, 1)
 
-        # TAB 5 content > Tool Select        
+        # TAB 6 content > Tool Select        
         self.customToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_customAnalysisTab.addWidget(self.customToolSelect)
         self.customToolSelect.setSizePolicy(preferredSizePolicy)
         
 
-        # TAB 5 content > Tools Stacked Widget    
+        # TAB 6 content > Tools Stacked Widget    
         self.customToolStackContainerWidget = NeuroWidget(0,0)   
         self.customToolStackGrid = QtGui.QGridLayout(self.customToolStackContainerWidget)
         self.splitter_customAnalysisTab.addWidget(self.customToolStackContainerWidget)
@@ -284,13 +309,31 @@ class Ui_MainWindow(object):
         self.plotToolBar = QtGui.QToolBar()
         self.plotToolBar.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.gridLayout_plots.addWidget(self.plotToolBar)       
+
+        # ------
+        # TAB 2   (ImageTab)
+        # ------    
+        # Geometry and Layout
+        self.dataImageTab = NeuroWidget(0,0)
+        self.displayTabWidget.addTab(self.dataImageTab, 'Image')
+        self.gridLayout_images = QtGui.QGridLayout(self.dataImageTab)
+         
+        # TAB 2 content > dataPlotsWidget        
+        #self.dataPlotsWidget = matplotlibWidget(0,0)
+        self.dataImageWidget = pg.ImageView() 
+        self.dataImageWidget.setSizePolicy(preferredSizePolicy)
+        self.gridLayout_images.addWidget(self.dataImageWidget)
+        # Toolbar
+        #self.plotToolBar = QtGui.QToolBar()
+        #self.plotToolBar.setLayoutDirection(QtCore.Qt.RightToLeft)
+        #self.gridLayout_images.addWidget(self.plotToolBar)     
         
         
         # ------
-        # TAB 2   (TableTab)
+        # TAB 3   (TableTab)
         # ------        
         # Geometry and Layout   
-        # TAB 2 content > tableWidget         
+        # TAB 3 content > tableWidget         
         #self.dataTableWidget = QtGui.QTableWidget()
         self.dataTableWidget = pg.TableWidget(editable=False)
         #self.dataTableWidget.setDragEnabled(True)
@@ -302,26 +345,26 @@ class Ui_MainWindow(object):
         self.displayTabWidget.addTab(self.dataTableWidget, _fromUtf8("Table"))        
 
         # ------
-        # TAB 3   (IPythonTab)
+        # TAB 4   (IPythonTab)
         # ------        
         # Geometry and Layout   
-        # TAB 3 content > IPython console         
+        # TAB 4 content > IPython console         
         self.IPythonWidget = QIPythonWidget()
         self.displayTabWidget.addTab(self.IPythonWidget, _fromUtf8("IPython"))        
 
         # ------
-        # TAB 4   (Matplotlib Tab)
+        # TAB 5   (Matplotlib Tab)
         # ------        
         # Geometry and Layout   
-        # TAB 4 content > Matplotlib axes
+        # TAB 5 content > Matplotlib axes
         self.mplWidget = matplotlibWidget()
         self.displayTabWidget.addTab(self.mplWidget, _fromUtf8("MatplotLib"))
 
         # ------
-        # TAB 5   (Notes Tab)
+        # TAB 6   (Notes Tab)
         # ------        
         # Geometry and Layout   
-        # TAB 5 content > Notes text edit
+        # TAB 6 content > Notes text edit
         self.notesWidget = QtGui.QTextEdit()
         self.displayTabWidget.addTab(self.notesWidget, _fromUtf8("Notes"))
 

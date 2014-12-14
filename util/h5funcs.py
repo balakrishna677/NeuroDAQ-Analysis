@@ -15,9 +15,10 @@ import numpy as np
 from widgets import h5Item
 from nptdms import TdmsFile
 import tablefuncs as table
+import imagefuncs as imagefun
 
 def load_h5(browser, tree, push):
-    """ Main loading function. Initially written for hdf5 files only,
+    """ Main loading function. Initially written for .hdf5 files only,
     but now also load .tdms files. 
     
     The whole thing could use with consolidating the code, there
@@ -27,6 +28,7 @@ def load_h5(browser, tree, push):
     index = browser.ui.dirTree.selectedIndexes()[0]
     currentFile = str(index.model().filePath(index))
     browser.currentFolder = os.path.dirname(currentFile)
+    browser.ui.loadFolderInput.setText(browser.currentFolder)
     
     if '.hdf5' in currentFile:
         if browser.db: browser.db.close()
@@ -42,6 +44,8 @@ def load_h5(browser, tree, push):
         # Select first item of loaded list
         tree.setCurrentItem(tree.itemAt(0,0))
         if push:
+            browser.saveFolder = browser.currentFolder
+            browser.ui.saveFolderInput.setText(browser.saveFolder)
             browser.ui.workingDataTree.setSortingEnabled(True)
             browser.ui.notesWidget.clear()
             for attr in browser.db.attrs:
@@ -61,6 +65,9 @@ def load_h5(browser, tree, push):
         tree.clear()       
         # Insert groups into the tree and add data to internal data list
         if push:
+            imaging = False
+            browser.saveFolder = browser.currentFolder      
+            browser.ui.saveFolderInput.setText(browser.saveFolder)  
             browser.ui.workingDataTree.setSortingEnabled(True)
             browser.ui.notesWidget.clear()
             browser.currentOpenFile = currentFile
@@ -72,6 +79,8 @@ def load_h5(browser, tree, push):
             for attr in browser.db.object().properties:
                 if 'kHz' in attr:
                     browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
+                elif 'pixel' in attr:
+                    imaging = True
                 else:
                     browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]
         for group in browser.db.groups():
@@ -85,6 +94,9 @@ def load_h5(browser, tree, push):
                 item.addChild(child)    
                 if push:
                     child.data = get_dataFromFile(browser, child)
+                    if imaging: 
+                        imageArray = imagefun.array2image(child.data, (1024,1024))
+                        child.data = imageArray
                     child.listIndex = len(browser.ui.workingDataTree.dataItems)
                     browser.ui.workingDataTree.dataItems.append(child)
                     if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
@@ -101,8 +113,7 @@ def populate_h5tree(browser, parent, parentWidget, push):
     elif isinstance(parent, h5py.Dataset):
         set_attrs(parent, parentWidget)
         if push:
-            try:
-                #parentWidget.data = parent[:]            
+            try:         
                 parentWidget.data = get_dataFromFile(browser, parentWidget)
                 parentWidget.listIndex = len(browser.ui.workingDataTree.dataItems)          
                 browser.ui.workingDataTree.dataItems.append(parentWidget)
