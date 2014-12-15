@@ -6,3 +6,4 @@ import mplfuncs as mplplot
 import treefuncs as treefun
 import tablefuncs as table
 import pgfuncs as pgplot
+import imagefuncs as imagefun

@@ -15,6 +15,8 @@ class h5Item(QtGui.QTreeWidgetItem):
         QtGui.QTreeWidgetItem.__init__(self, parent)
         self.name = ''
         self.path = ''
+        self.group = ''
+        self.channel = ''
         self.listIndex = None
         self.originalIndex = None
         self.data = None

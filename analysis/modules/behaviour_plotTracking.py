@@ -49,7 +49,7 @@ class AnalysisModule():
         self.color.addItem('DarkOrange')
         self.color.addItem('LightSlateGray')
         self.colorLabel = QtGui.QLabel('Colour')
-        self.toolOptions.append([self.color, self.colorLabel])
+        self.toolOptions.append([self.colorLabel, self.color])
         self.histOption = QtGui.QCheckBox('Histogram')
         self.toolOptions.append([self.histOption])
         self.plotAxisOption = QtGui.QCheckBox('Long axis over time')
