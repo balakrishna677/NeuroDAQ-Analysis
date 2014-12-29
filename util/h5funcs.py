@@ -129,6 +129,8 @@ def populate_h5File(browser, parent, parentWidget):
         elif item.data is not None:
                 dset = parent.create_dataset(str(item.text(0)), data=item.data)
                 set_attrs(item, dset)
+        else:
+                parent.create_group(str(item.text(0)))
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
