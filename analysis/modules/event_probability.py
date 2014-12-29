@@ -60,7 +60,7 @@ class AnalysisModule():
 
         Options:
         1) Threshold for detecting spikes
-        2) Time bin size
+        2) Time bin size (ms)
         3) Event direction
         """
     
@@ -96,8 +96,8 @@ class AnalysisModule():
 
             # Check cursor range
             #c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
-            #data = item.data[c1/dt:c2/dt]
-            data = item.data
+            data, c1 = aux.get_dataRange(plotWidget, item)
+            #data = item.data
             apCounter, i = 0, 0
             xOnsets, yOnsets  = [], []
             while i<len(data):
@@ -114,17 +114,19 @@ class AnalysisModule():
             binSize = int(timeBin/dt)
             nbins = np.ceil(len(data)/binSize)
             eventCounter = []
-            for b in np.arange(1, nbins):
+            for b in np.arange(1, nbins+1):
                 count = np.sum((xOnsets>(b-1)*binSize) & (xOnsets<(b*binSize)))
                 eventCounter.append(count)
+            bins = np.arange(0+binSize/2., nbins*binSize+binSize/2., binSize)*dt
 
             # Store data     
-            results.append(['event_counts', eventCounter]) 
+            results.append(['event_counts', np.array(eventCounter)]) 
 
             # Plot detected events
             self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)  
 
         # Store results
+        results.append(['time_bins', bins])
         aux.save_results(browser, parentText+'_eventProbability', results)     
          
         ############################################  
