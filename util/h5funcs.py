@@ -197,6 +197,7 @@ def create_h5(browser, tree):
 
 
 def save_h5(browser, tree):
+  try:
     currentSaveFile = str(browser.currentSaveFile)
     browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
     if browser.db:
@@ -211,6 +212,9 @@ def save_h5(browser, tree):
     set_attrs(browser.ui.workingDataTree.root, browser.wdb)   
     browser.wdb.attrs['Notes'] =  str(browser.ui.notesWidget.toPlainText())   
     browser.wdb.close()
+  except:
+    print 'Unexpected error, the data might have not been saved'
+    raise
 
 def set_attrs(source, item):
     """ Set attributes of h5 item or dataset
