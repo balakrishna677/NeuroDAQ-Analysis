@@ -36,8 +36,10 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-        self.toolOptions.append(QtGui.QCheckBox('Show traces', self.toolGroupBox))
-        self.toolOptions.append(QtGui.QCheckBox('Store result', self.toolGroupBox))
+        self.showTraces = QtGui.QCheckBox('Show traces')
+        self.storeResult = QtGui.QCheckBox('Store result')
+        self.toolOptions.append(self.showTraces)
+        self.toolOptions.append(self.storeResult)      
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -56,37 +58,30 @@ class AnalysisModule():
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget   
 
-        # Clear plot and get data
-        plotWidget.clear()    
+        # Get data 
         data = aux.get_data(browser)
     
-        # Get dt and 
+        # Get dt 
         dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
 
-        # Calculate average
+        # Calculate average and make h5item for plotting
         avgData = np.mean(data,0)
+        avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
 
-        # Check selected options
-        for option in self.toolOptions:
-            if option.isChecked():
-                if option.text()=='Store result':
-                    results = []                                    
-                    # Get attributes from plotted items
-                    item = plotWidget.plotDataItems[0]
-                    attrs = item.attrs           
- 
-                    # Store data     
-                    results.append(['avg_trace', avgData, attrs])
-                    aux.save_results(browser, item.parent().text(0)+'_average', results) 
-             
-                if option.text()=='Show traces':
-                    pgplot.replot(browser, plotWidget)
+        # Plot data
+        if self.showTraces.isChecked(): 
+            clear = False
+        else:
+            clear = True
+        pgplot.browse_singleData(browser, plotWidget, avgItem, clear=clear, color='r')
 
-        # Plot average
-        item = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
-        pgplot.browse_singleData(browser, plotWidget, item, clear=False, color='r')
-        if browser.ui.actionShowCursors.isChecked(): pgplot.replot_cursors(browser, plotWidget)      
-         
+        # Store data
+        if self.storeResult.isChecked():
+            results = []
+            item = plotWidget.plotDataItems[0]
+            results.append(['avg_trace', avgData, item.attrs])
+            aux.save_results(browser, item.parent().text(0)+'_average', results) 
+                 
         ############################################  
         
         

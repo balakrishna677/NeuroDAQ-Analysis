@@ -467,6 +467,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                 self.ui.statusbar.clearMessage()
             # Plot data if Browse is selected
             if self.ui.actionBrowseData.isChecked():
+              if current.data is not None: 
                 if len(current.data.shape)==1:
                     pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
                 elif len(current.data.shape)==2:

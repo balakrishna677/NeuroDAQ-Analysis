@@ -90,7 +90,7 @@ class AnalysisModule():
             parentText = 'Data'
     
         # Filter data
-        results = [] 
+        results, itemsToPlot = [], [] 
         for item in plotWidget.plotDataItems:  
             # Copy attributes and add some new ones
             attrs = item.attrs
@@ -102,9 +102,12 @@ class AnalysisModule():
             traceFilter = acq4filter.besselFilter(item.data, cutoff, order, float(item.attrs['dt'])/1000, btype, bidir)
             results.append([item.text(0), traceFilter, attrs])
         
-            # Store and plot filtered trace            
+            # Store filtered traces            
             filterItem = aux.make_h5item('filter', traceFilter, item.attrs)
-            pgplot.browse_singleData(browser, plotWidget, filterItem, clear=False, color='#F2EF44')
+            itemsToPlot.append(filterItem)
+
+        # Plot results
+        pgplot.plot_multipleData(browser, plotWidget, itemsToPlot, clear=False, color='#F2EF44')
 
         # Store results
         aux.save_results(browser, parentText+'_filter', results)     
