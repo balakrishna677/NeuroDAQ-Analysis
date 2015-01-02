@@ -13,3 +13,4 @@ from h5Widgets import h5TreeWidget
 from MplWidgets import matplotlibWidget
 from IPythonWidget import QIPythonWidget
 from TableWidgets import TablePropsWidget
+from TableWidgets import SpreadSheet, tableItem

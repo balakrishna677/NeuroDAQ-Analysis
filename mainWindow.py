@@ -17,7 +17,7 @@ sip.setapi('QVariant', 2)
 from PyQt4 import QtGui, QtCore
 
 from gui import Ui_MainWindow
-from widgets import h5Item
+from widgets import h5Item, tableItem
 from util import h5, mplplot, treefun, table, pgplot, imagefun
 from analysis import toolselector, auxfuncs, template
 from console import utils as utilsconsole
@@ -141,6 +141,11 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionRenameTreeItem.triggered.connect(self.rename_itemOnMenu)
         self.ui.actionRemoveTreeItem.triggered.connect(self.remove_itemOnMenu)
         self.ui.actionShowInTable.triggered.connect(self.show_inTableOnMenu)    
+
+        # Data table        
+        # -----------------------------------------------------------------------------
+        self.connect(self.ui.dataTableWidget, QtCore.SIGNAL('droppedInTable'), self.copy_itemsToTable)
+        self.connect(self.ui.dataTableWidget, QtCore.SIGNAL('tableTargetPosition'), self.set_targetTablePosition)
 
         # Properties table        
         # -----------------------------------------------------------------------------        
@@ -411,7 +416,37 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     def show_inTableOnMenu(self):
         #self.ui.dataTableWidget.setData({'x': [1,2,3], 'y': [4,5,6]})#np.random.random(100))
-        table.put_dataOnTable(self)
+        table.put_dataOnTable(self, self.ui.dataTableWidget)
+
+    def set_targetTablePosition(self, col, row):
+        self.dragTableTargetCol = col
+        self.dragTableTargetRow = row
+
+    def copy_itemsToTable(self, source, modifiers):
+        if (source==self.ui.workingDataTree):
+          print "something arrived at the Table"
+          copyItems = []
+          for item in self.copyItems:
+             i = tableItem(str(item.text(0)))
+             i.data = item.data
+             targetItems.append(i)      
+                 
+          #parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
+          for row in np.arange(0, len(self.copyItems)):
+             index = self.ui.dataTable.model().index(self.dragTableTargetCol, self.dragTableTargetRow) #, 0, parentIndex)        
+             temp_item = self.ui.dataTable.itemFromIndex(QtCore.QModelIndex(index))
+             sip.delete(temp_item)        
+          #  if parentIndex.isValid():
+          #      self.make_nameUnique(self.dragTargetParent, targetItems[row], targetItems[row].text(0))
+          #      self.dragTargetParent.insertChild(index.row(), targetItems[row])
+          #      originalParentWidget = self.copyItems[row]
+          #      h5.populate_h5copyItems(self, originalParentWidget, targetItems[row])
+          #  else:
+          #      self.make_nameUnique(self.ui.workingDataTree.invisibleRootItem(), targetItems[row], targetItems[row].text(0))
+          #      self.ui.workingDataTree.insertTopLevelItem(index.row(), targetItems[row])     
+          #      originalParentWidget = self.copyItems[row]
+          #      h5.populate_h5copyItems(self, originalParentWidget, targetItems[row])       
+
 
     # -----------------------------------------------------------------------------
     # Plotting Methods

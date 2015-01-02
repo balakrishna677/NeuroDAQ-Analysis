@@ -335,13 +335,14 @@ class Ui_MainWindow(object):
         # Geometry and Layout   
         # TAB 3 content > tableWidget         
         #self.dataTableWidget = QtGui.QTableWidget()
-        self.dataTableWidget = pg.TableWidget(editable=False)
+        #self.dataTableWidget = pg.TableWidget(editable=False)
+        self.dataTableWidget = SpreadSheet(1000,1000)
         #self.dataTableWidget.setDragEnabled(True)
         #self.dataTableWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         #self.dataTableWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
-        self.dataTableWidget.setAlternatingRowColors(True)
-        self.dataTableWidget.setColumnCount(100)
-        self.dataTableWidget.setRowCount(100)
+        #self.dataTableWidget.setAlternatingRowColors(True)
+        #self.dataTableWidget.setColumnCount(100)
+        #self.dataTableWidget.setRowCount(100)
         self.displayTabWidget.addTab(self.dataTableWidget, _fromUtf8("Table"))        
 
         # ------
