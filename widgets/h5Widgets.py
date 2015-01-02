@@ -52,10 +52,12 @@ class h5Item(QtGui.QTreeWidgetItem):
                 # Only one string has numbers and other characters, or both are numbers only
                 try:
                     return int(item1) < int(item2)
-                except ValueError:         
+                except ValueError:      
+                    #print item1, item2, item1<item2   
                     return item1 < item2                             
         else:
             # There are no numbers (or only one string has a number)
+            #print item1, item2, item1<item2 
             return item1 < item2
 
 

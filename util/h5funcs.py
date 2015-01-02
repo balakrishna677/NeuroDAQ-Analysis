@@ -129,6 +129,8 @@ def populate_h5File(browser, parent, parentWidget):
         elif item.data is not None:
                 dset = parent.create_dataset(str(item.text(0)), data=item.data)
                 set_attrs(item, dset)
+        else:
+                parent.create_group(str(item.text(0)))
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
@@ -195,12 +197,14 @@ def create_h5(browser, tree):
 
 
 def save_h5(browser, tree):
+  try:
     currentSaveFile = str(browser.currentSaveFile)
     browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
     if browser.db:
-        if browser.dbType=='hdf5':
-            browser.db.close()
+        #if browser.dbType=='hdf5':
+        browser.db.close()
         browser.db = None
+    if browser.wdb: browser.wdb.close()
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()
     populate_h5File(browser, browser.wdb['/'], root) 
@@ -208,6 +212,9 @@ def save_h5(browser, tree):
     set_attrs(browser.ui.workingDataTree.root, browser.wdb)   
     browser.wdb.attrs['Notes'] =  str(browser.ui.notesWidget.toPlainText())   
     browser.wdb.close()
+  except:
+    print 'Unexpected error, the data might have not been saved'
+    raise
 
 def set_attrs(source, item):
     """ Set attributes of h5 item or dataset
@@ -260,3 +267,4 @@ def get_dataFromFile(browser, item):
     
 
         
+

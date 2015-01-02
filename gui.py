@@ -8,6 +8,7 @@ from IPython.lib import guisupport
 from PyQt4 import QtCore, QtGui
 from widgets import *
 import pyqtgraph as pg
+import vlc
 
 
 try:
@@ -335,14 +336,13 @@ class Ui_MainWindow(object):
         # Geometry and Layout   
         # TAB 3 content > tableWidget         
         #self.dataTableWidget = QtGui.QTableWidget()
-        #self.dataTableWidget = pg.TableWidget(editable=False)
-        self.dataTableWidget = SpreadSheet(1000,1000)
+        self.dataTableWidget = pg.TableWidget(editable=False)
         #self.dataTableWidget.setDragEnabled(True)
         #self.dataTableWidget.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         #self.dataTableWidget.setDefaultDropAction(QtCore.Qt.MoveAction)
-        #self.dataTableWidget.setAlternatingRowColors(True)
-        #self.dataTableWidget.setColumnCount(100)
-        #self.dataTableWidget.setRowCount(100)
+        self.dataTableWidget.setAlternatingRowColors(True)
+        self.dataTableWidget.setColumnCount(100)
+        self.dataTableWidget.setRowCount(100)
         self.displayTabWidget.addTab(self.dataTableWidget, _fromUtf8("Table"))        
 
         # ------
@@ -360,6 +360,7 @@ class Ui_MainWindow(object):
         # TAB 5 content > Matplotlib axes
         self.mplWidget = matplotlibWidget()
         self.displayTabWidget.addTab(self.mplWidget, _fromUtf8("MatplotLib"))
+
 
         # ------
         # TAB 6   (Notes Tab)

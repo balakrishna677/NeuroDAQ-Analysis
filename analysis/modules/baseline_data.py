@@ -61,24 +61,19 @@ class AnalysisModule():
             if option.isChecked():
                 if option.text()=='Keep original data':
                     aux.make_data_copy(browser, plotWidget)
-
-        # Get the data now, in case we are working on a copy
-        plotWidget.clear()    
-        data = aux.get_data(browser)
     
         # Get dt
         dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
 
         # Make average between cursors and subract for each trace 
-        for item in plotWidget.plotDataItems:
-            # Check cursor range
-            c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
-            bsl = np.mean(item.data[c1/dt:c2/dt])
+        for item in plotWidget.plotDataItems:                        
+            bslData, c1 = aux.get_dataRange(plotWidget, item)             
+            bsl = np.mean(bslData)
             item.data = item.data - bsl
 
         # Re-plot data
         pgplot.replot(browser, plotWidget)
-        pgplot.replot_cursors(browser, plotWidget)       
+        pgplot.replot_cursors(plotWidget)       
          
         ############################################            
         

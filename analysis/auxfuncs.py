@@ -122,7 +122,7 @@ def make_data_copy(browser, plotWidget):
         browser.ui.workingDataTree.dataItems.append(child)  
         childrenList.append(child)      
     pgplot.plot_multipleData(browser, plotWidget, childrenList)    
-    if browser.ui.actionShowCursors.isChecked(): pgplot.replot_cursors(browser, plotWidget) 
+    if browser.ui.actionShowCursors.isChecked(): pgplot.replot_cursors(plotWidget) 
 
 def plot_point(plotWidget, cursor1, xpoint, ypoint, dt):
     """ Plots a single point, with the X coordinate measured from the position
