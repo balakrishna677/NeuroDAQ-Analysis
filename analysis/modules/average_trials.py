@@ -3,6 +3,7 @@ from PyQt4 import QtGui, QtCore
 ####################################
 # ADD ADDITIONAL IMPORT MODULES HERE
 import numpy as np
+import sys, traceback
 from analysis import auxfuncs as aux
 from util import pgplot
 import pyqtgraph as pg
@@ -54,7 +55,11 @@ class AnalysisModule():
         # ANALYSIS FUNCTION
         
         # Get options
-        numberOfTrials = int(self.trialsNumber.text())
+        try:
+            numberOfTrials = int(self.trialsNumber.text())
+        except ValueError:
+            aux.error_box('Please input a valid number of trials')
+            return
     
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
@@ -68,24 +73,30 @@ class AnalysisModule():
     
         # Get data and attributes
         data = aux.get_data(self.browser)
-        item = self.browser.ui.dataPlotsWidget.plotDataItems[0]
+        item = plotWidget.plotDataItems[0]
         
         # Reshape data and average
-        data.shape = (numberOfTrials, data.shape[0]/numberOfTrials, data.shape[1])
-        avg = data.mean(axis=0)
+        try:
+            data.shape = (numberOfTrials, data.shape[0]/numberOfTrials, data.shape[1])
+            avg = data.mean(axis=0)
         
-        # Make h5 items
-        results = []        
-        for sweep in avg:  
-            #sweepItem = aux.make_h5item('sweep', sweep, item.attrs)
-            results.append(['sweep', sweep, item.attrs])
+            # Make h5 items
+            results, itemsToPlot = [], []        
+            for sweep in avg:  
+                #sweepItem = aux.make_h5item('sweep', sweep, item.attrs)
+                results.append(['sweep', sweep, item.attrs])
         
-            # Store and plot average sweep            
-            sweepItem = aux.make_h5item('sweep', sweep, item.attrs)
-            pgplot.browse_singleData(browser, plotWidget, sweepItem, clear=False, color='#F2EF44')
+                # Store average sweep            
+                sweepItem = aux.make_h5item('sweep', sweep, item.attrs)
+                itemsToPlot.append(sweepItem)
 
-        # Store results        
-        aux.save_results(browser, parentText+'_trialsAvg', results)     
-         
+            # Plot results
+            pgplot.plot_multipleData(browser, plotWidget, itemsToPlot, clear=False, color='#F2EF44')
+
+            # Store results        
+            aux.save_results(browser, parentText+'_trialsAvg', results)     
+        
+        except ValueError: 
+            aux.error_box('The number of sweeps and trials do not match', sys.exc_info())          
         ############################################  
 

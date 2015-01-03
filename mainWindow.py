@@ -57,6 +57,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Lists for storing data
         self.db = None
         self.wdb = None
+        self.ui.dataPlotsWidget.plotDataItems = []
         
         # Current working file and folder for saving
         self.currentSaveFile = []
@@ -378,24 +379,31 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     def select_analysisTool(self):
         i = self.ui.selectionTabWidget.currentIndex()
+        toolSelectWidget = None
         for item in self.selectionList:
             if item[2]==self.ui.selectionTabWidget.tabText(i):  # get the widgets that belong to the selected tab
                 toolSelectWidget = item[0]
-                toolStackedWidget = item[1]                
-        index = toolSelectWidget.selectedIndexes()[0]
-    
-        # Display the matching stack in the stacked widget
-        selectedItemName = toolSelectWidget.model.itemFromIndex(index).text()
-        for w in toolStackedWidget.widgetList:
-            if w[0]==selectedItemName: toolStackedWidget.setCurrentIndex(w[1])
+                toolStackedWidget = item[1]           
+        if toolSelectWidget and len(toolSelectWidget.selectedIndexes())>0:                
+            index = toolSelectWidget.selectedIndexes()[0]
+            # Display the matching stack in the stacked widget
+            selectedItemName = toolSelectWidget.model.itemFromIndex(index).text()
+            for w in toolStackedWidget.widgetList:
+                if w[0]==selectedItemName: toolStackedWidget.setCurrentIndex(w[1])
+        else:
+            index = None        
         return index        
 
-    def analyse_data(self):
-        index = self.select_analysisTool()
-        if index:
-            tool = index.data() #.toString()
-            #toolselector.toolselector(self, tool)
-            self.customToolSelector.tool_select(self, tool)
+    def analyse_data(self):        
+        if len(self.ui.dataPlotsWidget.plotDataItems)==0: # Check that there is data plotted to analyse
+            auxfuncs.error_box('There is no data to analyze', infoText='Please plot the data')
+        else:
+            index = self.select_analysisTool()
+            if index:
+                tool = index.data() 
+                self.customToolSelector.tool_select(self, tool)
+            else:
+                auxfuncs.error_box('No analysis function selected')
 
     # -----------------------------------------------------------------------------
     # Properties Methods

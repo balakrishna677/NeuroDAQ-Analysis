@@ -1,6 +1,3 @@
-import basic
-import eventdetection as event
-
 # Get browser instance
 global browser
 

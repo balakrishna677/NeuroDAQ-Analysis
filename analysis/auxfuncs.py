@@ -9,6 +9,7 @@ as the data list, so the indexes match.
 """
 
 import numpy as np
+import traceback
 from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
 from widgets import h5Item
@@ -158,10 +159,24 @@ def save_results(browser, parentText, results):
     return listIndexes
 
 
-
+def error_box(text, errorInfo=None, infoText=None):    
+    """ Displays a error message box with custom text and optional
+    details of the error (including traceback) and additional information.
+    """
+    errorBox = QtGui.QMessageBox()
+    errorBox.setWindowTitle('Error')
+    errorBox.setText('<b>'+text+'</b>')
+    errorBox.setIcon(QtGui.QMessageBox.Warning)
+    # Get error and traceback info
+    if errorInfo:
+        error_type, error_value, error_traceback = errorInfo
+        tracebackInfo = traceback.format_exception(error_type, error_value, error_traceback)
+        errorBox.setDetailedText(''.join(tracebackInfo)) 
+    # Add additional info
+    if infoText:
+        errorBox.setInformativeText(infoText)
+    errorBox.exec_()
     
-
-
 
 
 

@@ -33,7 +33,7 @@ def plot_multipleData(browser, plotWidget, itemList, clear=True, color='#3790CC'
             x = make_xvector(item.data, dt)     
             #x = np.arange(0, len(item.data)*dt, dt)
             y = item.data
-            plotWidget.plot(x, y, pen=pg.mkPen('#3790CC'))
+            plotWidget.plot(x, y, pen=pg.mkPen(color))
             plotWidget.plotDataItems.append(item)
 
 def browse_singleData(browser, plotWidget, currentItem, clear=True, color='#3790CC'):
