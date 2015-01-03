@@ -488,7 +488,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         itemList = self.ui.workingDataTree.selectedItems()
         if itemList:
             pgplot.plot_multipleData(self, self.ui.dataPlotsWidget, itemList)   
-            print itemList[0].attrs['dt']    
+            #print itemList[0].attrs['dt']    
 
     def zoom_out(self):
         pgplot.zoom_out(self, self.ui.dataPlotsWidget)

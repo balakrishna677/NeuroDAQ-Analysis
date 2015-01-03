@@ -3,6 +3,7 @@ from PyQt4 import QtGui, QtCore
 ####################################
 # ADD ADDITIONAL IMPORT MODULES HERE
 import numpy as np
+import sys
 from analysis import auxfuncs as aux
 from util import pgplot
 import pyqtgraph as pg
@@ -65,8 +66,13 @@ class AnalysisModule():
         dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
 
         # Calculate average and make h5item for plotting
-        avgData = np.mean(data,0)
-        avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
+        try:
+            avgData = np.mean(data,0)
+            avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
+        except ValueError:  # TODO: use masked arrays to get mean of shortest length
+            aux.error_box('Cannot calculate average on data with different lengths', sys.exc_info(),
+                          'Please ensure that all traces have the same length') 
+            return
 
         # Plot data
         if self.showTraces.isChecked(): 

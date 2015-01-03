@@ -23,7 +23,7 @@ def get_data(browser):
     for item in browser.ui.dataPlotsWidget.plotDataItems:
         #data.append(browser.ui.workingDataTree.data[item.dataIndex])
         data.append(item.data)
-    data = np.array(data) # this will return an error if dts are different (data is not the same len)
+    data = np.array(data)
     return data
 
 
@@ -166,7 +166,7 @@ def error_box(text, errorInfo=None, infoText=None):
     errorBox = QtGui.QMessageBox()
     errorBox.setWindowTitle('Error')
     errorBox.setText('<b>'+text+'</b>')
-    errorBox.setIcon(QtGui.QMessageBox.Warning)
+    errorBox.setIcon(QtGui.QMessageBox.Critical)
     # Get error and traceback info
     if errorInfo:
         error_type, error_value, error_traceback = errorInfo

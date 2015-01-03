@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+#from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
  
 class mplCanvas(FigureCanvas): 
@@ -13,9 +14,9 @@ class mplCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
  
-class NavigationToolbar(NavigationToolbar2QTAgg):
+class NavigationToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, parent, browser):
-        NavigationToolbar2QTAgg.__init__(self,canvas,parent)
+        NavigationToolbar2QT.__init__(self,canvas,parent)
         for c in self.findChildren(QtGui.QToolButton):
             #print str(c.text())
             #if str(c.text()) in ('Subplots','Customize','Back','Forward','Home'):

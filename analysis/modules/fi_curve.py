@@ -59,12 +59,15 @@ class AnalysisModule():
         # ANALYSIS FUNCTION
         
         # Read detection options 
-        threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        try:
+            threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        except NameError:
+            aux.error_box('No threshold selected')
+            return
     
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
-        plotWidget.clear()
     
         # Get parent text of plotted items
         try:
@@ -74,14 +77,11 @@ class AnalysisModule():
     
         # Detect APs in each trace
         comp = lambda a, b: a > b
-        apNumber, apFrequency = [], []
-        results = []        
+        apNumber, apFrequency, results = [], [], []
+        plotWidget.clear()        
         for item in plotWidget.plotDataItems:
-            c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
             dt = item.attrs['dt']
-            # Check cursor range
-            c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
-            data = item.data[c1/dt:c2/dt]
+            data, c1 = aux.get_dataRange(plotWidget, item)           
             apCounter, i = 0, 0
             xOnsets, yOnsets  = [], []
             while i<len(data):
@@ -96,8 +96,10 @@ class AnalysisModule():
             
             # Calculate AP frequency as 1/mean(ISI)
             isi = np.mean(np.diff(xOnsets))*dt # in ms
-            print isi
-            freq = 1/(isi/1000.)
+            if isi>0:
+                freq = 1/(isi/1000.)
+            else:
+                freq = 0.0
 
             # Store number of APs and mean frequency
             apNumber.append(apCounter)
@@ -105,10 +107,14 @@ class AnalysisModule():
 
             # Plot detected APs
             self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)  
+            
+        # Turn cursors off (the plot has been cleared so there are no cursors displayed)    
+        self.browser.ui.actionShowCursors.setChecked(False)
+        plotWidget.cursor = False       
 
         # Store results
-        results.append(['AP_number', apNumber])
-        results.append(['AP_frequency', apFrequency]) 
+        results.append(['AP_number', np.array(apNumber)])
+        results.append(['AP_frequency', np.array(apFrequency)]) 
         aux.save_results(browser, parentText+'_FI', results)     
          
         ############################################  
@@ -123,6 +129,7 @@ class AnalysisModule():
                                                pen=pg.mkPen('#FFD000', width=2))
             plotWidget.addItem(plotWidget.cursorThs)
             plotWidget.cursorThs.sigPositionChanged.connect(self.update_threshold)
+            self.update_threshold()
         else:
             plotWidget.cursorThsPos = []
             plotWidget.removeItem(plotWidget.cursorThs)                    
@@ -139,5 +146,4 @@ class AnalysisModule():
         plotWidget.plot(x, data)
         plotWidget.plot(xOnsets*dt, yOnsets, pen=None, symbol='o', symbolPen='r', symbolBrush=None, symbolSize=4)
 
-#/home/tiago/Data/isilon-science/Zina/e-physHDF5/
 
