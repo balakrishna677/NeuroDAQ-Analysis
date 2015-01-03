@@ -35,7 +35,8 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-        self.toolOptions.append(QtGui.QCheckBox('Keep original data', self.toolGroupBox))
+        self.keepData = QtGui.QCheckBox('Keep original data')
+        self.toolOptions.append(self.keepData)
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -54,13 +55,10 @@ class AnalysisModule():
         
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget   
-        c1, c2 = aux.get_cursors(plotWidget) 
 
-        # Check selected options
-        for option in self.toolOptions:
-            if option.isChecked():
-                if option.text()=='Keep original data':
-                    aux.make_data_copy(browser, plotWidget)
+        # Copy data if required
+        if self.keepData.isChecked():
+            aux.make_data_copy(browser, plotWidget)
     
         # Get dt
         dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
@@ -72,8 +70,7 @@ class AnalysisModule():
             item.data = item.data - bsl
 
         # Re-plot data
-        pgplot.replot(browser, plotWidget)
-        pgplot.replot_cursors(plotWidget)       
+        pgplot.replot(browser, plotWidget)     
          
         ############################################            
         

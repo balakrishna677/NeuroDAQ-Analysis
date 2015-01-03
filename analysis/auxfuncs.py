@@ -105,9 +105,8 @@ def make_data_copy(browser, plotWidget):
     in order to keep the original data intact. Add new items
     to the working data tree and plot them. 
     """
-    plotWidget.clear() 
     parentText = plotWidget.plotDataItems[0].parent().text(0)
-    item = h5Item([parentText+'_copy'])
+    item = h5Item([parentText+'_OriginalCopy'])
     parentWidget = browser.ui.workingDataTree.invisibleRootItem()
     browser.make_nameUnique(parentWidget, item, item.text(0))
     browser.ui.workingDataTree.addTopLevelItem(item)
@@ -122,8 +121,6 @@ def make_data_copy(browser, plotWidget):
         child.listIndex =  len(browser.ui.workingDataTree.dataItems)
         browser.ui.workingDataTree.dataItems.append(child)  
         childrenList.append(child)      
-    pgplot.plot_multipleData(browser, plotWidget, childrenList)    
-    if browser.ui.actionShowCursors.isChecked(): pgplot.replot_cursors(plotWidget) 
 
 def plot_point(plotWidget, cursor1, xpoint, ypoint, dt):
     """ Plots a single point, with the X coordinate measured from the position

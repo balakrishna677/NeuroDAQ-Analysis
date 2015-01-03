@@ -64,6 +64,7 @@ def replot(browser, plotWidget):
     Useful for visualising the data after any analysis transformation.
     """
     plotWidget.clear()
+    if plotWidget.cursor: replot_cursors(plotWidget)
     for item in plotWidget.plotDataItems:  
         try:
             dt = item.attrs['dt']
