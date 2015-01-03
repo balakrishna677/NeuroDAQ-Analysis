@@ -92,9 +92,9 @@ class AnalysisModule():
         # Store results
         results = []
         if self.storeBox.isChecked():
-            if self.minBox.isChecked(): results.append(['Minimum', dataMin])
-            if self.maxBox.isChecked(): results.append(['Maximum', dataMax])
-            if self.meanBox.isChecked(): results.append(['Mean', dataMean])
+            if self.minBox.isChecked(): results.append(['Minimum', np.array(dataMin)])
+            if self.maxBox.isChecked(): results.append(['Maximum', np.array(dataMax)])
+            if self.meanBox.isChecked(): results.append(['Mean', np.array(dataMean)])
             aux.save_results(browser, 'Measurements', results)             
         ############################################  
 

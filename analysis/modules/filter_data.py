@@ -75,8 +75,12 @@ class AnalysisModule():
             btype = 'low'
         elif 'High' in btype:
             btype = 'high'
-        cutoff = float(self.filterCutoff.text())
-        order = float(self.filterOrder.text())
+        try:    
+            cutoff = float(self.filterCutoff.text())
+            order = float(self.filterOrder.text())
+        except ValueError:
+            aux.error_box('Invalid Cut off or Order value')
+            return
         bidir = self.filterDirection.isChecked()
     
         # Get widgets
