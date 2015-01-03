@@ -67,15 +67,22 @@ class AnalysisModule():
         ############################################
         # ANALYSIS FUNCTION
         
-        # Read detection options 
-        threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        # Read detection options
+        try:
+            threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        except NameError:
+            aux.error_box('No threshold selected')
+            return         
+        try:
+            timeBin = np.abs(float(self.timeBin.text())) 
+        except ValueError:
+            aux.error_box('Invalid time bin')
+            return              
         direction = str(self.eventDirection.currentText())
-        timeBin = float(self.timeBin.text())
-    
+   
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
-        plotWidget.clear()
     
         # Get parent text of plotted items
         try:
@@ -89,15 +96,20 @@ class AnalysisModule():
         elif direction=='positive':
             comp = lambda a, b: a > b
   
+        # Check time bin (using the first plotted item)
+        item = plotWidget.plotDataItems[0]
+        dt = item.attrs['dt']
+        data, c1 = aux.get_dataRange(plotWidget, item)
+        if (timeBin/dt==0) or (len(data)<timeBin/dt):
+            aux.error_box('Invalid time bin', infoText='Make sure time bin is smaller than the selected data range')
+            return  
+  
+        # Detect events
         results = []        
+        plotWidget.clear()
         for item in plotWidget.plotDataItems:
-           #c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
             dt = item.attrs['dt']
-
-            # Check cursor range
-            #c1, c2 = aux.check_cursors(c1, c2, item.data, dt)
             data, c1 = aux.get_dataRange(plotWidget, item)
-            #data = item.data
             apCounter, i = 0, 0
             xOnsets, yOnsets  = [], []
             while i<len(data):
@@ -125,6 +137,10 @@ class AnalysisModule():
             # Plot detected events
             self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)  
 
+        # Turn cursors off (the plot has been cleared so there are no cursors displayed)    
+        self.browser.ui.actionShowCursors.setChecked(False)
+        plotWidget.cursor = False       
+
         # Store results
         results.append(['time_bins', bins])
         aux.save_results(browser, parentText+'_eventProbability', results)     
@@ -141,10 +157,10 @@ class AnalysisModule():
                                                pen=pg.mkPen('#FFD000', width=2))
             plotWidget.addItem(plotWidget.cursorThs)
             plotWidget.cursorThs.sigPositionChanged.connect(self.update_threshold)
+            self.update_threshold()
         else:
             plotWidget.cursorThsPos = []
             plotWidget.removeItem(plotWidget.cursorThs)                    
-
         
     def update_threshold(self):
         plotWidget = self.browser.ui.dataPlotsWidget
@@ -157,5 +173,4 @@ class AnalysisModule():
         plotWidget.plot(x, data)
         plotWidget.plot(xOnsets*dt, yOnsets, pen=None, symbol='o', symbolPen='r', symbolBrush=None, symbolSize=4)
 
-#/home/tiago/Data/isilon-science/Zina/e-physHDF5/
 
