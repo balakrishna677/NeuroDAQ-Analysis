@@ -208,6 +208,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             if ok:
                 self.currentSaveFile = str(self.saveFolder) + '/' + fname + '.hdf5'
                 h5.save_h5(self, self.ui.workingDataTree)
+        h5.load_h5(self, self.ui.fileDataTree, push=False) # Re-open currently selected file
         
     def save_h5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
@@ -215,7 +216,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         if ok:
             self.currentSaveFile = self.saveFolder + '/' + fname + '.hdf5'      
             h5.save_h5(self, self.ui.workingDataTree)        
-
+        h5.load_h5(self, self.ui.fileDataTree, push=False) # Re-open currently selected file
 
     # -----------------------------------------------------------------------------
     # Tree Methods
