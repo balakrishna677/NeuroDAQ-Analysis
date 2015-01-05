@@ -29,7 +29,7 @@ def load_h5(browser, tree, push):
     currentFile = str(index.model().filePath(index))
     browser.currentFolder = os.path.dirname(currentFile)
     browser.ui.loadFolderInput.setText(browser.currentFolder)
-    
+
     if '.hdf5' in currentFile:
         if browser.db: browser.db.close()
         browser.db = h5py.File(currentFile, 'r+')

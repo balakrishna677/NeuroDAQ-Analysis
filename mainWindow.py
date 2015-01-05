@@ -98,6 +98,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.workingDataTree.itemSelectionChanged.connect(lambda: self.store_Selection(2))
         self.ui.loadFolderInput.returnPressed.connect(self.update_loadDir)
         self.ui.saveFolderInput.textChanged.connect(self.update_saveDir)
+        self.connect(self.ui.dirTree, QtCore.SIGNAL('fileDeletePressed'), self.delete_file)
 
         # Analysis tab selection
         # -----------------------------------------------------------------------------
@@ -207,6 +208,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             if ok:
                 self.currentSaveFile = str(self.saveFolder) + '/' + fname + '.hdf5'
                 h5.save_h5(self, self.ui.workingDataTree)
+        h5.load_h5(self, self.ui.fileDataTree, push=False) # Re-open currently selected file
         
     def save_h5OnSaveAsPush(self):
         fname, ok = QtGui.QInputDialog.getText(self, 'New file', 'Enter file name:')
@@ -214,7 +216,15 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         if ok:
             self.currentSaveFile = self.saveFolder + '/' + fname + '.hdf5'      
             h5.save_h5(self, self.ui.workingDataTree)        
+        h5.load_h5(self, self.ui.fileDataTree, push=False) # Re-open currently selected file
 
+    def delete_file(self):
+        index = self.ui.dirTree.selectedIndexes()[0]
+        currentFile = str(index.model().filePath(index))
+        try:
+            os.remove(currentFile)
+        except OSError:
+            return
 
     # -----------------------------------------------------------------------------
     # Tree Methods
