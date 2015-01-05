@@ -37,7 +37,7 @@ class AnalysisModule():
         
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
-        self.apThreshold = QtGui.QPushButton('Set AP threshold')
+        self.apThreshold = QtGui.QPushButton('Set threshold')
         self.apThreshold.setCheckable(True)
         self.apThresholdDisplay = QtGui.QLabel('None')
         self.toolOptions.append([self.apThreshold, self.apThresholdDisplay])   

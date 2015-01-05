@@ -55,11 +55,9 @@ def make_label_layout(optionsList, groupBox):
             gridbox.addWidget(item[0], row, 0)
         elif len(item)==2: 
             gridbox.addWidget(item[0], row, 0)
-            gridbox.addWidget(item[1], row, 1)
+            gridbox.addWidget(item[1], row, 1)  
         row+=1
-    gridbox.setRowMinimumHeight(row,0)
-    gridbox.setRowStretch(row,1)    
+    gridbox.setRowMinimumHeight(row,0)    
+    gridbox.setRowStretch(row,1)        
     groupBox.setLayout(gridbox)
-
-
 

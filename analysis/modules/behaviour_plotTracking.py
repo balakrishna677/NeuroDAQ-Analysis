@@ -131,7 +131,7 @@ class AnalysisModule():
 
         self.canvas.draw()
         ############################################  
-#delaxes(subplot)
+
 
 
 

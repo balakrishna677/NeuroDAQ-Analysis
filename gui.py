@@ -38,16 +38,17 @@ class Ui_MainWindow(object):
         # -----------------------------------------------------------------------------
 
         # Geometry and Layout
-        MainWindow.resize(1300, 780)                
-        MainWindow.setSizePolicy(preferredSizePolicy)
-        MainWindow.setAutoFillBackground(False)
-        self.centralwidget = QtGui.QWidget(MainWindow)           
+        self.MainWindow = MainWindow
+        #self.MainWindow.resize(1500, 780)                
+        self.MainWindow.setSizePolicy(preferredSizePolicy)
+        self.MainWindow.setAutoFillBackground(False)
+        self.centralwidget = QtGui.QWidget(self.MainWindow)           
         self.gridLayout_centralwidget = QtGui.QGridLayout(self.centralwidget)
         self.splitter_centralwidget = QtGui.QSplitter(self.centralwidget)
         self.splitter_centralwidget.setOrientation(QtCore.Qt.Horizontal)
         self.gridLayout_centralwidget.addWidget(self.splitter_centralwidget, 0, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        MainWindow.setWindowTitle('NeuroDAQ Analysis')
+        self.MainWindow.setCentralWidget(self.centralwidget)
+        self.MainWindow.setWindowTitle('NeuroDAQ Analysis')
 
         # -----------------------------------------------------------------------------
         # Left pane -> SelectionTabs Widget and SinglePlot Widget
@@ -55,7 +56,8 @@ class Ui_MainWindow(object):
         # Geometry and Layout
         self.splitter_leftPane = QtGui.QSplitter(self.splitter_centralwidget)
         self.splitter_leftPane.setOrientation(QtCore.Qt.Vertical)
-
+        self.splitter_leftPane.setSizePolicy(preferredSizePolicy)
+        #self.splitter_leftPane.setMinimumSize(10,10)  # to disable automatically set minimumSizeHints
 
         # SelectionTabs Widget
         # -----------------------------------------------------------------------------
@@ -66,6 +68,10 @@ class Ui_MainWindow(object):
         self.selectionTabWidget.setTabShape(QtGui.QTabWidget.Rounded)
         self.selectionTabWidget.setElideMode(QtCore.Qt.ElideNone)
         self.splitter_leftPane.addWidget(self.selectionTabWidget)
+
+        # Minimum sizes for the leftPane
+        # [Data, 1D, Behaviour, Image, Graph, Custom]
+        self.leftPaneSizes = [100,400,500,500,500,500]
 
         # ------
         # TAB 1   (DataTab) -> dirTree and fileDataTree
@@ -132,6 +138,7 @@ class Ui_MainWindow(object):
         # TAB 2 content > Tool Select        
         self.oneDimToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_oneDimAnalysisTab.addWidget(self.oneDimToolSelect)
+        self.oneDimToolSelect.setMinimumWidth(150)
         self.oneDimToolSelect.setSizePolicy(preferredSizePolicy)
         
 
@@ -144,8 +151,10 @@ class Ui_MainWindow(object):
         self.toolDataSourceBox.addItem("Selection")   
         self.toolStackGrid.addWidget(self.toolDataSourceBox)
         self.oneDimToolStackedWidget = AnalysisStackWidget(0,0)
-        self.toolStackGrid.addWidget(self.oneDimToolStackedWidget)
-        self.oneDimToolStackedWidget.setSizePolicy(preferredSizePolicy)        
+        self.toolStackGrid.addWidget(self.oneDimToolStackedWidget)                      
+        self.toolStackContainerWidget.setSizePolicy(preferredSizePolicy)          
+        #self.oneDimToolStackedWidget.setSizePolicy(preferredSizePolicy)
+
         
         # -----
         # TAB 3   (behaviourAnalysisTab) -> toolSelect and toolStackedWidget
@@ -162,6 +171,7 @@ class Ui_MainWindow(object):
         # TAB 3 content > Tool Select        
         self.behaviourToolSelect = AnalysisSelectWidget(0,0)
         self.splitter_behaviourAnalysisTab.addWidget(self.behaviourToolSelect)
+        self.behaviourToolSelect.setMinimumWidth(200)
         self.behaviourToolSelect.setSizePolicy(preferredSizePolicy)
         
         # TAB 3 content > Tools Stacked Widget    
@@ -268,9 +278,6 @@ class Ui_MainWindow(object):
         self.singlePlotWidget.getAxis('left').setPen('k')           
         self.splitter_leftPane.addWidget(self.singlePlotWidget)
         self.singlePlotWidget.setSizePolicy(preferredSizePolicy)
-
-        self.splitter_leftPane.setSizes([300,1])
-
 
         # -----------------------------------------------------------------------------
         # Middle pane -> DisplayTabs Widget 
@@ -405,6 +412,7 @@ class Ui_MainWindow(object):
         self.propsTableWidget.horizontalHeader().setCascadingSectionResizes(False)
         self.propsTableWidget.horizontalHeader().setStretchLastSection(True)
     
+        self.splitter_leftPane.setSizes([300,1])
         self.splitter_centralwidget.setSizes([400,800,200])
         self.splitter_rightPane.setSizes([500,1])
         
@@ -458,7 +466,14 @@ class Ui_MainWindow(object):
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
         self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)     
         
-        
+    def setSize(self, fraction):
+        """ Resize MainWindow to a fraction of the total screen size
+        """
+        screen = QtGui.QDesktopWidget().screenGeometry()
+        height = screen.height() * fraction
+        width = screen.width() * fraction
+        self.MainWindow.resize(width, height)
+
         
         
         

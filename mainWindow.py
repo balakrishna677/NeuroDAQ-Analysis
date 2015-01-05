@@ -99,6 +99,11 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.loadFolderInput.returnPressed.connect(self.update_loadDir)
         self.ui.saveFolderInput.textChanged.connect(self.update_saveDir)
 
+        # Analysis tab selection
+        # -----------------------------------------------------------------------------
+        self.ui.selectionTabWidget.currentChanged.connect(self.tab_changed)
+      
+
         # Analysis selection list
         # -----------------------------------------------------------------------------
         self.ui.oneDimToolSelect.selectionModel().selectionChanged.connect(self.select_analysisTool)
@@ -112,11 +117,6 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.selectionList.append([self.ui.imageToolSelect, self.ui.imageToolStackedWidget, 'Image Analysis'])
         self.selectionList.append([self.ui.graphToolSelect, self.ui.graphToolStackedWidget, 'Graph'])        
         self.selectionList.append([self.ui.customToolSelect, self.ui.customToolStackedWidget, 'Custom Analysis'])
-
-        # Analysis tools stack
-        # -----------------------------------------------------------------------------
-        #self.ui.oneDimToolStackedWidget.eventCutOut.clicked.connect(self.event_cutOut)
-        #self.ui.oneDimToolStackedWidget.eventThreshold.toggled.connect(self.event_showThresholdCursor)        
 
         # Working data tree
         # -----------------------------------------------------------------------------
@@ -177,7 +177,6 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionPlotData.triggered.connect(self.plot_selected)
         self.ui.actionShowCursors.triggered.connect(self.show_cursors)
         self.ui.actionAnalyseData.triggered.connect(self.analyse_data)
-
 
 
     # -----------------------------------------------------------------------------
@@ -405,6 +404,13 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             else:
                 auxfuncs.error_box('No analysis function selected')
 
+    def tab_changed(self, index):
+        """ Use to set the minimum size of the left splitter depending on
+        the tab seleceted. It's a hack, because the in-built automated setting
+        of minimumSizeHint gets stuck on the highest value that it sees.
+        """   
+        self.ui.splitter_leftPane.setMinimumSize(self.ui.leftPaneSizes[index],1)
+
     # -----------------------------------------------------------------------------
     # Properties Methods
     # -----------------------------------------------------------------------------
@@ -506,6 +512,7 @@ def main():
     app = QtGui.QApplication(sys.argv)
     #app.setFont(defaultFont)    
     browser = NeuroDaqWindow()
+    browser.ui.setSize(0.90)   
     sys.exit(app.exec_())
     return browser
 
