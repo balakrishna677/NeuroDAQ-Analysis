@@ -63,7 +63,8 @@ class AnalysisModule():
         data = aux.get_data(browser)
     
         # Get dt 
-        dt = aux.get_attr(plotWidget.plotDataItems, 'dt')[0]
+        item = plotWidget.plotDataItems[0]
+        dt = item.attrs['dt']
 
         # Calculate average and make h5item for plotting
         try:
@@ -84,7 +85,6 @@ class AnalysisModule():
         # Store data
         if self.storeResult.isChecked():
             results = []
-            item = plotWidget.plotDataItems[0]
             results.append(['avg_trace', avgData, item.attrs])
             aux.save_results(browser, item.parent().text(0)+'_average', results) 
                  
