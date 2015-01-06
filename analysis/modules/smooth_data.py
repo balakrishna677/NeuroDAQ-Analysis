@@ -63,7 +63,11 @@ class AnalysisModule():
         
         # Get options
         window = str(self.comboBox.currentText())
-        window_len = float(self.smoothLength.text())
+        try:
+            window_len = float(self.smoothLength.text())
+        except ValueError:
+            aux.error_box('Invalid Window Length')
+            return
     
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
@@ -76,7 +80,7 @@ class AnalysisModule():
             parentText = 'Data'
     
         # Smooth data
-        results = [] 
+        results, itemsToPlot = [], [] 
         for item in plotWidget.plotDataItems:  
             # Copy attributes and add some new ones
             attrs = item.attrs
@@ -87,12 +91,12 @@ class AnalysisModule():
             traceSmooth = smooth.smooth(item.data, window_len=window_len, window=window)
             results.append([item.text(0), traceSmooth, attrs])
         
-            # Plot smoothed trace
-            #x = np.arange(0, len(traceSmooth)*item.attrs['dt'], item.attrs['dt'])
-            #plotWidget.plot(x, traceSmooth, pen=pg.mkPen('#F2EF44', width=1))
-            
+            # Store smoothed item
             smoothItem = aux.make_h5item('smooth', traceSmooth, item.attrs)
-            pgplot.browse_singleData(browser, plotWidget, smoothItem, clear=False, color='#F2EF44')
+            itemsToPlot.append(smoothItem)
+
+        # Plot results
+        pgplot.plot_multipleData(browser, plotWidget, itemsToPlot, clear=False, color='#F2EF44')
 
         # Store results
         aux.save_results(browser, parentText+'_smooth', results)     

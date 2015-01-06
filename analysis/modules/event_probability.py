@@ -43,7 +43,7 @@ class AnalysisModule():
         self.toolOptions.append([self.eventDirection])
         self.timeBin = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Time bin'), self.timeBin])
-        self.apThreshold = QtGui.QPushButton('Set event threshold')
+        self.apThreshold = QtGui.QPushButton('Set threshold')
         self.apThreshold.setCheckable(True)
         self.apThresholdDisplay = QtGui.QLabel('None')
         self.toolOptions.append([self.apThreshold, self.apThresholdDisplay])   
