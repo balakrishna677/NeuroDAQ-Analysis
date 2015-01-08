@@ -46,7 +46,8 @@ class AnalysisModule():
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
 
     def func(self, browser):
-        """ Calculate average trace from currently plotted traces.
+        """ Calculate average trace from currently plotted traces. If cursors are
+        selected the average is calculated for the range within the cursors.
 
         Options:
         1) create new entry in Working Data tree with the result
@@ -59,18 +60,20 @@ class AnalysisModule():
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget   
 
-        # Get data 
+        # Get data and cursors
         data = aux.get_data(browser)
-    
+        dataRange, c1 = aux.get_dataRange(plotWidget, plotWidget.plotDataItems[0])
+        c2 = c1 + len(dataRange)    
+
         # Get dt 
         item = plotWidget.plotDataItems[0]
         dt = item.attrs['dt']
 
         # Calculate average and make h5item for plotting
         try:
-            avgData = np.mean(data,0)
+            avgData = np.mean(data[:, c1:c2], 0)
             avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
-        except ValueError:  # TODO: use masked arrays to get mean of shortest length
+        except ValueError:  
             aux.error_box('Cannot calculate average on data with different lengths', sys.exc_info(),
                           'Please ensure that all traces have the same length') 
             return
