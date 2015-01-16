@@ -28,6 +28,7 @@ class AnalysisModule():
         # Add option widgets
         self.make_option_widgets()
 
+        selectItem.setToolTip('Perform operations in selected traces')
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.oneDimToolStackedWidget

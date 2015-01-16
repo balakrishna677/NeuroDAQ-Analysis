@@ -151,10 +151,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
 
         # Properties table        
         # -----------------------------------------------------------------------------        
-        self.ui.propsTableWidget.setRowCount(1)
+        self.ui.propsTableWidget.setRowCount(2)
         self.ui.propsTableWidget.setColumnCount(1)
         self.ui.propsTableWidget.horizontalHeader().setVisible(False)
         self.ui.propsTableWidget.setData({'dt':['']})
+        #self.ui.propsTableWidget.setData({'Description':['']})
+        
         #self.ui.workingDataTree.propsItemDtLabel = QtGui.QTableWidgetItem('dt')
         #self.ui.workingDataTree.propsItemDt = QtGui.QTableWidgetItem(self.ui.workingDataTree.propsDt)
         #self.ui.workingDataTree.propsItemDescriptionLabel = QtGui.QTableWidgetItem('Description')
@@ -498,6 +500,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                     pgplot.browse_image(self, self.ui.dataImageWidget, current)
             # Show dt
             self.ui.propsTableWidget.setData({'dt':[current.attrs['dt']]})
+            #tableItem = QtGui.QTableWidgetItem(current.attrs['dt'])
+            #tableItem.itemChanged = ''
+            #self.ui.propsTableWidget.setItem(0,0, tableItem)
 
     def plot_selected(self):
         self.ui.actionBrowseData.setChecked(False)

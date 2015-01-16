@@ -52,7 +52,7 @@ def load_h5(browser, tree, push):
                 browser.ui.workingDataTree.root.attrs[attr] = browser.db.attrs[attr]
                 if 'Notes' in attr: browser.ui.notesWidget.setText(browser.db.attrs['Notes'])
                 #if 'dt' in attr: browser.ui.workingDataTree.propsDt = str(browser.db.attrs[attr])
-                #if 'description' in attr:  browser.ui.workingDataTree.propsDescription = browser.db.attrs[attr]
+                if 'description' in attr: browser.ui.propsTableWidget.setData({'Description':[browser.db.attrs['description']]})
                 #table.update_props(browser)
             browser.currentOpenFile = currentFile
             browser.currentSaveFile = currentFile
@@ -101,6 +101,8 @@ def load_h5(browser, tree, push):
                     browser.ui.workingDataTree.dataItems.append(child)
                     if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
                         child.attrs['dt'] = 1./browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)']       
+                    #if 'description' in str(browser.ui.workingDataTree.root.attrs): 
+                    #    child.attrs['description'] = 1./browser.ui.workingDataTree.root.attrs['description'] 
 
 def populate_h5tree(browser, parent, parentWidget, push):   
     if isinstance(parent, h5py.Group):
