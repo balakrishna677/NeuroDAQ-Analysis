@@ -14,3 +14,4 @@ from MplWidgets import matplotlibWidget
 from IPythonWidget import QIPythonWidget
 from TableWidgets import TablePropsWidget
 from TableWidgets import SpreadSheet, tableItem
+from plotWidgets import plotWidget

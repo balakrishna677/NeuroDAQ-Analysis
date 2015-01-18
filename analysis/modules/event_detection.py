@@ -86,6 +86,11 @@ class AnalysisModule():
         # Read detection options 
         try:
             threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+        except NameError:
+            aux.error_box('No threshold selected')
+            return              
+
+        try:
             noiseSafety = float(self.eventNoiseSafety.text())
             smoothFactor = float(self.eventSmooth.text())
             direction = str(self.eventDirection.currentText())
@@ -99,6 +104,9 @@ class AnalysisModule():
         # Ensure that noise safety has the same sign as the threshold
         noiseSafety = np.sign(threshold) * abs(noiseSafety)
 
+        # Get widgets
+        plotWidget = browser.ui.dataPlotsWidget
+
         # Get dt list and attrs for use in concatenated data
         dtList = aux.get_attr(self.browser.ui.dataPlotsWidget.plotDataItems, 'dt')
         dt = dtList[0]
@@ -110,7 +118,7 @@ class AnalysisModule():
         for item in plotWidget.plotDataItems:
             trace, c1 = aux.get_dataRange(plotWidget, item)
             data.append(trace)
-        data = data.ravel()
+        data = np.array(data).ravel()
 
         # Smooth
         original_data = data
@@ -167,6 +175,10 @@ class AnalysisModule():
 
         # Plot results
         self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)
+
+        # Turn cursors off (the plot has been cleared so there are no cursors displayed)    
+        self.browser.ui.actionShowCursors.setChecked(False)
+        plotWidget.cursor = False          
         ############################################            
         
         

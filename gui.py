@@ -301,7 +301,8 @@ class Ui_MainWindow(object):
          
         # TAB 1 content > dataPlotsWidget        
         #self.dataPlotsWidget = matplotlibWidget(0,0)
-        self.dataPlotsWidget = pg.PlotWidget(background='#ECEDEB')
+        #self.dataPlotsWidget = pg.PlotWidget(background='#ECEDEB')
+        self.dataPlotsWidget = plotWidget(background='#ECEDEB')
         self.dataPlotsWidget.getAxis('bottom').setPen('k')
         self.dataPlotsWidget.getAxis('left').setPen('k')        
         self.dataPlotsWidget.showGrid(x=True, y=True, alpha=0.3)

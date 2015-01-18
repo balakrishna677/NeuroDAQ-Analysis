@@ -68,7 +68,9 @@ class AnalysisModule():
             bslData, c1 = aux.get_dataRange(plotWidget, item)             
             bsl = np.mean(bslData)
             item.data = item.data - bsl
-
+            item.analysis['baselineStart'] = c1 
+            item.analysis['baselineEnd'] = c1+len(bslData)
+            
         # Re-plot data
         pgplot.replot(browser, plotWidget)     
          

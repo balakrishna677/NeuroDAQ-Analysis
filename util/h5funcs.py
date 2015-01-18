@@ -95,6 +95,8 @@ def load_h5(browser, tree, push):
                 child.group = group
                 child.channel = channelname
                 item.addChild(child)    
+                if 'kHz' in str(tree.root.attrs): 
+                    child.attrs['dt'] = 1./tree.root.attrs['sampling_rate(kHz)']                   
                 if push:
                     child.data = get_dataFromFile(browser, child)
                     if imaging: 
@@ -102,8 +104,8 @@ def load_h5(browser, tree, push):
                         child.data = imageArray
                     child.listIndex = len(browser.ui.workingDataTree.dataItems)
                     browser.ui.workingDataTree.dataItems.append(child)
-                    if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
-                        child.attrs['dt'] = 1./browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)']       
+                    #if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
+                    #    child.attrs['dt'] = 1./browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)']       
 
 def populate_h5tree(browser, parent, parentWidget, push):   
     if isinstance(parent, h5py.Group):
@@ -130,10 +132,10 @@ def populate_h5File(browser, parent, parentWidget):
             parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
         elif item.data is not None:
-                dset = parent.create_dataset(str(item.text(0)), data=item.data)
-                set_attrs(item, dset)
+            dset = parent.create_dataset(str(item.text(0)), data=item.data)
+            set_attrs(item, dset)
         else:
-                parent.create_group(str(item.text(0)))
+            parent.create_group(str(item.text(0)))
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:

@@ -93,6 +93,8 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # File data tree
         # -----------------------------------------------------------------------------
         self.ui.fileDataTree.data = []
+        self.ui.fileDataTree.root = self.ui.fileDataTree.invisibleRootItem()
+        self.ui.fileDataTree.root.attrs = {}        
         self.ui.fileDataTree.currentItemChanged.connect(self.plot_OnSelectionChanged)
         self.ui.fileDataTree.itemSelectionChanged.connect(lambda: self.store_Selection(1))
         self.ui.workingDataTree.itemSelectionChanged.connect(lambda: self.store_Selection(2))
