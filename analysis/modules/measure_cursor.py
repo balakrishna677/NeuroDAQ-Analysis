@@ -59,7 +59,10 @@ class AnalysisModule():
         self.toolOptions.append([QtGui.QLabel('Upper limit (%)'), self.riseUpperLimit])
         self.onsetBox = QtGui.QCheckBox('Onset')
         self.toolOptions.append([self.onsetBox])     
-               
+        self.decayTimeBox = QtGui.QCheckBox('Decay time')
+        self.toolOptions.append([self.decayTimeBox])        
+        self.decayLimit = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Decay limit (%)'), self.decayLimit])               
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -89,7 +92,7 @@ class AnalysisModule():
 
         # Iterate through traces
         dataMin, dataMax, dataMean = [], [], []
-        dataRiseTime = []
+        dataRiseTime, dataOnset, dataDecay = [], [], []
         for item in plotWidget.plotDataItems:
             
             # Get dt and data range
@@ -128,7 +131,7 @@ class AnalysisModule():
                     aux.error_box('Invalid limits')
                     return                                   
                 # Get peak
-                xPeak, yPeak = self.get_peak()
+                xPeak, yPeak = self.get_peak(data)
                 # Get limits
                 lowerLimit = lowerLimit*(yPeak-bsl)+bsl
                 upperLimit = upperLimit*(yPeak-bsl)+bsl
@@ -136,10 +139,10 @@ class AnalysisModule():
                 lowerCrossed, upperCrossed = False, False
                 i = 0
                 while lowerCrossed==False or upperCrossed==False:
-                    if (upperCrossed==False) and (data[xPeak-i]>upperLimit): 
+                    if (upperCrossed==False) and self.comp(data[xPeak-i],upperLimit): 
                         xUpper = xPeak-i
                         upperCrossed = True
-                    if data[xPeak-i] > lowerLimit: 
+                    if self.comp(data[xPeak-i], lowerLimit):
                         xLower = xPeak-i
                         lowerCrossed = True
                     i+=1
@@ -148,8 +151,35 @@ class AnalysisModule():
                 aux.plot_point(plotWidget, c1, xLower, lowerLimit, dt) 
                 aux.plot_point(plotWidget, c1, xUpper, upperLimit, dt)                 
 
-            if self.riseTimeBox.isChecked():
-                d
+            if self.onsetBox.isChecked():
+                xPeak, yPeak = self.get_peak(data)
+                bslCrossed = False
+                i = 0
+                while bslCrossed==False:
+                    if self.comp(data[xPeak-i], bsl):
+                        onset = xPeak-i
+                        bslCrossed = True
+                    i+=1
+                aux.plot_point(plotWidget, c1, onset, bsl, dt)
+                dataOnset.append(onset*dt)
+
+            if self.decayTimeBox.isChecked():
+                try:
+                    decayLimit = float(self.decayLimit.text())/100
+                except ValueError:
+                    aux.error_box('Invalid limits')
+                    return       
+                xPeak, yPeak = self.get_peak(data)
+                yDecay = decayLimit*(yPeak-bsl)+bsl
+                decayCrossed = False
+                i = 0
+                while decayCrossed==False:
+                    if self.comp(data[xPeak+i], yDecay):
+                        decayTime = xPeak+i
+                        decayCrossed = True
+                    i+=1
+                aux.plot_point(plotWidget, c1, decayTime, yDecay, dt)
+                dataOnset.append(decayTime*dt)
 
         # Store results
         results = []
@@ -158,14 +188,17 @@ class AnalysisModule():
             if self.maxBox.isChecked(): results.append(['Maximum', np.array(dataMax)])
             if self.meanBox.isChecked(): results.append(['Mean', np.array(dataMean)])
             if self.riseTimeBox.isChecked(): results.append(['RiseTime', np.array(dataRiseTime)])
+            if self.onsetBox.isChecked(): results.append(['Onset', np.array(dataOnset)])
+            if self.decayTimeBox.isChecked(): results.append(['Decay', np.array(dataDecay)])
             aux.save_results(browser, 'Measurements', results)             
         ############################################  
 
     def set_defaultValues(self):
         self.riseLowerLimit.setText('10')
         self.riseUpperLimit.setText('90')
+        self.decayLimit.setText('37')
     
-    def get_peak(self):
+    def get_peak(self, data):
         peakDirection = str(self.peakComboBox.currentText())
         if peakDirection=='Positive peak':
             yPeak = np.max(data)
@@ -174,4 +207,11 @@ class AnalysisModule():
             yPeak = np.min(data)
             xPeak = np.argmin(data)
         return xPeak, yPeak                
+        
+    def comp(self, a, b):
+        peakDirection = str(self.peakComboBox.currentText())
+        if peakDirection=='Positive peak':
+            return a < b
+        else:
+            return a > b
         
