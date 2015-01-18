@@ -84,11 +84,14 @@ class AnalysisModule():
         # ANALYSIS FUNCTION
  
         # Read detection options 
-        threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
-        noiseSafety = float(self.eventNoiseSafety.text())
-        smoothFactor = float(self.eventSmooth.text())
-        direction = str(self.eventDirection.currentText())
-        minDuration = float(self.eventMinDuration.text())
+        try:
+            threshold = float(self.browser.ui.dataPlotsWidget.cursorThsPos)
+            noiseSafety = float(self.eventNoiseSafety.text())
+            smoothFactor = float(self.eventSmooth.text())
+            direction = str(self.eventDirection.currentText())
+            minDuration = float(self.eventMinDuration.text())
+        except NameError:
+            aux.error_box('Invalid detection value')
         bslWindow = 1.0
         slowestRise = 0.5
         minEventInterval = 10.0
@@ -102,12 +105,11 @@ class AnalysisModule():
         item = self.browser.ui.dataPlotsWidget.plotDataItems[0]
         attrs = item.attrs
 
-        # Get data currently plotted within the cursors and concatenate in a single sweep
-        data = aux.get_data(self.browser)
-        c1, c2 = aux.get_cursors(self.browser.ui.dataPlotsWidget)  
-        # Check cursor range
-        c1, c2 = aux.check_cursors(c1, c2, data[0], dt)
-        data = data[:,c1/dt:c2/dt]
+        # Get data currently plotted and concatenate in a single sweep
+        data = []
+        for item in plotWidget.plotDataItems:
+            trace, c1 = aux.get_dataRange(plotWidget, item)
+            data.append(trace)
         data = data.ravel()
 
         # Smooth
@@ -115,12 +117,14 @@ class AnalysisModule():
         if smoothFactor > 1:
             data = smooth.smooth(data, window_len=smoothFactor, window='hanning')
 
-        # Run detection  
+        # Comparison functions  
         if direction=='negative':
             comp = lambda a, b: a < b
         elif direction=='positive':
             comp = lambda a, b: a > b
-        eventCounter,i = 0,0+bslWindow/dt+slowestRise/dt
+            
+        # Run detection
+        eventCounter,i = 0,0 #+bslWindow/dt+slowestRise/dt
         iLastDetection = 0
         xOnsets, yOnsets = [], []
         minEventInterval = minEventInterval/dt

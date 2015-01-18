@@ -63,6 +63,18 @@ def load_h5(browser, tree, push):
         browser.db = TdmsFile(currentFile)
         browser.dbType = 'tdms'
         tree.clear()       
+        # Deal with properties
+        for attr in browser.db.object().properties:
+            if 'kHz' in attr:
+                browser.ui.fileDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
+                if push:
+                    browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
+            elif 'pixel' in attr:
+                imaging = True
+            else:
+                browser.ui.fileDataTree.root.attrs[attr] = browser.db.object().properties[attr]   
+                if push:
+                    browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]        
         # Insert groups into the tree and add data to internal data list
         if push:
             imaging = False
@@ -72,17 +84,8 @@ def load_h5(browser, tree, push):
             browser.ui.notesWidget.clear()
             browser.currentOpenFile = currentFile
             browser.currentSaveFile = os.path.splitext(currentFile)[0]+'.hdf5'
-            #currentFileName = os.path.split(currentFile)[1]
-            #currentFileName = os.path.splitext(currentFileName)[0]
             browser.ui.workingDataTree.setHeaderLabels([os.path.split(browser.currentSaveFile)[1]])
             browser.ui.workingDataTree.setSortingEnabled(False)  # Otherwise it screws up drag and drop
-            for attr in browser.db.object().properties:
-                if 'kHz' in attr:
-                    browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
-                elif 'pixel' in attr:
-                    imaging = True
-                else:
-                    browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]
         for group in browser.db.groups():
             item = h5Item([str(group)])
             tree.addTopLevelItem(item)
@@ -147,7 +150,6 @@ def populate_h5dragItems(browser, originalParentWidget, parentWidget):
             else:
                 set_attrs(child, i)
                 i.listIndex = len(browser.ui.workingDataTree.dataItems)
-                #browser.ui.workingDataTree.data.append(browser.db[child.path][:])
                 i.data = get_dataFromFile(browser, i)
                 browser.ui.workingDataTree.dataItems.append(i)
     # For transferring datasets directly
