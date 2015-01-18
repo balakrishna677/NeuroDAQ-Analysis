@@ -39,18 +39,24 @@ class AnalysisModule():
         # WIDGETS FOR USER DEFINED OPTIONS
         self.showTraces = QtGui.QCheckBox('Show traces')
         self.storeResult = QtGui.QCheckBox('Store result')
+        self.sdBox = QtGui.QCheckBox('SD')
+        self.semBox = QtGui.QCheckBox('SEM')       
         self.toolOptions.append(self.showTraces)
+        self.toolOptions.append(self.sdBox)
+        self.toolOptions.append(self.semBox)
         self.toolOptions.append(self.storeResult)      
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
 
     def func(self, browser):
-        """ Calculate average trace from currently plotted traces.
+        """ Calculate average trace from currently plotted traces. If cursors are
+        selected the average is calculated for the range within the cursors.
 
         Options:
         1) create new entry in Working Data tree with the result
         2) plot average with orginal traces
+        3) caclulate SD and SEM
         """
     
         ############################################
@@ -58,22 +64,41 @@ class AnalysisModule():
         
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget   
+        results = []
 
-        # Get data 
+        # Get data and cursors
         data = aux.get_data(browser)
-    
+        dataRange, c1 = aux.get_dataRange(plotWidget, plotWidget.plotDataItems[0])
+        c2 = c1 + len(dataRange)    
+
         # Get dt 
         item = plotWidget.plotDataItems[0]
         dt = item.attrs['dt']
 
         # Calculate average and make h5item for plotting
         try:
-            avgData = np.mean(data,0)
+            avgData = np.nanmean(data[:, c1:c2], 0)
             avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
-        except ValueError:  # TODO: use masked arrays to get mean of shortest length
+            results.append(['avg_trace', avgData, item.attrs])  
+        except ValueError:  
             aux.error_box('Cannot calculate average on data with different lengths', sys.exc_info(),
                           'Please ensure that all traces have the same length') 
             return
+
+        # Calculate SD and SEM
+        if self.sdBox.isChecked():
+            sdData = np.nanstd(data[:, c1:c2], 0)
+            avgPlusSDItem = aux.make_h5item('avg+sd', avgData+sdData, plotWidget.plotDataItems[0].attrs)
+            avgMinusSDItem = aux.make_h5item('avg-sd', avgData-sdData, plotWidget.plotDataItems[0].attrs)
+            results.append(['avg+sd', avgData+sdData, item.attrs])  
+            results.append(['avg-sd', avgData-sdData, item.attrs])  
+ 
+        if self.semBox.isChecked():
+            semData = np.nanstd(data[:, c1:c2], 0)/np.sqrt(len(data))
+            avgPlusSEMItem = aux.make_h5item('avg+sem', avgData+semData, plotWidget.plotDataItems[0].attrs)
+            avgMinusSEMItem = aux.make_h5item('avg-sem', avgData-semData, plotWidget.plotDataItems[0].attrs)
+            results.append(['avg+sem', avgData+semData, item.attrs])  
+            results.append(['avg-sem', avgData-semData, item.attrs])  
 
         # Plot data
         if self.showTraces.isChecked(): 
@@ -83,9 +108,7 @@ class AnalysisModule():
         pgplot.browse_singleData(browser, plotWidget, avgItem, clear=clear, color='r')
 
         # Store data
-        if self.storeResult.isChecked():
-            results = []
-            results.append(['avg_trace', avgData, item.attrs])
+        if self.storeResult.isChecked():     
             aux.save_results(browser, item.parent().text(0)+'_average', results) 
                  
         ############################################  
