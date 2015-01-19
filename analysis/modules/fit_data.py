@@ -44,8 +44,8 @@ class AnalysisModule():
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
         self.comboBox = QtGui.QComboBox()
-        self.comboBox.addItem('exp1')
-        self.comboBox.addItem('exp2')
+        self.comboBox.addItem('exp')
+        self.comboBox.addItem('expsum')
         self.comboBox.addItem('parab')
         self.toolOptions.append([self.comboBox])
         self.toolOptions.append([QtGui.QLabel('Initial guesses')])
@@ -91,10 +91,6 @@ class AnalysisModule():
         ############################################
         # ANALYSIS FUNCTION
         
-        # Get options
-        #window = str(self.comboBox.currentText())
-        #window_len = float(self.smoothLength.text())
-    
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
@@ -105,13 +101,20 @@ class AnalysisModule():
         except AttributeError:   # Parent = None
             parentText = 'Data'
 
+        # Get current function
+        currentFuncmap = self.dataFit.fitfuncmap[str(self.comboBox.currentText())]
+
         # Read initial guesses
         pInit = []
-        #try:        
-        #    for 
+        try:        
+            nParam = len(currentFuncmap[2])
+            for n in range(nParam): pInit.append(float(self.p[n].text()))
+        except ValueError:
+            aux.error_box('Invalid value in initial guess')
+            return              
 
         # Fit data
-        results = [] 
+        fitResults = []
         for item in plotWidget.plotDataItems:  
 
             # Get data range to fit        
@@ -121,18 +124,22 @@ class AnalysisModule():
             self.dataFit.c1 = cx1   
 
             # Fit
-            func = self.dataFit.fitfuncmap[str(self.comboBox.currentText())][0]
-            fitParams = self.dataFit.fit(func, xRange, yData, [0.0, -1.0, cx1, 20.0]) 
+            func = currentFuncmap[0]
+            fitParams = self.dataFit.fit(func, xRange, yData, pInit) 
+            fitResults.append(fitParams)
             print fitParams
-            #results.append([item.text(0), traceSmooth, attrs])
+            
         
             # Plot fitted function over trace
-            fittedTrace = self.dataFit.exp1(xRange, *fitParams)
+            fittedTrace = func(xRange, *fitParams)
             plotWidget.plot(xRange, fittedTrace, pen=pg.mkPen('r', width=1))
 
 
         # Store results
-        #aux.save_results(browser, parentText+'_smooth', results)     
+        results = []
+        for n in range(np.shape(fitResults)[1]):    
+            results.append([self.plabels[n], fitResults[:,n]])
+        aux.save_results(browser, parentText+'_fit', results)     
          
         ############################################  
 
@@ -149,26 +156,26 @@ class Fitting:
         self.c1 = 0
         self.c2 = 0
         self.fitfuncmap = {
-        'exp1'  : (self.exp1, [0.0, 1.0, self.c1, 20.0], ['Y0', 'A', 'X0', 'tau'],
+        'exp'  : (self.exp, [0.0, 1.0, 20.0], ['Y0', 'A', 'tau'],
                   ['Y0 + A*exp(-(x-X0)/tau)']),
-        'exp2'  : (self.exp2, [0.0, 1.0, self.c1, 20.0, 1.0, 20.0], ['Y0', 'A1', 'X0', 'tau1', 'A2', 'tau2'],
+        'expsum'  : (self.expsum, [0.0, 1.0, 20.0, 1.0, 20.0], ['Y0', 'A1', 'tau1', 'A2', 'tau2'],
                   ['Y0 + A1*exp(-(x-X0)/tau1) + A2*exp(-(x-X0)/tau2)']),
         'parab' : (self.parab, [-10.0, 10.0, 0.0], ['i', 'N', 'bsl'],
                   ['i * x-x^2/N + bsl']),
         }
 
 
-    def exp1(self, x, *p):
+    def exp(self, x, *p):
         """ Exponential function with amplitude and X and Y offset
         """
-        y = p[0] + p[1] * np.exp(-(x-p[2])/p[3])
+        y = p[0] + p[1] * np.exp(-(x-self.c1)/p[2])
         return y
 
-    def exp2(self, x, *p):
+    def expsum(self, x, *p):
         """ Sum of two exponentials with independent time constants and amplitudes,
         and X and Y offsets
         """
-        y = p[0] + (p[1]*np.exp(-(x-p[2])/p[3])) + (p[4]*np.exp(-(x-p[3]/p[5])))    
+        y = p[0] + p[1]*np.exp(-(x-self.c1)/p[2]) + p[3]*np.exp(-(x-self.c1)/p[4])    
         return y
 
     def parab(self, x, p):
