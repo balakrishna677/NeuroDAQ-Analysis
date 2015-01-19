@@ -47,6 +47,11 @@ class AnalysisModule():
         self.scaleBox = QtGui.QCheckBox('Scale')
         self.scaleValue = QtGui.QLineEdit()
         self.toolOptions.append([self.scaleBox, self.scaleValue])
+        self.normalizeBox = QtGui.QCheckBox('Normalize peak')
+        self.peakComboBox = QtGui.QComboBox()
+        self.peakComboBox.addItem('Positive')
+        self.peakComboBox.addItem('Negative')  
+        self.toolOptions.append([self.normalizeBox, self.peakComboBox])
 
         ############################################        
               
@@ -92,15 +97,29 @@ class AnalysisModule():
             
             # Get dt and data range
             dt = item.attrs['dt']
-            dataRange, c1, cx1, cx2 = aux.get_dataRange(plotWidget, item, cursors=True)
+            data, c1, cx1, cx2 = aux.get_dataRange(plotWidget, item, cursors=True)
+
+            # Check baseline
+            if 'baselineStart' in item.analysis:
+                bsl = 0  # the mean of the baseline will always be 0
+            else:
+                bsl = np.mean(item.data[0:round(1./dt)]) 
             
             # Scale data
             if self.scaleBox.isChecked():
                 item.data = item.data * vScale
 
+            if self.normalizeBox.isChecked():
+                peakDirection = str(self.peakComboBox.currentText())
+                if peakDirection=='Positive peak':
+                    peak = np.max(data)
+                else:
+                    peak = -np.min(data)
+                item.data = item.data / peak               
+
             # Delete points
             if self.delPointsBox.isChecked():
-                item.data = np.delete(item.data, np.s_[c1:c1+len(dataRange)+1])
+                item.data = np.delete(item.data, np.s_[c1:c1+len(data)+1])
 
             # Add offset
             if self.offsetBox.isChecked():
