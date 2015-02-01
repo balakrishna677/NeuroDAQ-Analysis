@@ -44,10 +44,15 @@ class AnalysisModule():
         ############################################
         # WIDGETS FOR USER DEFINED OPTIONS
         self.comboBox = QtGui.QComboBox()
+        self.comboBox.addItem('line')
         self.comboBox.addItem('exp')
         self.comboBox.addItem('expsum')
         self.comboBox.addItem('parab')
         self.toolOptions.append([self.comboBox])
+        self.storeBox = QtGui.QCheckBox('Store results')
+        self.toolOptions.append([self.storeBox])        
+        self.extendBox = QtGui.QCheckBox('Extend to data range')
+        self.toolOptions.append([self.extendBox])       
         self.toolOptions.append([QtGui.QLabel('Initial guesses')])
         self.p, self.plabels = [], []
         self.make_parameterWidgets(10) # arbitrary number of max parameters   
@@ -94,6 +99,9 @@ class AnalysisModule():
         # Get widgets
         plotWidget = browser.ui.dataPlotsWidget
         toolsWidget = browser.ui.oneDimToolStackedWidget
+
+        # Replot data to clear previous measure plot points
+        pgplot.replot(browser, plotWidget)
     
         # Get parent text of plotted items
         try:
@@ -114,32 +122,39 @@ class AnalysisModule():
             return              
 
         # Fit data
-        fitResults = []
+        fitResults, fitTraces, fitTracesAttrs = [], [], []
         for item in plotWidget.plotDataItems:  
 
             # Get data range to fit        
             dt = item.attrs['dt']
+            fitTracesAttrs.append(item.attrs)
             yData, c1, cx1, cx2 = aux.get_dataRange(plotWidget, item, cursors=True)
-            xRange = np.arange(cx1, cx2, dt)
+            xRange = pgplot.make_xvector(yData, dt)+cx1
             self.dataFit.c1 = cx1   
 
             # Fit
             func = currentFuncmap[0]
             fitParams = self.dataFit.fit(func, xRange, yData, pInit) 
             fitResults.append(fitParams)
-            print fitParams
-            
+            print fitParams            
         
             # Plot fitted function over trace
+            if self.extendBox.isChecked():
+                xRange = pgplot.make_xvector(item.data, dt)
+                #xRange = np.arange(plotWidget.viewBox.viewRange()[0][0], plotWidget.viewBox.viewRange()[0][1], dt)
             fittedTrace = func(xRange, *fitParams)
             plotWidget.plot(xRange, fittedTrace, pen=pg.mkPen('r', width=1))
-
+            fitTraces.append(fittedTrace)
 
         # Store results
-        results = []
-        for n in range(np.shape(fitResults)[1]):    
-            results.append([self.plabels[n], fitResults[:,n]])
-        aux.save_results(browser, parentText+'_fit', results)     
+        if self.storeBox.isChecked():
+            fitResults = np.array(fitResults)
+            results = []
+            for n in range(np.shape(fitResults)[1]):    
+                results.append([str(self.plabels[n].text()), fitResults[:,n]])
+            for n in range(len(fitTraces)):
+                results.append(['fitTraces_'+str(n), fitTraces[n], fitTracesAttrs[n]])     
+            aux.save_results(browser, parentText+'_fit', results)     
          
         ############################################  
 
@@ -156,6 +171,7 @@ class Fitting:
         self.c1 = 0
         self.c2 = 0
         self.fitfuncmap = {
+        'line' : (self.line, [1.0, 0.0], ['m', 'b'], ['m*x + b']),
         'exp'  : (self.exp, [0.0, 1.0, 20.0], ['Y0', 'A', 'tau'],
                   ['Y0 + A*exp(-(x-X0)/tau)']),
         'expsum'  : (self.expsum, [0.0, 1.0, 20.0, 1.0, 20.0], ['Y0', 'A1', 'tau1', 'A2', 'tau2'],
@@ -164,6 +180,11 @@ class Fitting:
                   ['i * x-x^2/N + bsl']),
         }
 
+    def line(self, x, *p):
+        """ Line function
+        """
+        y = p[0]*x + p[1]
+        return y
 
     def exp(self, x, *p):
         """ Exponential function with amplitude and X and Y offset

@@ -206,9 +206,9 @@ def save_h5(browser, tree):
     currentSaveFile = str(browser.currentSaveFile)
     browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentSaveFile)[1]])
     if browser.db:
-        #if browser.dbType=='hdf5':
+      if browser.dbType=='hdf5':
         browser.db.close()
-        browser.db = None
+      browser.db = None
     if browser.wdb: browser.wdb.close()
     browser.wdb = h5py.File(currentSaveFile, 'w')
     root = tree.invisibleRootItem()

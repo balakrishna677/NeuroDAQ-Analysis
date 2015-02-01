@@ -12,6 +12,7 @@ import pyqtgraph as pg
 from analysis import smooth
 from widgets import h5Item
 from util import pgplot
+from analysis.acq4 import filterfuncs as acq4filter
 ####################################
 
 class AnalysisModule():    
@@ -23,8 +24,9 @@ class AnalysisModule():
         self.entryName = 'Event Detection'  
         ############################################
         
-        # Get main browser
+        # Get main browser and widgets
         self.browser = browser          
+        self.plotWidget = browser.ui.dataPlotsWidget
         # Add entry to AnalysisSelectWidget         
         selectItem = QtGui.QStandardItem(self.entryName)
         selectWidget = self.browser.ui.oneDimToolSelect
@@ -48,6 +50,12 @@ class AnalysisModule():
         self.eventDirection.addItem('negative')
         self.eventDirection.addItem('positive')
         self.toolOptions.append([self.eventDirection])
+        self.detectionTrace = QtGui.QComboBox()
+        self.detectionTrace.addItem('trace')
+        self.detectionTrace.addItem('derivative')
+        self.toolOptions.append([self.detectionTrace])        
+        self.derivativeDisplay = QtGui.QPushButton('Show derivative')
+        self.toolOptions.append([self.derivativeDisplay])    
         self.eventThreshold = QtGui.QPushButton('Set Threshold')
         self.eventThreshold.setCheckable(True)
         self.eventThresholdDisplay = QtGui.QLabel('None')
@@ -68,6 +76,7 @@ class AnalysisModule():
         # Connect buttons to functions
         self.eventCutOut.clicked.connect(self.event_cut)
         self.eventThreshold.toggled.connect(self.show_thresholdCursor)   
+        self.derivativeDisplay.clicked.connect(self.show_derivative)
               
         ############################################        
               
@@ -95,6 +104,7 @@ class AnalysisModule():
             smoothFactor = float(self.eventSmooth.text())
             direction = str(self.eventDirection.currentText())
             minDuration = float(self.eventMinDuration.text())
+            detectionTrace = str(self.detectionTrace.currentText())
         except NameError:
             aux.error_box('Invalid detection value')
         bslWindow = 1.0
@@ -120,6 +130,12 @@ class AnalysisModule():
             data.append(trace)
         data = np.array(data).ravel()
 
+        # Get derivative trace and filter
+        dtrace = None
+        if detectionTrace=='derivative':
+            dtrace = np.diff(data)
+            dtrace = acq4filter.besselFilter(dtrace, 2000, 1, dt/1000, 'low', True)
+
         # Smooth
         original_data = data
         if smoothFactor > 1:
@@ -140,16 +156,20 @@ class AnalysisModule():
         bslWindow = bslWindow/dt
         slowestRise = slowestRise/dt
         bsl = 0
-        while i<len(data):
+        if dtrace is not  None:
+            detectionData = dtrace
+        else:
+            detectionData = data
+        while i<len(detectionData):
             # Sliding baseline
-            #bsl = np.mean(data[i-bslWindow-slowestRise:i])
-            if comp(data[i]-bsl,threshold):
+            #bsl = np.mean(data[i-bslWindow-slowestRise:i])   
+            if comp(detectionData[i]-bsl,threshold):
               #if i-iLastDetection>minEventInterval:  # Min inter-event interval
                 xOnsets.append(i)
                 yOnsets.append(data[i])
                 eventCounter+=1
                 iLastDetection = i
-                while i<len(data) and comp(data[i]-bsl,(threshold-noiseSafety)):
+                while i<len(detectionData) and comp(detectionData[i]-bsl,(threshold-noiseSafety)):
                     i+=1 # skip values if index in bounds AND until the value is below/above threshold again
                 if i-iLastDetection < minDuration: # Event is too brief
                     xOnsets.pop()
@@ -234,7 +254,7 @@ class AnalysisModule():
     def show_events(self, data, xOnsets, yOnsets, dt):
         plotWidget = self.browser.ui.dataPlotsWidget
         plotWidget.clear()
-        x = np.arange(0, len(data)*dt, dt)
+        x = pgplot.make_xvector(data, dt)
         plotWidget.plot(x, data)
         plotWidget.plot(xOnsets*dt, yOnsets, pen=None, symbol='o', symbolPen='r', symbolBrush=None, symbolSize=7)
 
@@ -244,5 +264,16 @@ class AnalysisModule():
         self.eventMinDuration.setText('2')
         self.eventBaseline.setText('2')
         self.eventDuration.setText('20')
+
+    def show_derivative(self):
+       """ Show derivative of plotted traces
+       """
+       for trace in self.plotWidget.plotDataItems:
+           dt = float(trace.attrs['dt'])
+           dtrace = np.diff(trace.data)
+           dtrace = acq4filter.besselFilter(dtrace, 2000, 1, dt/1000, 'low', True)
+           #dtrace = smooth.smooth(dtrace, window_len=5, window='hanning')
+           x = pgplot.make_xvector(dtrace, dt)
+           self.plotWidget.plot(x, dtrace,  pen=pg.mkPen('r'))
 
 

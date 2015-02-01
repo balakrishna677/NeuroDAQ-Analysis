@@ -24,11 +24,10 @@ def get_data():
     """
     data = []
     for item in browser.ui.dataPlotsWidget.plotDataItems:
-        #data.append(browser.ui.workingDataTree.data[item.dataIndex])
-        data.append(item.data)
+        dataRange, c1 = aux.get_dataRange(browser.ui.dataPlotsWidget, item)
+        data.append(dataRange)
     data = np.array(data) # this will return an error if dts are different (data is not the same len)
-    attrs = item.attrs
-    
+    attrs = item.attrs    
     if data.shape[0]==1:
         return data.ravel()
     else:    
@@ -84,7 +83,7 @@ def store_data(data, array2D=False, name='data', attrs={'dt':1}):
 def plot_data(*args, **kwargs): #color='#3790CC', clear=False):
     """ Plot a single trace.
     
-    *args: x, y
+    *args: y or x, y
     **kwargs: color='color', clear=True|False
     """
     plotWidget = browser.ui.dataPlotsWidget

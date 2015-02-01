@@ -28,7 +28,7 @@ class AnalysisModule():
         # Add option widgets
         self.make_option_widgets()
 
-        selectItem.setToolTip('Perform operations in selected traces')
+        selectItem.setToolTip('Perform operations in plotted traces')
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.oneDimToolStackedWidget
@@ -52,6 +52,11 @@ class AnalysisModule():
         self.peakComboBox.addItem('Positive')
         self.peakComboBox.addItem('Negative')  
         self.toolOptions.append([self.normalizeBox, self.peakComboBox])
+        self.selectedBox = QtGui.QCheckBox('Data operation')
+        self.selectedComboBox = QtGui.QComboBox()
+        self.selectedComboBox.addItem('Subtract')
+        self.selectedComboBox.addItem('Add')  
+        self.toolOptions.append([self.selectedBox, self.selectedComboBox])        
 
         ############################################        
               
@@ -93,6 +98,7 @@ class AnalysisModule():
             aux.make_data_copy(browser, plotWidget)
 
         # Iterate through traces
+        i = 0
         for item in plotWidget.plotDataItems:
             
             # Get dt and data range
@@ -125,6 +131,21 @@ class AnalysisModule():
             if self.offsetBox.isChecked():
                 offset = int(nOffsetPoints/dt)
                 item.data = np.insert(item.data, 0, np.zeros(offset) + np.nan)          
+
+            # Operation against selected data (currently only works for one selected data item)
+            if self.selectedBox.isChecked():
+                operation = str(self.selectedComboBox.currentText())
+                if operation=='Subtract':
+                    op = lambda a, b: a - b
+                if operation=='Add':
+                    op = lambda a, b: a + b
+                try:
+                    selectedItem = browser.ui.workingDataTree.selectedItems()[i]               
+                    item.data = op(item.data, selectedItem.data)                
+                except IndexError:
+                    aux.error_box('Number of selected data items does not match number of plotted traces')
+                    return
+            i+=1                     
 
         # Re-plot data
         pgplot.replot(browser, plotWidget) 

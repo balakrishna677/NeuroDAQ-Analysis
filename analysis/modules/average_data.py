@@ -67,17 +67,17 @@ class AnalysisModule():
         results = []
 
         # Get data and cursors
-        data = aux.get_data(browser)
-        dataRange, c1 = aux.get_dataRange(plotWidget, plotWidget.plotDataItems[0])
-        c2 = c1 + len(dataRange)    
-
-        # Get dt 
-        item = plotWidget.plotDataItems[0]
-        dt = item.attrs['dt']
+        data = []
+        for item in plotWidget.plotDataItems:
+            dt = item.attrs['dt']
+            dataRange, c1 = aux.get_dataRange(plotWidget, item)    
+            data.append(dataRange)   
+        data = np.array(data)
 
         # Calculate average and make h5item for plotting
         try:
-            avgData = np.nanmean(data[:, c1:c2], 0)
+            #avgData = np.nanmean(data[:, c1:c2], 0)
+            avgData = np.mean(data, 0)
             avgItem = aux.make_h5item('avg', avgData, plotWidget.plotDataItems[0].attrs)
             results.append(['avg_trace', avgData, item.attrs])  
         except ValueError:  
@@ -87,14 +87,16 @@ class AnalysisModule():
 
         # Calculate SD and SEM
         if self.sdBox.isChecked():
-            sdData = np.nanstd(data[:, c1:c2], 0)
+            #sdData = np.nanstd(data[:, c1:c2], 0)
+            sdData = np.std(data, 0)            
             avgPlusSDItem = aux.make_h5item('avg+sd', avgData+sdData, plotWidget.plotDataItems[0].attrs)
             avgMinusSDItem = aux.make_h5item('avg-sd', avgData-sdData, plotWidget.plotDataItems[0].attrs)
             results.append(['avg+sd', avgData+sdData, item.attrs])  
             results.append(['avg-sd', avgData-sdData, item.attrs])  
  
         if self.semBox.isChecked():
-            semData = np.nanstd(data[:, c1:c2], 0)/np.sqrt(len(data))
+            #semData = np.nanstd(data[:, c1:c2], 0)/np.sqrt(len(data))
+            semData = np.std(data, 0)/np.sqrt(len(data))
             avgPlusSEMItem = aux.make_h5item('avg+sem', avgData+semData, plotWidget.plotDataItems[0].attrs)
             avgMinusSEMItem = aux.make_h5item('avg-sem', avgData-semData, plotWidget.plotDataItems[0].attrs)
             results.append(['avg+sem', avgData+semData, item.attrs])  
