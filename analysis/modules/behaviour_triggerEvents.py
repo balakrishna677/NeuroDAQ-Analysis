@@ -97,18 +97,22 @@ class AnalysisModule():
         self.toolsWidget = browser.ui.oneDimToolStackedWidget
     
         # Iterate through root and get chosen trigger data
-        root = browser.ui.workingDataTree.invisibleRootItem()
-        for c in range(root.childCount()):
-            if stimType in root.child(c).text(0): item = root.child(c)
+        #root = browser.ui.workingDataTree.invisibleRootItem()
+        #for c in range(root.childCount()):
+        #    if stimType in root.child(c).text(0): item = root.child(c)
 
         # Temporary 
-        if stimType=='Visual':
-            if item.childCount()==1:
-                triggers = item.child(0).data
-            else:
-                triggers = item.child(1).data
-        else:
-            triggers = item.child(0).data
+        #if stimType=='Visual':
+        #    if item.childCount()==1:
+        #        triggers = item.child(0).data
+        #    else:
+        #        triggers = item.child(1).data
+        #else:
+        #    triggers = item.child(0).data
+
+        # Get item with trigeer start times
+        item =  browser.ui.workingDataTree.selectedItems()[0]
+        triggers = item.data
         
         # Make sure dt is matched
         dt = self.plotWidget.plotDataItems[0].attrs['dt']
@@ -124,13 +128,13 @@ class AnalysisModule():
             self.plotWidget.addItem(line)
 
         # Automatically cut events and stimulation profiles
-        if self.stimProfile.isChecked():
-           if stimType=='Visual':
-               self.triggerProfileData = item.child(0).data          
-               self.event_cut(profile=True)
-        else:
-            self.event_cut()
-         
+        #if self.stimProfile.isChecked():
+        #   if stimType=='Visual':
+        #       self.triggerProfileData = item.child(0).data          
+        #       self.event_cut(profile=True)
+        #else:
+        #    self.event_cut()
+        self.event_cut() 
         
         ############################################  
 
