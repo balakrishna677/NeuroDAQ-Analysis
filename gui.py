@@ -8,7 +8,7 @@ from IPython.lib import guisupport
 from PyQt4 import QtCore, QtGui
 from widgets import *
 import pyqtgraph as pg
-import vlc
+#import vlc
 
 
 try:
