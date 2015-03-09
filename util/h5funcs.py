@@ -102,6 +102,14 @@ def load_h5(browser, tree, push):
                     if imaging: 
                         imageArray = imagefun.array2image(child.data, (1024,1024))
                         child.data = imageArray
+                    text = []
+                    if ('names' in channelname) or ('Names' in channelname):
+                        browser.ui.notesWidget.append(str(channelname))
+                        for d in child.data:
+                            if bool(d): text.append(d)
+                        for t in text:
+                            browser.ui.notesWidget.append(t)
+                        browser.ui.notesWidget.append('\r')
                     child.listIndex = len(browser.ui.workingDataTree.dataItems)
                     browser.ui.workingDataTree.dataItems.append(child)
                     #if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 

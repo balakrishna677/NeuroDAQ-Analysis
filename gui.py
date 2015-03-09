@@ -466,7 +466,16 @@ class Ui_MainWindow(object):
         self.actionRenameTreeItem = QtGui.QAction('Rename', MainWindow)
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
         self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)     
-        
+
+        # -----------------------------------------------------------------------------
+        # House keeping jobs
+        # -----------------------------------------------------------------------------
+        # Group data source boxes [selectionTabWidget index, dataSource combo box]
+        self.dataSource = []
+        self.dataSource.append([1, self.toolDataSourceBox]) 
+        self.dataSource.append([2, self.behaviourToolDataSourceBox]) 
+   
+     
     def setSize(self, fraction):
         """ Resize MainWindow to a fraction of the total screen size
         """

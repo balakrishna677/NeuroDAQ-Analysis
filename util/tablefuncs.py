@@ -7,7 +7,7 @@ import sip
 import h5py
 from PyQt4 import QtGui, QtCore
 
-def put_dataOnTable_old(browser):
+def put_dataOnTable(browser):
     dataList = []
     items = browser.ui.workingDataTree.selectedItems()    
     if items:
@@ -15,9 +15,9 @@ def put_dataOnTable_old(browser):
              dataList.append(item.data) 
     browser.ui.dataTableWidget.setData(dataList)
 
-def put_dataOnTable(browser, table):
-    items = browser.ui.workingDataTree.selectedItems()
-    startCol = 0
+#def put_dataOnTable(browser, table):
+#    items = browser.ui.workingDataTree.selectedItems()
+#    startCol = 0
     #if items:
     #    for item in items:
     #        d
