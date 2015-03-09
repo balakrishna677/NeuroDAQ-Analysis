@@ -140,7 +140,7 @@ def populate_h5File(browser, parent, parentWidget):
         if item.childCount()>0:
             parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
-        elif item.data is not None:
+        elif (item.data is not None) and (isinstance(item.data[0], basestring)==False):
             dset = parent.create_dataset(str(item.text(0)), data=item.data)
             set_attrs(item, dset)
         else:
