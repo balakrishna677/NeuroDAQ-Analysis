@@ -102,11 +102,13 @@ def load_h5(browser, tree, push):
                     if imaging: 
                         imageArray = imagefun.array2image(child.data, (1024,1024))
                         child.data = imageArray
+                    # Deal with strings (display in Notes and convert to ASCII)
                     text = []
-                    if ('names' in channelname) or ('Names' in channelname):
+                    if (isinstance(child.data[0], basestring))==True:
                         browser.ui.notesWidget.append(str(channelname))
                         for d in child.data:
-                            if bool(d): text.append(d)
+                            if bool(d): text.append(d)         # Get rid of empty strings
+                        child.data = np.string_(text)   # Convert to fixed length ASCII
                         for t in text:
                             browser.ui.notesWidget.append(t)
                         browser.ui.notesWidget.append('\r')
@@ -140,7 +142,8 @@ def populate_h5File(browser, parent, parentWidget):
         if item.childCount()>0:
             parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
-        elif (item.data is not None) and (isinstance(item.data[0], basestring)==False):
+        elif (item.data is not None): # and (isinstance(item.data[0], basestring)==False):
+            #print type(item.data), item.text(0)
             dset = parent.create_dataset(str(item.text(0)), data=item.data)
             set_attrs(item, dset)
         else:
@@ -225,6 +228,7 @@ def save_h5(browser, tree):
     set_attrs(browser.ui.workingDataTree.root, browser.wdb)   
     browser.wdb.attrs['Notes'] =  str(browser.ui.notesWidget.toPlainText())   
     browser.wdb.close()
+    print 'File saved'
   except:
     print 'Unexpected error, the data might have not been saved'
     raise
