@@ -179,7 +179,7 @@ class AnalysisModule():
                         decayCrossed = True
                     i+=1
                 aux.plot_point(plotWidget, c1, decayTime, yDecay, dt)
-                dataOnset.append(decayTime*dt)
+                dataDecay.append(decayTime*dt)
 
         # Store results
         results = []

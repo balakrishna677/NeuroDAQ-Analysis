@@ -49,6 +49,7 @@ class Ui_MainWindow(object):
         self.gridLayout_centralwidget.addWidget(self.splitter_centralwidget, 0, 0, 1, 1)
         self.MainWindow.setCentralWidget(self.centralwidget)
         self.MainWindow.setWindowTitle('NeuroDAQ Analysis')
+        self.centralwidget.setMinimumHeight(50)
 
         # -----------------------------------------------------------------------------
         # Left pane -> SelectionTabs Widget and SinglePlot Widget
@@ -483,7 +484,6 @@ class Ui_MainWindow(object):
         height = screen.height() * fraction
         width = screen.width() * fraction
         self.MainWindow.resize(width, height)
-
         
         
         
