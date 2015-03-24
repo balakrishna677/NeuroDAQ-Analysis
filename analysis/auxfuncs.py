@@ -82,10 +82,10 @@ def get_dataRange(plotWidget, item, cursors=False):
             c1 = temp
         # Coerce to data limits if necessary
         if c1 < 0: c1 = 0
-        if c2 > len(item.data) : c2 = (len(item.data)-1)        
+        if c2 > len(item.data) : c2 = (len(item.data))        
     else:
         c1 = 0
-        c2 = len(item.data)-1
+        c2 = len(item.data)
     if cursors:
         return item.data[c1:c2], c1, c1*dt, c2*dt
     else:

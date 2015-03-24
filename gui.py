@@ -8,7 +8,7 @@ from IPython.lib import guisupport
 from PyQt4 import QtCore, QtGui
 from widgets import *
 import pyqtgraph as pg
-import vlc
+#import vlc
 
 
 try:
@@ -49,6 +49,7 @@ class Ui_MainWindow(object):
         self.gridLayout_centralwidget.addWidget(self.splitter_centralwidget, 0, 0, 1, 1)
         self.MainWindow.setCentralWidget(self.centralwidget)
         self.MainWindow.setWindowTitle('NeuroDAQ Analysis')
+        self.centralwidget.setMinimumHeight(50)
 
         # -----------------------------------------------------------------------------
         # Left pane -> SelectionTabs Widget and SinglePlot Widget
@@ -466,7 +467,16 @@ class Ui_MainWindow(object):
         self.actionRenameTreeItem = QtGui.QAction('Rename', MainWindow)
         self.actionShowInTable = QtGui.QAction('Show in Table', MainWindow)
         self.actionRemoveTreeItem = QtGui.QAction('Remove', MainWindow)     
-        
+
+        # -----------------------------------------------------------------------------
+        # House keeping jobs
+        # -----------------------------------------------------------------------------
+        # Group data source boxes [selectionTabWidget index, dataSource combo box]
+        self.dataSource = []
+        self.dataSource.append([1, self.toolDataSourceBox]) 
+        self.dataSource.append([2, self.behaviourToolDataSourceBox]) 
+   
+     
     def setSize(self, fraction):
         """ Resize MainWindow to a fraction of the total screen size
         """
@@ -474,7 +484,6 @@ class Ui_MainWindow(object):
         height = screen.height() * fraction
         width = screen.width() * fraction
         self.MainWindow.resize(width, height)
-
         
         
         

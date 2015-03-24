@@ -407,16 +407,29 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             index = None        
         return index        
 
-    def analyse_data(self):        
-        if len(self.ui.dataPlotsWidget.plotDataItems)==0: # Check that there is data plotted to analyse
-            auxfuncs.error_box('There is no data to analyze', infoText='Please plot the data')
+    def analyse_data(self):       
+        # Get data source 
+        i = self.ui.selectionTabWidget.currentIndex()
+        for tab in self.ui.dataSource:
+            if tab[0]==i: 
+                dataSource = tab[1].currentText()
+        if dataSource=='Plot':
+            self.analysisItems = self.ui.dataPlotsWidget.plotDataItems  # deal with error as below
         else:
-            index = self.select_analysisTool()
-            if index:
-                tool = index.data() 
-                self.customToolSelector.tool_select(self, tool)
-            else:
-                auxfuncs.error_box('No analysis function selected')
+            self.analysisItems = self.ui.workingDataTree.selectedItems() # also deal with error
+
+        # if cursors are selected and dataSource is Selection, ask if the cursors positions are  
+        # to be applied to the selection, which could be useful
+
+        #if len(self.ui.dataPlotsWidget.plotDataItems)==0: # Check that there is data plotted to analyse
+        #    auxfuncs.error_box('There is no data to analyze', infoText='Please plot the data')
+        #else:
+        index = self.select_analysisTool()
+        if index:
+            tool = index.data() 
+            self.customToolSelector.tool_select(self, tool)
+        else:
+            auxfuncs.error_box('No analysis function selected')
 
     def tab_changed(self, index):
         """ Use to set the minimum size of the left splitter depending on
@@ -444,7 +457,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------
     def show_inTableOnMenu(self):
         #self.ui.dataTableWidget.setData({'x': [1,2,3], 'y': [4,5,6]})#np.random.random(100))
-        table.put_dataOnTable(self, self.ui.dataTableWidget)
+        table.put_dataOnTable(self) #, self.ui.dataTableWidget)
 
     def set_targetTablePosition(self, col, row):
         self.dragTableTargetCol = col
