@@ -15,10 +15,11 @@ from util import pgplot
 from analysis.acq4 import filterfuncs as acq4filter
 ####################################
 
-class AnalysisModule():    
+class AnalysisModule(QtGui.QWidget):    
 
     def __init__(self, browser):    
-    
+        QtGui.QWidget.__init__(self)
+            
         ############################################
         # NAME THAT IS LISTED IN THE TAB
         self.entryName = 'Event Detection'  
@@ -37,7 +38,8 @@ class AnalysisModule():
         self.make_option_widgets()
         # Set default values
         self.set_defaultValues()
-
+        # Connect signals and slots
+        self.connect(self.plotWidget, QtCore.SIGNAL('eventSelected'), self.event_highlight)
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.oneDimToolStackedWidget
@@ -66,18 +68,25 @@ class AnalysisModule():
         self.toolOptions.append([QtGui.QLabel('Smooth'), self.eventSmooth])
         self.eventMinDuration = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Min Duration'), self.eventMinDuration])        
+        self.eventCheck = QtGui.QPushButton('Event Check')
+        self.eventCheck.setCheckable(True)
+        self.toolOptions.append([self.eventCheck])
         self.eventCutOut = QtGui.QPushButton('Cut events')
         self.toolOptions.append([self.eventCutOut])
         self.eventBaseline = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Baseline'), self.eventBaseline])
         self.eventDuration = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Duration'), self.eventDuration])           
+        self.eventReplot = QtGui.QPushButton('Replot events')
+        self.toolOptions.append([self.eventReplot])
         
         # Connect buttons to functions
         self.eventCutOut.clicked.connect(self.event_cut)
         self.eventThreshold.toggled.connect(self.show_thresholdCursor)   
         self.derivativeDisplay.clicked.connect(self.show_derivative)
-              
+        self.eventCheck.toggled.connect(self.event_check)
+        self.eventReplot.clicked.connect(self.event_replot)              
+
         ############################################        
               
         stackWidget.add_options(self.toolOptions, self.toolGroupBox, self.entryName)
@@ -120,6 +129,7 @@ class AnalysisModule():
         # Get dt list and attrs for use in concatenated data
         dtList = aux.get_attr(self.browser.ui.dataPlotsWidget.plotDataItems, 'dt')
         dt = dtList[0]
+        self.dt = dt
         item = self.browser.ui.dataPlotsWidget.plotDataItems[0]
         attrs = item.attrs
 
@@ -137,7 +147,7 @@ class AnalysisModule():
             dtrace = acq4filter.besselFilter(dtrace, 2000, 1, dt/1000, 'low', True)
 
         # Smooth
-        original_data = data
+        self.trace = data
         if smoothFactor > 1:
             data = smooth.smooth(data, window_len=smoothFactor, window='hanning')
 
@@ -147,14 +157,16 @@ class AnalysisModule():
         elif direction=='positive':
             comp = lambda a, b: a > b
             
-        # Run detection
-        eventCounter,i = 0,0 #+bslWindow/dt+slowestRise/dt
-        iLastDetection = 0
-        xOnsets, yOnsets = [], []
+        # Correct times for dt    
         minEventInterval = minEventInterval/dt
         minDuration = minDuration/dt
         bslWindow = bslWindow/dt
         slowestRise = slowestRise/dt
+            
+        # Run detection
+        eventCounter,i = 0,0 #+bslWindow/dt+slowestRise/dt
+        iLastDetection = 0
+        self.xOnsets, self.yOnsets = [], []
         bsl = 0
         if dtrace is not  None:
             detectionData = dtrace
@@ -165,15 +177,15 @@ class AnalysisModule():
             #bsl = np.mean(data[i-bslWindow-slowestRise:i])   
             if comp(detectionData[i]-bsl,threshold):
               #if i-iLastDetection>minEventInterval:  # Min inter-event interval
-                xOnsets.append(i)
-                yOnsets.append(data[i])
+                self.xOnsets.append(i)
+                self.yOnsets.append(data[i])
                 eventCounter+=1
                 iLastDetection = i
                 while i<len(detectionData) and comp(detectionData[i]-bsl,(threshold-noiseSafety)):
                     i+=1 # skip values if index in bounds AND until the value is below/above threshold again
                 if i-iLastDetection < minDuration: # Event is too brief
-                    xOnsets.pop()
-                    yOnsets.pop()
+                    self.xOnsets.pop()
+                    self.yOnsets.pop()
                     eventCounter-=1
             else:
                 i+=1
@@ -183,18 +195,15 @@ class AnalysisModule():
 
         # Store event onsets and peaks in h5 data tree
         results = []
-        results.append(['trace', np.array(original_data), attrs])
-        results.append(['onsets', np.array(xOnsets)])
-        results.append(['peaks', np.array(yOnsets)])
+        results.append(['trace', np.array(self.trace), attrs])
+        results.append(['xOnsets', np.array(self.xOnsets)])
+        results.append(['yOnsets', np.array(self.yOnsets)])
         results.append(['number', np.array([eventCounter])])
         results.append(['frequency', np.array([frequency])])
-        listIndexes = aux.save_results(browser, 'Event_Detection', results)    
-
-        # Store list indexes temporarily in stack widget list for further event analysis
-        self.eventItemsIndex = listIndexes
+        aux.save_results(browser, 'Event_Detection', results)    
 
         # Plot results
-        self.show_events(data, np.array(xOnsets), np.array(yOnsets), dt)
+        self.show_events(data, np.array(self.xOnsets), np.array(self.yOnsets), dt)
 
         # Turn cursors off (the plot has been cleared so there are no cursors displayed)    
         self.browser.ui.actionShowCursors.setChecked(False)
@@ -202,31 +211,28 @@ class AnalysisModule():
         ############################################            
         
         
-    def event_cut(self):
-        # Get trace and event onsets using stored dataIndex
-        itrace = self.eventItemsIndex[0]
-        trace = self.browser.ui.workingDataTree.dataItems[itrace]
-        ionsets = self.eventItemsIndex[1]
-        onsets = self.browser.ui.workingDataTree.dataItems[ionsets]   
-        dt = float(trace.attrs['dt'])
-
+    def event_cut(self):       
         # Get cutting parameters
-        baseline = float(self.eventBaseline.text())/dt
-        duration = float(self.eventDuration.text())/dt 
+        try:        
+            baseline = float(self.eventBaseline.text())/self.dt
+            duration = float(self.eventDuration.text())/self.dt 
+        except NameError:
+            aux.error_box('Invalid cutting value')
 
         # Cut out
         events = []
-        for onset in onsets.data:
+        for onset in self.xOnsets:
             eStart = onset-baseline
             eEnd = onset+duration
-            eData = trace.data[eStart:eEnd]
+            eData = self.trace[eStart:eEnd]
             events.append(eData)
 
         # Store event waveforms in h5 data tree
         results = []
         attrs = {}
-        attrs['dt'] = dt 
+        attrs['dt'] = self.dt 
         for e in np.arange(0, len(events)):
+            attrs['onset'] = self.xOnsets[e]
             results.append(['event'+str(e), events[e], attrs])  
         aux.save_results(self.browser, 'Events', results)
         
@@ -252,11 +258,10 @@ class AnalysisModule():
         self.eventThresholdDisplay.setText(str(plotWidget.cursorThsPos))
 
     def show_events(self, data, xOnsets, yOnsets, dt):
-        plotWidget = self.browser.ui.dataPlotsWidget
-        plotWidget.clear()
+        self.plotWidget.clear()
         x = pgplot.make_xvector(data, dt)
-        plotWidget.plot(x, data)
-        plotWidget.plot(xOnsets*dt, yOnsets, pen=None, symbol='o', symbolPen='r', symbolBrush=None, symbolSize=7)
+        self.plotWidget.plot(x, data)
+        self.plotWidget.plot(xOnsets*dt, yOnsets, pen=None, symbol='o', symbolPen='r', symbolBrush=None, symbolSize=7)
 
     def set_defaultValues(self):
         self.eventNoiseSafety.setText('5')
@@ -275,5 +280,55 @@ class AnalysisModule():
            #dtrace = smooth.smooth(dtrace, window_len=5, window='hanning')
            x = pgplot.make_xvector(dtrace, dt)
            self.plotWidget.plot(x, dtrace,  pen=pg.mkPen('r'))
+
+    def event_check(self):
+        if self.eventCheck.isChecked():
+            self.plotWidget.events = True
+            self.plotWidget.eventOnsets = self.xOnsets*self.dt
+        else:
+            self.plotWidget.events = False
+                        
+    def event_replot(self):
+        """ Replot event onsets over original trace       
+        """
+        self.trace, self.xOnsets, self.yOnsets = None, None, None
+        item = self.browser.ui.workingDataTree.currentItem()
+        for c in range(item.childCount()):
+            if 'trace' in item.child(c).text(0): 
+                self.trace = item.child(c).data
+                self.dt = item.child(c).attrs['dt']
+            if 'xOnsets' in item.child(c).text(0): self.xOnsets = item.child(c).data
+            if 'yOnsets' in item.child(c).text(0): self.yOnsets = item.child(c).data
+        if (self.trace is None) or (self.xOnsets is None) or (self.yOnsets is None): 
+            aux.error_box('No event data found', infoText='Please select an item with trace and event onset data') 
+            return
+        else:
+            self.show_events(self.trace, self.xOnsets, self.yOnsets, self.dt)
+            
+    def event_highlight(self):
+        e = self.plotWidget.currentEvent
+        #if eventPlotItem:
+        #    self.plotWidget.removeItem(eventPlotItem)
+        #else:
+        #    eventPlotItem = pg.PlotDataItem([self.xOnsets[e]*self.dt], [self.yOnsets[e]], pen=None, symbol='o',
+        #                                    symbolPen='c', symbolBrush='c', symbolSize=7)  
+        #    self.plotWidget.addItem(eventPlotItem) 
+
+        #self.plotWidget.plot([self.xOnsets[e]*self.dt], [self.yOnsets[e]], pen=None, symbol='o',
+        #                symbolPen='c', symbolBrush='c', symbolSize=7)            
+                  
+            
+''' create the eventPlotItem before, and turn it on and off with the event_check button/fun
+    better to also select the starting event, otherwise it always starts from 0
+'''
+            
+            
+            
+            
+            
+            
+            
+
+   
 
 

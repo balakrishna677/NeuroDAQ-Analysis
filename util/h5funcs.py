@@ -68,16 +68,18 @@ def load_h5(browser, tree, push):
             if 'kHz' in attr:
                 browser.ui.fileDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
                 if push:
-                    browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]
-            elif 'pixel' in attr:
-                imaging = True
-            else:
-                browser.ui.fileDataTree.root.attrs[attr] = browser.db.object().properties[attr]   
-                if push:
-                    browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]        
+                    browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)'] = browser.db.object().properties[attr]         
+            browser.ui.fileDataTree.root.attrs[attr] = browser.db.object().properties[attr]   
+            if push:
+                browser.ui.workingDataTree.root.attrs[attr] = browser.db.object().properties[attr]        
         # Insert groups into the tree and add data to internal data list
         if push:
-            imaging = False
+            try:
+                browser.db.object().properties['imaging']
+                imaging = True
+            except KeyError:
+                imaging = False
+            imaging = browser.db.object().properties['imaging']
             browser.saveFolder = browser.currentFolder      
             browser.ui.saveFolderInput.setText(browser.saveFolder)  
             browser.ui.workingDataTree.setSortingEnabled(True)
@@ -100,7 +102,9 @@ def load_h5(browser, tree, push):
                 if push:
                     child.data = get_dataFromFile(browser, child)
                     if imaging: 
-                        imageArray = imagefun.array2image(child.data, (1024,1024))
+                        pixels = float(browser.db.object().properties['pixels_per_line'])
+                        lines = float(browser.db.object().properties['lines_per_frame'])
+                        imageArray = imagefun.array2image(child.data, (pixels,lines))
                         child.data = imageArray
                     child.listIndex = len(browser.ui.workingDataTree.dataItems)
                     browser.ui.workingDataTree.dataItems.append(child)

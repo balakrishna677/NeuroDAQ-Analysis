@@ -70,7 +70,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         # Load custom analysis modules
         self.customToolSelector  = toolselector.ToolSelector()        
         for module in dir(moduleLoader):               
-            try:    
+            try:  
                 sys.modules['analysis.modules.'+module].AnalysisModule(self)
                 #print dir(m)
                 #if hasattr(m, 'AnalysisModule'): 
@@ -498,7 +498,7 @@ class NeuroDaqWindow(QtGui.QMainWindow):
               if current.data is not None: 
                 if len(current.data.shape)==1:
                     pgplot.browse_singleData(self, self.ui.dataPlotsWidget, current)
-                elif len(current.data.shape)==2:
+                elif len(current.data.shape)>1:
                     pgplot.browse_image(self, self.ui.dataImageWidget, current)
             # Show dt
             self.ui.propsTableWidget.setData({'dt':[current.attrs['dt']]})

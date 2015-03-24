@@ -11,7 +11,7 @@ from analysis.acq4 import filterfuncs as acq4filter
 
 class AnalysisModule():    
 
-    def __init__(self, browser):    
+    def __init__(self, browser):        
     
         ############################################
         # NAME THAT IS LISTED IN THE TAB

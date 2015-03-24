@@ -18,10 +18,10 @@ def ephus2h5(folder, overwrite=False):
     
     # Iterate through files
     for fname in os.listdir(folder):
-        ext = os.path.splitext(fname)[1]        
+        ext = os.path.splitext(fname)[1]     
         if (ext=='.fig') | (ext=='.xsg'):
             h5fname = fname.rstrip(ext) + '.hdf5'            
-            
+
             # Skip previoulsy converted files
             if not overwrite:
                 if (h5fname in h5fileList)==True:
@@ -32,7 +32,10 @@ def ephus2h5(folder, overwrite=False):
                 #print folder + fname
                 mat = scipy.io.loadmat(folder+'/'+fname)
                 if ext=='.xsg':
-                    data = mat['data'][0][0][0][0][0][0]                
+                  try:
+                    data = mat['data'][0][0][0][0][0][0]               
+                  except IndexError:
+                    pass 
                 elif ext=='.fig':
                     data = np.array(mat['hgS_070000'][0][0][3][0][0][3][0][0][2][0][0]).item()[2][0]
                     #data = temp.item()[2][0]
@@ -42,7 +45,7 @@ def ephus2h5(folder, overwrite=False):
              
                 # Create Channel 1 group and add data
                 #f.create_group('Channel_1')
-                dset = f.create_dataset('/data', data=data)
+                dset = f.create_dataset('/data', data=data.ravel())
                 
                 # Add some attributes
                 f.attrs['dt'] = dt
