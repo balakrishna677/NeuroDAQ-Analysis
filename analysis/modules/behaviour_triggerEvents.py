@@ -122,6 +122,15 @@ class AnalysisModule():
         tarray = np.arange(0, len(triggers))
         self.tevents = tarray[triggers==level]
 
+        #HACK FOR OLD MOVIES - INPUT TIMES MANUALLY
+        #self.tevents = [3595,7470,9435,11810,16560,26920,44850,54540]
+        #self.tevents = [1220,4240,6040,7800,8970,10740,14760,16810,18080,22460,27680,
+        #                29460,32250,35680,37600,41150,42230,43300,44230,45770]
+        #self.tevents = [4400,11220,14300,15780,19960,25330,31740,32900,37500,40130]
+        #self.tevents = [10290,10860,11350,11690,12060,12580,12980,13380,13730,14460,
+        #                15100,16030,17590,22100,24660]
+        #self.tevents = [6470,13960,24650]
+
         # Make infinte vertical lines on trigger events        
         for t in self.tevents:
             line = pg.InfiniteLine(pos=t*dt, angle=90, movable=False, pen=pg.mkPen('k', width=2))        

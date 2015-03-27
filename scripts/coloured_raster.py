@@ -19,9 +19,11 @@ maxIndex = np.argmax(data, axis=1)
 index = np.argsort(maxIndex)
 rankedData = [data[i] for i in index]
 rankedData = np.array(rankedData)
+#rankedData = data
 
 # Define max value for normalization
 vmax = 170*0.6
+vmax = 5.
 
 # Colormap
 #cmap = plt.cm.Spectral_r
@@ -41,9 +43,9 @@ for plot in range(nPlots):
     ax.append(canvas.fig.add_subplot(gs[plot]))
 
 # Show matrix
-ax[0].axis('off')
+#ax[0].axis('off')
 #ax.linewidth=50.0
-ax[0].matshow(rankedData, cmap=cmap, vmin=0, vmax=vmax, interpolation='none',aspect='auto')
+ax[0].matshow(rankedData[3::], cmap=cmap, vmin=0, vmax=vmax, interpolation='none',aspect='auto')
 norm = mpl.colors.Normalize(vmin=0, vmax=vmax)    
 
 # Show colorbar

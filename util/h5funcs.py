@@ -79,7 +79,6 @@ def load_h5(browser, tree, push):
                 imaging = True
             except KeyError:
                 imaging = False
-            imaging = browser.db.object().properties['imaging']
             browser.saveFolder = browser.currentFolder      
             browser.ui.saveFolderInput.setText(browser.saveFolder)  
             browser.ui.workingDataTree.setSortingEnabled(True)
