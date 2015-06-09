@@ -16,6 +16,7 @@ from widgets import h5Item
 from nptdms import TdmsFile
 import tablefuncs as table
 import imagefuncs as imagefun
+from neo import io
 
 def load_h5(browser, tree, push):
     """ Main loading function. Initially written for .hdf5 files only,
@@ -59,7 +60,53 @@ def load_h5(browser, tree, push):
             browser.ui.workingDataTree.setHeaderLabels([os.path.split(currentFile)[1]])
             browser.ui.workingDataTree.setSortingEnabled(False)  # Otherwise it screws up drag and drop
 
-    if '.tdms' in currentFile:
+    if '.abf' in currentFile:
+        browser.db = io.AxonIO(filename=currentFile)
+        browser.dbType = 'abf'
+        tree.clear()
+        # read data
+        browser.bl = browser.db.read_block(lazy=False, cascade=True) 
+        nSweeps = len(browser.bl.segments)
+        signal = browser.bl.segments[0].analogsignals
+        signalItem = signal.pop()
+        samplingRate = np.array(signalItem.sampling_rate) # Hz
+        if 'A' in str(signalItem.units):
+            groupname = 'current'
+        else:
+            groupname = 'voltage'
+        item = h5Item([groupname])
+        tree.addTopLevelItem(item)
+        browser.bl = browser.db.read_block(lazy=False, cascade=True) 
+        browser.saveFolder = browser.currentFolder      
+        browser.ui.saveFolderInput.setText(browser.saveFolder)  
+        browser.ui.workingDataTree.setSortingEnabled(True)
+        browser.ui.notesWidget.clear()
+        browser.currentOpenFile = currentFile
+        browser.currentSaveFile = os.path.splitext(currentFile)[0]+'.hdf5'
+        browser.ui.workingDataTree.setHeaderLabels([os.path.split(browser.currentSaveFile)[1]])
+        browser.ui.workingDataTree.setSortingEnabled(False)  # Otherwise it screws up drag and drop
+        for sweep in np.arange(1,nSweeps):
+            datasetname = 'sweep_'+str(sweep)
+            child = h5Item([datasetname])
+            child.sweep = sweep
+            child.attrs['dt'] = 1./(samplingRate/1000.)
+            item.addChild(child)
+            if push:
+                child.data = get_dataFromFile(browser, child)
+                # Deal with strings (display in Notes and convert to ASCII)
+                text = []
+                if (isinstance(child.data[0], basestring))==True:
+                    browser.ui.notesWidget.append(str(channelname))
+                    for d in child.data:
+                        if bool(d): text.append(d)         # Get rid of empty strings
+                    child.data = np.string_(text)   # Convert to fixed length ASCII
+                    for t in text:
+                        browser.ui.notesWidget.append(t)
+                    browser.ui.notesWidget.append('\r')
+                child.listIndex = len(browser.ui.workingDataTree.dataItems)
+                browser.ui.workingDataTree.dataItems.append(child) 
+
+    elif '.tdms' in currentFile:
         browser.db = TdmsFile(currentFile)
         browser.dbType = 'tdms'
         tree.clear()       
@@ -278,13 +325,14 @@ def get_dataFromFile(browser, item):
     elif browser.dbType=='tdms':
         if item.channel:
             data = browser.db.object(item.group, item.channel).data
+    elif browser.dbType=='abf':
+        data = np.array(browser.bl.segments[item.sweep].analogsignals)
+        data = data.ravel()
     return data
 
 
 
 
     
-    
-
         
 
