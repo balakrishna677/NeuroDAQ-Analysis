@@ -110,7 +110,7 @@ class AnalysisModule():
         #else:
         #    triggers = item.child(0).data
 
-        # Get item with trigeer start times
+        # Get item with trigger start times
         item =  browser.ui.workingDataTree.selectedItems()[0]
         triggers = item.data
         
