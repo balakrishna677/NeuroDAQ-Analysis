@@ -29,8 +29,13 @@ for plot in range(nPlots):
        
 # Plot
 x = np.arange(0, len(data[0]))
+#x = np.arange(0, len(data[0])*0.02, 0.02)
+
 ax[0].plot(x, data[0], 'k')
 ax[0].fill_between(x, data[1], data[2])
+#ax[0].fill_between(x, data[0]+data[1], data[0]-data[1])
+#ax[0].set_ylim([85,126])
+#ax[0].set_xlim([0,50])
 
 canvas.draw()
 

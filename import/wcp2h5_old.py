@@ -34,19 +34,19 @@ def wcp2h5(folder, overwrite=False):
                 for l in np.arange(0, nLinesHeader):
                     hList.append(fwcp.readline())
                
-                for l in np.arange(0, len(hList)):
-                    print l, hList[l]
-                ADCMAX = int(hList[5].strip('ADCMAX=\r\n'))
-                NC = int(hList[6].strip('NC=\r\n'))
-                NBA = int(hList[7].strip('NBA=\r\n'))  
-                NBD = int(hList[8].strip('NBD=\r\n'))
-                NR = int(hList[10].strip('NR=\r\n'))
-                DT = float(hList[11].strip('DT=\r\n'))
-                YU0 = hList[14].strip('YUO=\r\u')
-                YG0 = float(hList[16].strip('YG0=\r\n'))
+                #for l in np.arange(0, len(hList)):
+                #    print l, hList[l]
+                ADCMAX = int(hList[3].strip('ADCMAX=\r\n'))
+                NC = int(hList[4].strip('NC=\r\n'))
+                NBA = int(hList[5].strip('NBA=\r\n'))  
+                NBD = int(hList[6].strip('NBD=\r\n'))
+                NR = int(hList[8].strip('NR=\r\n'))
+                DT = float(hList[9].strip('DT=\r\n'))
+                YU0 = hList[12].strip('YUO=\r\u')
+                YG0 = float(hList[14].strip('YG0=\r\n'))
                 if NC==2:
-                    YU1 = hList[20].strip('YU1=\r\u')
-                    YG1 = float(hList[22].strip('YG1=\r\n'))                    
+                    YU1 = hList[19].strip('YU1=\r\u')
+                    YG1 = float(hList[20].strip('YG1=\r\n'))                    
 
                 # Read ANALYSIS block
                 fwcp.seek(1024,0)

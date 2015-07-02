@@ -68,6 +68,8 @@ class AnalysisModule(QtGui.QWidget):
         self.toolOptions.append([QtGui.QLabel('Smooth'), self.eventSmooth])
         self.eventMinDuration = QtGui.QLineEdit()
         self.toolOptions.append([QtGui.QLabel('Min Duration'), self.eventMinDuration])        
+        self.eventMinInterval = QtGui.QLineEdit()
+        self.toolOptions.append([QtGui.QLabel('Min Interval'), self.eventMinInterval])             
         self.eventCheck = QtGui.QPushButton('Event Check')
         self.eventCheck.setCheckable(True)
         self.toolOptions.append([self.eventCheck])
@@ -114,11 +116,12 @@ class AnalysisModule(QtGui.QWidget):
             direction = str(self.eventDirection.currentText())
             minDuration = float(self.eventMinDuration.text())
             detectionTrace = str(self.detectionTrace.currentText())
+            minInterval = float(self.eventMinInterval.text())
         except NameError:
             aux.error_box('Invalid detection value')
         bslWindow = 1.0
         slowestRise = 0.5
-        minEventInterval = 10.0
+        #minEventInterval = 5000.0
 
         # Ensure that noise safety has the same sign as the threshold
         noiseSafety = np.sign(threshold) * abs(noiseSafety)
@@ -143,6 +146,7 @@ class AnalysisModule(QtGui.QWidget):
         # Get derivative trace and filter
         dtrace = None
         if detectionTrace=='derivative':
+            print threshold
             dtrace = np.diff(data)
             dtrace = acq4filter.besselFilter(dtrace, 2000, 1, dt/1000, 'low', True)
 
@@ -158,7 +162,7 @@ class AnalysisModule(QtGui.QWidget):
             comp = lambda a, b: a > b
             
         # Correct times for dt    
-        minEventInterval = minEventInterval/dt
+        minEventInterval = minInterval/dt
         minDuration = minDuration/dt
         bslWindow = bslWindow/dt
         slowestRise = slowestRise/dt
@@ -176,7 +180,8 @@ class AnalysisModule(QtGui.QWidget):
             # Sliding baseline
             #bsl = np.mean(data[i-bslWindow-slowestRise:i])   
             if comp(detectionData[i]-bsl,threshold):
-              #if i-iLastDetection>minEventInterval:  # Min inter-event interval
+              print i, i-iLastDetection
+              if i-iLastDetection>minEventInterval:  # Min inter-event interval
                 self.xOnsets.append(i)
                 self.yOnsets.append(data[i])
                 eventCounter+=1
@@ -187,6 +192,8 @@ class AnalysisModule(QtGui.QWidget):
                     self.xOnsets.pop()
                     self.yOnsets.pop()
                     eventCounter-=1
+              else:
+                i+=1   # for min event interval   
             else:
                 i+=1
 
@@ -220,20 +227,24 @@ class AnalysisModule(QtGui.QWidget):
             aux.error_box('Invalid cutting value')
 
         # Cut out
-        events = []
+        events, allAttrs = [], []
         for onset in self.xOnsets:
             eStart = onset-baseline
             eEnd = onset+duration
             eData = self.trace[eStart:eEnd]
             events.append(eData)
+            attrs = {}
+            attrs['dt'] = self.dt
+            attrs['onset'] = onset
+            allAttrs.append(attrs)
 
         # Store event waveforms in h5 data tree
         results = []
-        attrs = {}
-        attrs['dt'] = self.dt 
+        #attrs = {}
+        #attrs['dt'] = self.dt 
         for e in np.arange(0, len(events)):
-            attrs['onset'] = self.xOnsets[e]
-            results.append(['event'+str(e), events[e], attrs])  
+            #attrs['onset'] = self.xOnsets[e]
+            results.append(['event'+str(e), events[e], allAttrs[e]])  
         aux.save_results(self.browser, 'Events', results)
         
 
@@ -254,7 +265,7 @@ class AnalysisModule(QtGui.QWidget):
         
     def update_threshold(self):
         plotWidget = self.browser.ui.dataPlotsWidget
-        plotWidget.cursorThsPos = round(plotWidget.cursorThs.value(),2)
+        plotWidget.cursorThsPos = round(plotWidget.cursorThs.value(),4)
         self.eventThresholdDisplay.setText(str(plotWidget.cursorThsPos))
 
     def show_events(self, data, xOnsets, yOnsets, dt):
@@ -269,6 +280,7 @@ class AnalysisModule(QtGui.QWidget):
         self.eventMinDuration.setText('2')
         self.eventBaseline.setText('2')
         self.eventDuration.setText('20')
+        self.eventMinInterval.setText('10')
 
     def show_derivative(self):
        """ Show derivative of plotted traces

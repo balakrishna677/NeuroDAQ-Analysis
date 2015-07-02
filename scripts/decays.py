@@ -22,7 +22,7 @@ dt = items[0].attrs['dt']
 # Setup exponential decay curve
 xdecay = c2
 xpeak = c1
-tau = 48
+tau = 45
 x = np.arange(0, c2*dt-c1*dt, dt)
 
 # Go through plotted traces

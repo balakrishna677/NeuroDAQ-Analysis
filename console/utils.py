@@ -52,10 +52,34 @@ def store_data(data, array2D=False, name='data', attrs={'dt':1}):
     parentWidget = browser.ui.workingDataTree.invisibleRootItem()
 
     # Make sure data is numpy array
-    data = np.array(data)
+    #data = np.array(data)
+
+    # List - add 'name' group and 'data' datasets
+    if isinstance(data, list):
+        item = h5Item([name])
+        browser.make_nameUnique(parentWidget, item, item.text(0)) 
+        browser.ui.workingDataTree.addTopLevelItem(item)
+        for n in np.arange(0, len(data)):
+            child = h5Item(['data_'+str(n)])
+            browser.make_nameUnique(item, child, child.text(0))
+            child.data = data[n]
+            child.attrs = attrs
+            child.listIndex = len(browser.ui.workingDataTree.dataItems)
+            browser.ui.workingDataTree.dataItems.append(child)
+            item.addChild(child)
+
+    # Float - add straight to root with name 'name' 
+    #elif isinstance(data, float):
+    #    item = h5Item([name])
+    #    browser.make_nameUnique(parentWidget, item, item.text(0))    
+    #    item.data = data
+    #    item.attrs = attrs
+    #    item.listIndex = len(browser.ui.workingDataTree.dataItems)
+    #    browser.ui.workingDataTree.dataItems.append(item)
+    #    browser.ui.workingDataTree.addTopLevelItem(item)
 
     # 1D array - add straight to root with name 'name' 
-    if (len(data.shape)==1) or ((len(data.shape)==2) and (array2D==True)):
+    elif (len(data.shape)==1) or ((len(data.shape)==2) and (array2D==True)):
         item = h5Item([name])
         browser.make_nameUnique(parentWidget, item, item.text(0))    
         item.data = data
@@ -77,7 +101,7 @@ def store_data(data, array2D=False, name='data', attrs={'dt':1}):
             child.listIndex = len(browser.ui.workingDataTree.dataItems)
             browser.ui.workingDataTree.dataItems.append(child)
             item.addChild(child)
-
+            
             
 # Ploting functions
 def plot_data(*args, **kwargs): #color='#3790CC', clear=False):

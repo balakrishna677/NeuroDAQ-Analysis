@@ -47,6 +47,10 @@ class AnalysisModule():
         self.toolOptions.append([self.maxBox])
         self.meanBox = QtGui.QCheckBox('Mean')
         self.toolOptions.append([self.meanBox])
+        self.medianBox = QtGui.QCheckBox('Median')
+        self.semBox = QtGui.QCheckBox('SEM')
+        self.toolOptions.append([self.semBox])   
+        self.toolOptions.append([self.medianBox])        
         self.peakComboBox = QtGui.QComboBox()
         self.peakComboBox.addItem('Positive peak')
         self.peakComboBox.addItem('Negative peak')        
@@ -91,7 +95,7 @@ class AnalysisModule():
         pgplot.replot(browser, plotWidget)
 
         # Iterate through traces
-        dataMin, dataMax, dataMean = [], [], []
+        dataMin, dataMax, dataMean, dataMedian, dataSEM = [], [], [], [], []
         dataRiseTime, dataOnset, dataDecay = [], [], []
         for item in plotWidget.plotDataItems:
             
@@ -121,6 +125,16 @@ class AnalysisModule():
             if self.meanBox.isChecked():
                 y = np.mean(data)
                 dataMean.append(y)
+                plotWidget.plot([cx1,cx2], [y,y], pen=pg.mkPen('#CF1C04', width=1))  
+
+            if self.medianBox.isChecked():
+                y = np.median(data)
+                dataMedian.append(y)
+                plotWidget.plot([cx1,cx2], [y,y], pen=pg.mkPen('#CF1C04', width=1))  
+
+            if self.semBox.isChecked():
+                y = np.std(data)/np.sqrt(len(data))
+                dataSEM.append(y)
                 plotWidget.plot([cx1,cx2], [y,y], pen=pg.mkPen('#CF1C04', width=1))  
 
             if self.riseTimeBox.isChecked():
@@ -187,6 +201,8 @@ class AnalysisModule():
             if self.minBox.isChecked(): results.append(['Minimum', np.array(dataMin)])
             if self.maxBox.isChecked(): results.append(['Maximum', np.array(dataMax)])
             if self.meanBox.isChecked(): results.append(['Mean', np.array(dataMean)])
+            if self.medianBox.isChecked(): results.append(['Median', np.array(dataMedian)])
+            if self.semBox.isChecked(): results.append(['SEM', np.array(dataSEM)])
             if self.riseTimeBox.isChecked(): results.append(['RiseTime', np.array(dataRiseTime)])
             if self.onsetBox.isChecked(): results.append(['Onset', np.array(dataOnset)])
             if self.decayTimeBox.isChecked(): results.append(['Decay', np.array(dataDecay)])

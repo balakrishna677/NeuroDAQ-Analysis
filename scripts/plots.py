@@ -40,6 +40,18 @@ for plot in range(nPlots):
 # Line plots
 #x = np.arange(0,len(data)*0.02,0.02)
 #x = np.arange(0, len(data[0]))
+<<<<<<< HEAD
+#x = data[0]
+#ax[0].plot(x, data[1]*1000, 'k')
+#ax[0].plot(x, data[1], 'y')
+#ax[0].plot(x, data[2], 'g')
+#ax[0].set_ylim([-200,1000])
+
+# Histogram from plotted data
+ax[0].hist(data[0], bins=40, range=(-200,10), histtype='bar')
+ax[0].hist(data[1], bins=40, range=(-200,10), histtype='bar')
+ax[0].hist(data[2], bins=40, range=(-200,10), histtype='bar')
+=======
 #ax[0].plot(x, data[0], 'k')
 #ax[0].plot(x, data[1], 'y')
 #ax[0].plot(x, data[2], 'g')
@@ -47,6 +59,7 @@ for plot in range(nPlots):
 
 # Histogram from plotted data
 #ax[0].hist(data, bins=40, range=(0,10), histtype='bar')
+>>>>>>> d540f1f330be28239c4f9ccd795353d16aaa392d
 
 # Symbols
 #x = np.zeros(len(data))
@@ -54,11 +67,19 @@ for plot in range(nPlots):
 #ax[0].set_ylim([0,200])
 
 # Bar chart
+<<<<<<< HEAD
+#x = np.arange(0, len(data[0]))
+#ax[0].bar(x, data[0], 1.0, color='r', yerr=data[1])
+#ax[0].bar(x, data[1], 17.5, color='y')
+#ax[0].bar(x, data[2], 1.0, color='g')
+#ax[0].set_ylim([0,110])
+=======
 x = np.arange(0, len(data[0]))
 ax[0].bar(x, data[0], 1.0, color='r', yerr=data[1])
 #ax[0].bar(x, data[1], 17.5, color='y')
 #ax[0].bar(x, data[2], 1.0, color='g')
 ax[0].set_ylim([0,110])
+>>>>>>> d540f1f330be28239c4f9ccd795353d16aaa392d
 
 # Raster
 #colors = ['#DF0101', '#08298A', '#0080FF', '#01DFD7', '#01DF74', '#01DF74', '#01DF74', '#01DF74', '#01DF74', '#8A084B']
