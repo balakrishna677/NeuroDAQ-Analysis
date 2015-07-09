@@ -118,3 +118,68 @@ class h5TreeWidget(QtGui.QTreeWidget):
             self.emit(QtCore.SIGNAL('deletePressed'))
 
 
+class h5itemSelect(QtGui.QDialog):
+
+    """ Make a dialog box that displays a clone of workingDataTree
+    for selecting a h5item for analysis
+    """
+    
+    def __init__(self, tree, text, extendendSelection=False, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.tree = tree
+        self.text = text
+        self.extendendSelection = extendendSelection
+        self.cloneTree()
+        self.makeButtons()
+        self.setProps()    
+
+    def setProps(self):
+        self.labelwidget = QtGui.QLabel(self.text)
+        self.grid = QtGui.QGridLayout(self)
+        self.grid.addWidget(self.labelwidget, 0,0,1,2) 
+        self.grid.addWidget(self.clone, 1,0,1,2)
+        self.grid.addWidget(self.Cancel_btn, 2,0)
+        self.grid.addWidget(self.OK_btn, 2,1)
+        self.clone.headerItem().setText(0, 'Available data')
+        if self.extendendSelection:
+            self.clone.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        #self.clone.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding))
+
+    def cloneTree(self):
+        self.clone = QtGui.QTreeWidget()
+        root = self.tree.invisibleRootItem()
+        cloneRoot = self.clone.invisibleRootItem()
+        self.iterateTree(root, cloneRoot)  
+        #self.clone.setParent(self)            
+
+    def iterateTree(self, parent, cloneParent):
+        for c in range(parent.childCount()):
+            item = parent.child(c)
+            itemName = item.text(0)
+            cloneItem = QtGui.QTreeWidgetItem()
+            cloneItem.setText(0, itemName)
+            cloneParent.addChild(cloneItem)
+            self.iterateTree(item, cloneItem) 
+            
+    def makeButtons(self):
+        self.OK_btn = QtGui.QPushButton("OK", self)
+        self.Cancel_btn = QtGui.QPushButton("Cancel", self)
+        self.OK_btn.clicked.connect(self.accept)
+        self.Cancel_btn.clicked.connect(self.reject)
+
+    def getItemPath(self):
+        try:
+            item = self.clone.selectedItems()[0]
+            path = []
+            while item is not None:
+                path.append(str(item.text(0)))
+                item = item.parent()
+            return '/'.join(reversed(path))
+        except IndexError:
+            self.reject()
+
+
+
+
+            
+            

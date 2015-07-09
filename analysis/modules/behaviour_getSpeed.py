@@ -29,8 +29,7 @@ class AnalysisModule():
         browser.customToolSelector.add_tool(self.entryName, self.func)
         # Add option widgets
         self.make_option_widgets()
-        # Set default values
-        self.set_defaultValues()        
+       
     
     def make_option_widgets(self):         
         stackWidget = self.browser.ui.behaviourToolStackedWidget
@@ -73,20 +72,19 @@ class AnalysisModule():
 
         # Calculate speed
         d = []
+        dt = item.attrs['dt']
         for i in range(1, len(x)):
             xmov = x[i] - x[i-1]
             ymov = y[i] - y[i-1]
             d.append(np.sqrt((xmov**2) + (ymov**2)))
-        speed = d #np.diff(d) # px/frame  > px/s = speed/(1./dt) with dt in seconds
+        speed = d # px/frame  > px/s = speed/(1./dt) with dt in seconds
 
         # Store data
         speedItem = h5Item(['speed'])
-        speedItem.data = speed
+        speedItem.data = np.array(speed)
         parentItem.addChild(speedItem)
         
         ############################################  
-
-
 
 
 

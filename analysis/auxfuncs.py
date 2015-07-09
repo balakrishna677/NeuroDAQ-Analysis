@@ -9,10 +9,11 @@ as the data list, so the indexes match.
 """
 
 import numpy as np
+import os
 import traceback
 from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
-from widgets import h5Item
+from widgets import h5Item, h5TreeWidget, h5itemSelect
 from util import pgplot
     
 
@@ -173,13 +174,40 @@ def error_box(text, errorInfo=None, infoText=None):
     if infoText:
         errorBox.setInformativeText(infoText)
     errorBox.exec_()
-    
-
-
-
-
-
 
     
+def selectItem_box(browser):
+    """ Asks the user to select an item in the data tree for analysis
+    """
+    q = h5itemSelect(browser.ui.workingDataTree, 'Please select the data analyse')
+    if q.exec_():
+        return q.getItemPath()
+
+
+def getTreePath(item):
+    path = []
+    while item is not None:
+        path.append(str(item.text(0)))
+        item = item.parent()
+    return '/'.join(reversed(path))
+
+
+def getItemFromPath(path, parent, level=0):
+#path = path.split('/')
+    """ Return the item corresponding to the path
+    'path' is a list with the path elements in order
+    """
+    pathItem = None
+    for i in range(parent.childCount()):
+        item = parent.child(i)
+        if item.text(0)==path[level]:
+            if level<(len(path)-1):
+                level+=1
+                #print item.text(0), level
+                return getItemFromPath(path, item, level)
+            else:
+                pathItem = item     
+    return pathItem
+
 
 

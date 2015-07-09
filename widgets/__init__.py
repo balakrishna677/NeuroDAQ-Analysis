@@ -9,6 +9,7 @@ from TabWidget import TabWidget
 
 from h5Widgets import h5Item
 from h5Widgets import h5TreeWidget
+from h5Widgets import h5itemSelect
 
 from MplWidgets import matplotlibWidget
 from IPythonWidget import QIPythonWidget
