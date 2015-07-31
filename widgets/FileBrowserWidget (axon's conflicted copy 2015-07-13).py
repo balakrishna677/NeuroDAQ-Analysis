@@ -34,7 +34,7 @@ class FileBrowserWidget(QtGui.QTreeView):
                 self.homeFolder = '/'              
         self.model.setRootPath(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder)))
         self.setRootIndex(self.model.index(QtCore.QDir.absolutePath(QtCore.QDir(self.homeFolder))))                
-        self.model.setNameFilters(['*.hdf5', '*.tdms', '*.abf', '*.avi', '*.mp4' ])
+        self.model.setNameFilters(['*.hdf5', '*.tdms', '*.abf'])
  
         # Hide some default columns
         self.setColumnHidden(1, True)

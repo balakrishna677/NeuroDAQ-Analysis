@@ -112,12 +112,13 @@ def replot_cursors(plotWidget):
     after the axis had been cleared for some reason
     """    
     plotWidget.addItem(plotWidget.cursor1)
-    plotWidget.addItem(plotWidget.cursor2)     
+    if hasattr(plotWidget, 'cursos2'):
+        plotWidget.addItem(plotWidget.cursor2)     
 
 
 def make_xvector(ydata, dt):
     """ Make a X vector to plot data against 
-    and ensure it is has the same lenght as Y
+    and ensure it is has the same length as Y
     """ 
     x = np.arange(0, len(ydata)*dt, dt)
     if len(x)<len(ydata):

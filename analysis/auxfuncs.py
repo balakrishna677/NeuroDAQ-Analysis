@@ -175,6 +175,18 @@ def error_box(text, errorInfo=None, infoText=None):
         errorBox.setInformativeText(infoText)
     errorBox.exec_()
 
+def warning_box(text, infoText=None):    
+    """ Displays a warning message box with custom text and optional
+    additional information.
+    """
+    warningBox = QtGui.QMessageBox()
+    warningBox.setWindowTitle('Warning')
+    warningBox.setText('<b>'+text+'</b>')
+    warningBox.setIcon(QtGui.QMessageBox.Warning)
+    # Add additional info
+    if infoText:
+        warningBox.setInformativeText(infoText)
+    warningBox.exec_()
     
 def selectItem_box(browser):
     """ Asks the user to select an item in the data tree for analysis

@@ -337,8 +337,25 @@ class Ui_MainWindow(object):
         #self.plotToolBar = QtGui.QToolBar()
         #self.plotToolBar.setLayoutDirection(QtCore.Qt.RightToLeft)
         #self.gridLayout_images.addWidget(self.plotToolBar)     
-        
-        
+
+        # ------
+        # TAB X   (videoTab)
+        # ------    
+        # Geometry and Layout        
+        self.dataVideoTab = NeuroWidget(0,0)
+        self.displayTabWidget.addTab(self.dataVideoTab, 'Video')    
+        self.gridLayout_video = QtGui.QGridLayout(self.dataVideoTab)    
+
+        # content        
+        self.dataVideoWidget = videoPlayerWidget()
+        self.dataVideoWidget.setSizePolicy(preferredSizePolicy)
+        self.gridLayout_video.addWidget(self.dataVideoWidget, 0, 0, 1, 1) 
+
+        # toolbar
+        self.videoPlotToolBar = QtGui.QToolBar()
+        self.videoPlotToolBar.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.gridLayout_video.addWidget(self.videoPlotToolBar)     
+
         # ------
         # TAB 3   (TableTab)
         # ------        
@@ -459,7 +476,11 @@ class Ui_MainWindow(object):
         self.plotToolBar.addAction(self.actionPlotData)
         self.plotToolBar.addAction(self.actionShowCursors)
         self.plotToolBar.addAction(self.actionAnalyseData)
-                
+
+        # Video Plot Toolbar
+        self.actionVideoPlotData = QtGui.QAction('Plot', MainWindow) 
+        self.videoPlotToolBar.addAction(self.actionVideoPlotData)
+               
         # File data tree context menu        
         self.actionAddRootGroup = QtGui.QAction('Add Root Group', MainWindow)
         self.actionAddChildGroup = QtGui.QAction('Add Child Group', MainWindow)

@@ -22,7 +22,6 @@ class h5Item(QtGui.QTreeWidgetItem):
         self.data = None
         self.attrs = {}
         self.attrs['dt'] = 1
-        self.attrs['video'] = 'False'
         self.analysis = {}
         
     def set_name(self, name):

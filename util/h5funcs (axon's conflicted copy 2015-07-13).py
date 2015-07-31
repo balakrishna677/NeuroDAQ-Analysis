@@ -17,7 +17,6 @@ from nptdms import TdmsFile
 import tablefuncs as table
 import imagefuncs as imagefun
 from neo import io
-from moviepy.editor import *
 
 def load_h5(browser, tree, push):
     """ Main loading function. Initially written for .hdf5 files only,
@@ -41,7 +40,6 @@ def load_h5(browser, tree, push):
         for group in browser.db:
             item = h5Item([str(group)])
             item.path = '/'+str(group)
-            set_attrs(browser.db[group], item)
             tree.addTopLevelItem(item)
             populate_h5tree(browser, browser.db['/'+str(group)], parentWidget=item, push=push) 
         # Select first item of loaded list
@@ -169,21 +167,6 @@ def load_h5(browser, tree, push):
                     #if 'kHz' in str(browser.ui.workingDataTree.root.attrs): 
                     #    child.attrs['dt'] = 1./browser.ui.workingDataTree.root.attrs['sampling_rate(kHz)']       
 
-    elif '.mp4' in currentFile:
-        browser.dbType = 'video'
-        tree.clear()
-        item = h5Item(['Video stream'])
-        item.attrs['mrl'] = currentFile
-        item.attrs['video'] = 'True'
-        tree.addTopLevelItem(item)        
-        # Read and show some properties
-        clip = VideoFileClip(currentFile)
-        resolution = h5Item(['Resolution: '+str(clip.size[0])+'x'+str(clip.size[1])])
-        item.addChild(resolution)
-        frameRate = h5Item(['Frame rate: '+str(clip.fps)])
-        item.addChild(frameRate)
-        duration = h5Item(['Duration: '+str(clip.duration)+' sec'])
-        item.addChild(duration)
 
 def populate_h5tree(browser, parent, parentWidget, push):   
     if isinstance(parent, h5py.Group):
@@ -191,7 +174,6 @@ def populate_h5tree(browser, parent, parentWidget, push):
             #print parent[child]
             item = h5Item([child])
             item.path = re.findall('"([^"]*)"', str(parent))[0] + '/' + str(child)
-            set_attrs(parent[child], item)
             parentWidget.addChild(item)
             populate_h5tree(browser, parent[child], item, push)
     elif isinstance(parent, h5py.Dataset):
@@ -204,21 +186,18 @@ def populate_h5tree(browser, parent, parentWidget, push):
             except ValueError:   # No data in the dataset
                 sip.delete(parentWidget)
 
-def populate_h5File(browser, parent, parentWidget):     
-    set_attrs(parentWidget, parent)
+def populate_h5File(browser, parent, parentWidget):
     for i in range(parentWidget.childCount()):
-        item = parentWidget.child(i)  
+        item = parentWidget.child(i)        
         if item.childCount()>0:
-            group = parent.create_group(str(item.text(0)))
-            #print item.text(0), item.attrs
-            set_attrs(item, group)          
+            parent.create_group(str(item.text(0)))
             populate_h5File(browser, parent[str(item.text(0))], parentWidget=item)
         elif (item.data is not None): # and (isinstance(item.data[0], basestring)==False):
+            #print type(item.data), item.text(0)
             dset = parent.create_dataset(str(item.text(0)), data=item.data)
             set_attrs(item, dset)
         else:
-            group = parent.create_group(str(item.text(0)))
-            set_attrs(item, group)
+            parent.create_group(str(item.text(0)))
 
 def populate_h5dragItems(browser, originalParentWidget, parentWidget):
     if originalParentWidget.childCount()>0:
@@ -305,8 +284,8 @@ def save_h5(browser, tree):
     raise
 
 def set_attrs(source, item):
-    """ Set attributes of h5 item or h5 group and dataset
-    Source and item can be tree h5item or h5File group/dataset, the syntax is the same.
+    """ Set attributes of h5 item or dataset
+    Source and item can be tree h5item or h5File dataset, the syntax is the same.
     """
     for attr in source.attrs:
         if type(source.attrs[attr]) is unicode:

@@ -2,6 +2,7 @@ from PyQt4 import QtGui, QtCore
 
 ####################################
 # ADD ADDITIONAL IMPORT MODULES HERE
+import os
 import numpy as np
 from analysis import auxfuncs as aux
 from util import pgplot
@@ -9,6 +10,7 @@ import pyqtgraph as pg
 import re
 from widgets import h5Item
 from analysis.acq4 import filterfuncs as acq4filter
+from moviepy.editor import *
 ####################################
 
 class AnalysisModule():    
@@ -69,33 +71,38 @@ class AnalysisModule():
         # ANALYSIS FUNCTION      
 
         # Read options 
-        baseline = int(self.eventBaseline.text())
-        duration = int(self.eventDuration.text())
+        self.baseline = int(self.eventBaseline.text())
+        self.duration = int(self.eventDuration.text())
     
         # Get names and indices from selected parent item
-        names, triggers = [], []
-        parentItem = browser.ui.workingDataTree.selectedItems()[0]
-        for i in range(parentItem.childCount()):
-            item = parentItem.child(i)
+        self.names, self.triggers = [], []
+        self.parentItem = browser.ui.workingDataTree.selectedItems()[0]
+        for i in range(self.parentItem.childCount()):
+            item = self.parentItem.child(i)
             if 'Names' in item.text(0):
-               names = re.findall(r"'(.*?)'", item.data, re.DOTALL)
+               self.names = re.findall(r"'(.*?)'", item.data, re.DOTALL)
             elif 'Indices' in item.text(0):
-               triggers = item.data
-        if len(names)==0 or len(triggers)==0:   
-            aux.error_box('Protocol details not found')
-            return
+               self.triggers = item.data
+        if len(self.names)==0 or len(self.triggers)==0:   
+            aux.warning_box('Protocol details not found',
+                            infoText='Using trigger levels only')
+            self.noProtocolNames()
+        else:
+            self.withProtocolNames()
 
+        ############################################  
+    def withProtocolNames(self):
         # Get trigger times (in data points)
-        tarray = np.arange(0, len(triggers))
-        self.tevents = tarray[triggers>0]
+        tarray = np.arange(0, len(self.triggers))
+        self.tevents = tarray[self.triggers>0]
 
         # Iterate names and add entries to data tree
-        protocols = list(set(names))
-        inames = list(enumerate(names))
+        protocols = list(set(self.names))
+        inames = list(enumerate(self.names))
         protocolsItem = h5Item([str('protocols_data')])
-        parentItem.addChild(protocolsItem)    
+        self.parentItem.addChild(protocolsItem)    
         if self.eventsBox.isChecked():     
-            itemPath = aux.selectItem_box(browser)
+            itemPath = aux.selectItem_box(self.browser)
             itemPath = itemPath.split('/')
         for protocol in protocols:
             item = h5Item([str(protocol)])
@@ -112,65 +119,76 @@ class AnalysisModule():
                     
                     # Deal with data options
                     if self.eventsBox.isChecked():     
-                        root = browser.ui.workingDataTree.invisibleRootItem()
+                        root = self.browser.ui.workingDataTree.invisibleRootItem()
                         dataSourceItem = aux.getItemFromPath(itemPath, root, level=0)
-                        print [triggerFrame-baseline,triggerFrame+baseline]
-                        child.data = dataSourceItem.data[triggerFrame-baseline:triggerFrame+baseline]
-                        # check whether there is data
-
-                    if triggers[triggerFrame]==1:
+                        #print [triggerFrame-self.baseline,triggerFrame+self.baseline]
+                        if ('video' in dataSourceItem.attrs) and (dataSourceItem.attrs['video']=='True'):
+                            print 'this is a video' 
+                        else:
+                            child.data = dataSourceItem.data[triggerFrame-self.baseline:triggerFrame+self.duration]
+                            # todo: check whether there is data
+                    if self.triggers[triggerFrame]==1:
                         item_nontriggers.addChild(child)
-                    elif triggers[triggerFrame]==2:
+                    elif self.triggers[triggerFrame]==2:
                         item_triggers.addChild(child)
-                    elif triggers[triggerFrame]==3:
+                    elif self.triggers[triggerFrame]==3:
                         item_manualtriggers.addChild(child)   
-            protocolsItem.addChild(item)
+            protocolsItem.addChild(item)    
 
-        ############################################  
+    def noProtocolNames(self):
+        # Get trigger times (in data points)
+        tarray = np.arange(0, len(self.triggers))
+        self.tevents = tarray[self.triggers>0]
 
-    def event_cut(self, profile=False):
-
-        # Read options 
-        baseline = float(self.eventBaseline.text())
-        duration = float(self.eventDuration.text())
-    
-        # Get plotted tracking data
-        trackData = self.plotWidget.plotDataItems[0].data
-
-        # Get selected trigger data
-        item = self.browser.ui.workingDataTree.currentItem()
-        triggers = item.data
-        
-        # Deal with dt
-        dt = self.plotWidget.plotDataItems[0].attrs['dt']
-        item.attrs['dt'] = dt
-
-        # Extract events        
-        events, stimProfiles = [], []
+        # Iterate names and add entries to data tree
+        protocolsItem = h5Item([str('protocols_data')])
+        self.parentItem.addChild(protocolsItem)    
+        if self.eventsBox.isChecked():     
+            itemPath = aux.selectItem_box(self.browser)
+            itemPath = itemPath.split('/')
+            root = self.browser.ui.workingDataTree.invisibleRootItem()
+            dataSourceItem = aux.getItemFromPath(itemPath, root, level=0)
+            if ('video' in dataSourceItem.attrs) and (dataSourceItem.attrs['video']=='True'):
+                videoEvents = True
+                clip = VideoFileClip(dataSourceItem.attrs['mrl'])
+        item_triggers = h5Item([str('triggers')])
+        item_nontriggers = h5Item([str('non_triggers')])
+        item_manualtriggers = h5Item([str('manual')])
+        protocolsItem.addChild(item_triggers)
+        protocolsItem.addChild(item_nontriggers)
+        protocolsItem.addChild(item_manualtriggers)
         for t in self.tevents:
-            event = trackData[t-int(baseline/dt):t+int(duration/dt)]
-            events.append(event)
-            if profile:
-                eventProfile = self.triggerProfileData[t-int(baseline/dt):t+int(duration/dt)]
-                stimProfiles.append(eventProfile)                
+             triggerFrame = t
+             child = h5Item(['frame_'+str(triggerFrame)]) 
+                   
+             # Deal with data options
+             if self.eventsBox.isChecked():     
+                 if videoEvents:
+                     tstart = (triggerFrame-self.baseline)/clip.fps
+                     tend = (triggerFrame+self.duration)/clip.fps
+                     subclip = clip.subclip(tstart, tend)
+                     self.makeVideoStream(subclip, child)
+                 else:
+                     child.data = dataSourceItem.data[triggerFrame-self.baseline:triggerFrame+self.duration]
+                     # todo: check whether there is data
+             if self.triggers[triggerFrame]==1:
+                 item_nontriggers.addChild(child)
+             elif self.triggers[triggerFrame]==2:
+                 item_triggers.addChild(child)
+             elif self.triggers[triggerFrame]==3:
+                 item_manualtriggers.addChild(child)   
+        #protocolsItem.addChild(item)    
 
-        # Store data
-        results = []
-        attrs = {}
-        attrs['dt'] = dt 
-        attrs['t0'] = baseline  # in sampling points
-        for e in np.arange(0, len(events)):
-            attrs['trigger_time'] = self.tevents[e]  # in sampling points 
-            results.append(['event'+str(e), events[e], attrs])  
-        aux.save_results(self.browser, 'Events', results)
-                
-        if profile:
-            results = []
-            for e in np.arange(0, len(stimProfiles)):
-                attrs['trigger_time'] = self.tevents[e]  # in sampling points 
-                results.append(['stim'+str(e), stimProfiles[e], attrs])  
-            aux.save_results(self.browser, 'Stimulation Profiles', results)     
-        
+    def makeVideoStream(self, subclip, item):
+        fpath = os.path.split(self.browser.currentSaveFile)
+        fdir = fpath[0]
+        folder = '.'+os.path.splitext(fpath[1])[0]
+        if folder not in os.listdir(fdir):
+             os.mkdir(folder) 
+        savename = fdir+folder+str(item.text(0))+'.mp4'
+        subclip.write_videofile(savename, fps=subclip.fps)
+        item.attrs['video'] = 'True'
+        item.attrs['mrl'] = savename
 
     def set_defaultValues(self):
         self.eventBaseline.setText('200')

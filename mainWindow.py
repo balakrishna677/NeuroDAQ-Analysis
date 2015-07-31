@@ -183,6 +183,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         self.ui.actionShowCursors.triggered.connect(self.show_cursors)
         self.ui.actionAnalyseData.triggered.connect(self.analyse_data)
 
+        # Video tab
+        # ----------------------------------------------------------------------------- 
+        self.ui.actionVideoPlotData.triggered.connect(self.videoPlot_selected)
 
     # -----------------------------------------------------------------------------
     # HDF5 file Methods
@@ -258,7 +261,9 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             dataTree = self.ui.fileDataTree
             for originalIndex in dataTree.selectedIndexes():
                 item = dataTree.itemFromIndex(QtCore.QModelIndex(originalIndex))
-                self.dragItems.append([item.path, item.text(0), item.listIndex, originalIndex])
+                self.dragItems.append([item.path, item.text(0), item.listIndex, originalIndex, 
+                                      item.data, item.attrs])
+                #self.dragItems.append([item, originalIndex])
         elif source==2: # Copy
             dataTree = self.ui.workingDataTree
             self.copyItems = []
@@ -305,6 +310,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
             i.path = item[0]
             i.listIndex = item[2]
             i.originalIndex = item[3]
+            i.data = item[4]
+            i.attrs = item[5]
+            #item = i[0]
+            #item.originalIndex = i[1]
             targetItems.append(i)             
           parentIndex = self.ui.workingDataTree.indexFromItem(self.dragTargetParent)
           for row in np.arange(0, len(self.dragItems)):
@@ -499,7 +508,10 @@ class NeuroDaqWindow(QtGui.QMainWindow):
                 pgplot.plot_singleData(self, self.ui.singlePlotWidget, data)    
 
     def browse_OnSelectionChanged(self, current, previous):
-        if hasattr(current, 'data'): 
+        if ('video' in current.attrs) and (current.attrs['video']=='True'):
+            self.ui.dataVideoWidget.filename = str(current.attrs['mrl'])    
+            self.ui.dataVideoWidget.OpenFile()  # not ideal, should maybe have a Load button    
+        elif hasattr(current, 'data'): 
             # Show data values in status bar
             if current.data is not None:
                 dataValue = str(current.data[0])
@@ -525,6 +537,12 @@ class NeuroDaqWindow(QtGui.QMainWindow):
         if itemList:
             pgplot.plot_multipleData(self, self.ui.dataPlotsWidget, itemList)   
             #print itemList[0].attrs['dt']    
+
+    def videoPlot_selected(self):
+        itemList = self.ui.workingDataTree.selectedItems()
+        if itemList:
+            pgplot.plot_multipleData(self, self.ui.dataVideoWidget.plotsWidget, itemList)   
+            self.ui.dataVideoWidget.xmax = self.ui.dataVideoWidget.plotsWidget.viewBox.childrenBounds()[0][1]
 
     def zoom_out(self):
         pgplot.zoom_out(self, self.ui.dataPlotsWidget)
